@@ -20,6 +20,7 @@ import {
   TOKEN,
 } from './config.js';
 import { buyPack, claimFreeReward, claimReward, getUser } from './economy.js';
+import { renderCollection } from './gallery.js';
 
 if (!TOKEN) {
   console.error('Brakuje DISCORD_TOKEN. Skopiuj .env.example do .env i uzupełnij token.');
@@ -171,19 +172,62 @@ async function claimFree(interaction) {
 async function showCollection(interaction) {
   if (!requireGuild(interaction)) return;
   const user = getUser(interaction.guildId, interaction.user.id);
-  const recent = user.cards.slice(-10).reverse();
-  if (recent.length === 0) {
-    await interaction.reply({ content: 'Twoja kolekcja jest pusta. Kup paczkę w `/sklep`!', ephemeral: true });
-    return;
-  }
-  const lines = recent.map((card, index) =>
-    `**${index + 1}. ${card.name}** — OVERALL ${card.overall} · ${card.tier}`,
-  );
+  const image = await renderCollection(catalog, user.cards);
+  const imageName = 'kolekcja-s2.png';
   const embed = new EmbedBuilder()
     .setColor(0x168cff)
-    .setTitle(`⚽ Kolekcja ${interaction.user.username}`)
-    .setDescription(lines.join('\n'))
-    .setFooter({ text: `Pokazano ${recent.length} z ${user.cards.length} kart.` });
+    .setTitle(`⚽ Kolekcja S2 — ${interaction.user.username}`)
+    .setDescription(`Masz **${new Set(user.cards.map((card) => card.name)).size} z ${catalog.length}** zawodników. Szare karty nie są jeszcze w Twojej kolekcji.`)
+    .setImage(`attachment://${imageName}`);
+  await interaction.reply({
+    embeds: [embed],
+    files: [new AttachmentBuilder(Buffer.from(image), { name: imageName })],
+    ephemeral: true,
+  });
+}
+
+async function showStats(interaction) {
+  if (!requireGuild(interaction)) return;
+  const name = interaction.options.getString('zawodnik', true);
+  const player = catalog.find((entry) => entry.name === name);
+  if (!player) {
+    await interaction.reply({ content: 'Nie znaleziono tego zawodnika.', ephemeral: true });
+    return;
+  }
+
+  const user = getUser(interaction.guildId, interaction.user.id);
+  const owned = user.cards.some((card) => card.name === player.name);
+  const hissatsu = (player.hissatsu ?? []).map((move) => {
+    const element = move.element ? ` · ${move.element}` : '';
+    return `• **${move.name}** — ${move.type}${element}`;
+  });
+  const embed = new EmbedBuilder()
+    .setColor(tierColors[player.tier] ?? 0x168cff)
+    .setTitle(`⚽ ${player.name} · OVERALL ${player.overall}`)
+    .setDescription(owned ? '✅ Masz tego zawodnika w kolekcji.' : '🔒 Nie masz jeszcze tej karty.')
+    .addFields(
+      { name: 'Pozycja', value: player.position ?? 'Niepodana', inline: true },
+      { name: 'Element', value: player.element ?? 'Niepodany', inline: true },
+      { name: 'Rzadkość', value: player.tier, inline: true },
+      { name: 'Hissatsu', value: hissatsu.length ? hissatsu.join('\n') : 'Nie podano technik.' },
+    );
+  const imageName = 'karta-zawodnika.png';
+  embed.setImage(`attachment://${imageName}`);
+  await interaction.reply({
+    embeds: [embed],
+    files: [new AttachmentBuilder(path.join(ASSETS, player.image), { name: imageName })],
+    ephemeral: true,
+  });
+}
+
+async function showBalance(interaction) {
+  if (!requireGuild(interaction)) return;
+  const user = getUser(interaction.guildId, interaction.user.id);
+  const embed = new EmbedBuilder()
+    .setColor(0xffbe37)
+    .setTitle('💰 Twoje saldo')
+    .setDescription(`Masz **${user.balance} monet**.`)
+    .setFooter({ text: 'Zarabiaj przez /work, /training i /job.' });
   await interaction.reply({ embeds: [embed], ephemeral: true });
 }
 
@@ -193,6 +237,17 @@ client.once(Events.ClientReady, (readyClient) => {
 
 client.on(Events.InteractionCreate, async (interaction) => {
   try {
+    if (interaction.isAutocomplete()) {
+      if (interaction.commandName === 'stats') {
+        const query = interaction.options.getFocused().toLocaleLowerCase('pl');
+        const matches = catalog
+          .filter((player) => player.name.toLocaleLowerCase('pl').includes(query))
+          .slice(0, 25)
+          .map((player) => ({ name: player.name, value: player.name }));
+        await interaction.respond(matches);
+      }
+      return;
+    }
     if (interaction.isButton() && interaction.customId === packButtonId) {
       await openPack(interaction);
       return;
@@ -216,12 +271,12 @@ client.on(Events.InteractionCreate, async (interaction) => {
       case 'free':
         await claimFree(interaction);
         break;
-      case 'saldo': {
-        if (!requireGuild(interaction)) return;
-        const user = getUser(interaction.guildId, interaction.user.id);
-        await interaction.reply(`💰 Masz **${user.balance} monet**.`);
+      case 'saldo':
+        await showBalance(interaction);
         break;
-      }
+      case 'stats':
+        await showStats(interaction);
+        break;
       case 'kolekcja':
         await showCollection(interaction);
         break;
