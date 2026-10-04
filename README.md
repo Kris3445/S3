@@ -9,7 +9,10 @@ Gotowy starter bota z paczką S2, animacjami, kartami zawodników i prostą ekon
 - Animacja otwarcia zależy od najlepszej karty w paczce: brązowa dla OVERALL 1–64, srebrna 65–74, złota 75–99.
 - `/work`, `/training` i `/job` dają po **20 monet**. Dzielą jeden cooldown 60 sekund, więc na 100 monet potrzeba pięciu użyć w około 4 minuty.
 - `/saldo` pokazuje stan konta, a `/kolekcja` ostatnie zdobyte karty.
-- Karty są PNG 512 × 640 i mają ramki zgodne z OVERALLEM.
+- Po animacji otwarcia bot odkrywa karty osobno, jedną po drugiej.
+- Portrety zawodników to PNG 512 × 640 bez ozdobnych ramek; kolor osadzonej wiadomości oznacza rzadkość.
+- `/free` daje jednorazowo 8000 monet na każdym serwerze.
+- Wszystkie komendy i przycisk kupowania paczki są dostępne wyłącznie dla osób z uprawnieniem Administrator.
 
 Dane ekonomii są w pliku `src/config.js`; prawdopodobieństwa i karty w `assets/katalog.json`.
 
@@ -47,7 +50,7 @@ npm run deploy
 npm start
 ```
 
-Zostaw uruchomiony terminal, kiedy testujesz bota na komputerze. Komendy do sprawdzenia: `/sklep`, `/work`, `/training`, `/job`, `/saldo`, `/kolekcja`.
+Zostaw uruchomiony terminal, kiedy testujesz bota na komputerze. Komendy do sprawdzenia: `/sklep`, `/work`, `/training`, `/job`, `/free`, `/saldo`, `/kolekcja`.
 
 ## 4. Wgraj pliki na GitHuba
 
