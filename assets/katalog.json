@@ -1,6 +1,9 @@
 [
   {
     "name": "William Glass",
+    "position": "Obrońca",
+    "element": "Forest",
+    "hissatsu": [{ "name": "Megane Crash", "element": "Mountain", "type": "Strzał" }],
     "overall": 35,
     "chance_percent": 45.0,
     "tier": "BRĄZOWA",
@@ -9,6 +12,9 @@
   },
   {
     "name": "Jim Wright",
+    "position": "Obrońca",
+    "element": "Forest",
+    "hissatsu": [{ "name": "Coil Turn", "element": "Wind", "type": "Odbiór" }],
     "overall": 57,
     "chance_percent": 25.0,
     "tier": "BRĄZOWA",
@@ -17,6 +23,12 @@
   },
   {
     "name": "Tod Ironside",
+    "position": "Obrońca",
+    "element": "Fire",
+    "hissatsu": [
+      { "name": "Spinning Cut (B)", "element": "Wind", "type": "Odbiór" },
+      { "name": "Deceptor Dribble", "element": "Forest", "type": "Drybling" }
+    ],
     "overall": 73,
     "chance_percent": 3.2,
     "tier": "SREBRNA",
@@ -25,6 +37,12 @@
   },
   {
     "name": "Timmy Saunders",
+    "position": "Pomocnik",
+    "element": "Forest",
+    "hissatsu": [
+      { "name": "Kung Fu Head", "element": "Forest", "type": "Strzał" },
+      { "name": "Whirlwind Twister", "element": "Wind", "type": "Drybling" }
+    ],
     "overall": 70,
     "chance_percent": 3.2,
     "tier": "SREBRNA",
@@ -33,6 +51,9 @@
   },
   {
     "name": "Steve Grim",
+    "position": "Pomocnik",
+    "element": "Wind",
+    "hissatsu": [{ "name": "Rolling Kick", "element": "Forest", "type": "Strzał" }],
     "overall": 67,
     "chance_percent": 3.2,
     "tier": "SREBRNA",
@@ -41,6 +62,9 @@
   },
   {
     "name": "Sam Kincaid",
+    "position": "Pomocnik",
+    "element": "Fire",
+    "hissatsu": [{ "name": "Grenade Shot", "element": "Fire", "type": "Strzał" }],
     "overall": 66,
     "chance_percent": 3.2,
     "tier": "SREBRNA",
@@ -49,6 +73,9 @@
   },
   {
     "name": "Maxwell Carson",
+    "position": "Napastnik",
+    "element": "Wind",
+    "hissatsu": [{ "name": "Cross Drive (C)", "element": "Wind", "type": "Strzał" }],
     "overall": 71,
     "chance_percent": 3.2,
     "tier": "SREBRNA",
@@ -57,6 +84,12 @@
   },
   {
     "name": "Bobby Shearer",
+    "position": "Obrońca",
+    "element": "Forest",
+    "hissatsu": [
+      { "name": "Killer Slide", "element": null, "type": "Odbiór" },
+      { "name": "Volcano Cut (B)", "element": "Fire", "type": "Odbiór" }
+    ],
     "overall": 80,
     "chance_percent": 4.5,
     "tier": "ZŁOTA",
@@ -65,6 +98,12 @@
   },
   {
     "name": "Kevin Dragonfly",
+    "position": "Napastnik",
+    "element": "Forest",
+    "hissatsu": [
+      { "name": "Dragon Crash", "element": null, "type": "Strzał" },
+      { "name": "Dragon Slayer", "element": null, "type": "Strzał" }
+    ],
     "overall": 82,
     "chance_percent": 4.5,
     "tier": "ZŁOTA",
@@ -73,6 +112,12 @@
   },
   {
     "name": "Jack Wallside",
+    "position": "Obrońca",
+    "element": "Mountain",
+    "hissatsu": [
+      { "name": "The Wall (B)", "element": null, "type": "Odbiór" },
+      { "name": "The Mountain (B)", "element": null, "type": "Odbiór" }
+    ],
     "overall": 85,
     "chance_percent": 1.33,
     "tier": "ZŁOTA",
@@ -81,6 +126,12 @@
   },
   {
     "name": "Erik Eagle",
+    "position": "Pomocnik",
+    "element": "Forest",
+    "hissatsu": [
+      { "name": "Flame Dance", "element": null, "type": "Odbiór" },
+      { "name": "Pegasus Shot", "element": null, "type": "Strzał" }
+    ],
     "overall": 86,
     "chance_percent": 1.33,
     "tier": "ZŁOTA",
@@ -89,6 +140,12 @@
   },
   {
     "name": "Nathan Swift",
+    "position": "Obrońca",
+    "element": "Wind",
+    "hissatsu": [
+      { "name": "Flurry Dash", "element": "Wind", "type": "Drybling" },
+      { "name": "Wind God's Dance", "element": "Wind", "type": "Drybling" }
+    ],
     "overall": 88,
     "chance_percent": 1.33,
     "tier": "ZŁOTA",
@@ -97,6 +154,12 @@
   },
   {
     "name": "Mark Evans",
+    "position": "Bramkarz",
+    "element": "Mountain",
+    "hissatsu": [
+      { "name": "Majin The Hand", "element": "Mountain", "type": "Obrona bramkarska" },
+      { "name": "God Catch", "element": "Mountain", "type": "Obrona bramkarska" }
+    ],
     "overall": 91,
     "chance_percent": 0.5,
     "tier": "ZŁOTA",
@@ -105,6 +168,12 @@
   },
   {
     "name": "Axel Blaze",
+    "position": "Napastnik",
+    "element": "Fire",
+    "hissatsu": [
+      { "name": "Fire Tornado", "element": "Fire", "type": "Strzał" },
+      { "name": "Fireball Screw", "element": "Fire", "type": "Strzał" }
+    ],
     "overall": 92,
     "chance_percent": 0.5,
     "tier": "ZŁOTA",
