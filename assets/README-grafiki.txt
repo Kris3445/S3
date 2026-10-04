@@ -10,3 +10,4 @@ Trzy animacje GIF można wysyłać na Discordzie jako zapowiedź otwarcia paczki
 
 Zdjęcia przypisano w kolejności podanej w wiadomości: William, Jim, Tod, Timmy, Steve, Sam, Maxwell, Bobby, Kevin, Jack, Erik, Nathan, Mark, Axel.
 Szanse z tabeli sumują się do 99,99% z powodu zaokrągleń.
+Herby szkół do Hissatsu Pack znajdują się w folderze emblems/.

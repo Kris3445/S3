@@ -1,0 +1,5 @@
+[
+  {"id":"raimon","name":"Raimon","image":"emblems/raimon.webp","color":"#f0a51b"},
+  {"id":"zeus","name":"Zeus","image":"emblems/zeus.webp","color":"#8fbf44"},
+  {"id":"genesis","name":"Genesis","image":"emblems/genesis-source.png","crop":{"x":52,"y":47,"width":220,"height":176},"color":"#9467df"}
+]

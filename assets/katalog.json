@@ -3,9 +3,15 @@
     "name": "William Glass",
     "position": "Obrońca",
     "element": "Forest",
-    "hissatsu": [{ "name": "Megane Crash", "element": "Mountain", "type": "Strzał" }],
+    "hissatsu": [
+      {
+        "name": "Megane Crash",
+        "element": "Mountain",
+        "type": "Strzał"
+      }
+    ],
     "overall": 35,
-    "chance_percent": 45.0,
+    "chance_percent": 42.01,
     "tier": "BRĄZOWA",
     "image": "cards/01_william_glass.png",
     "source_file": "rating-every-ie-characters-day-12-william-glass-megane-v0-83y34akpe3gb1.webp"
@@ -14,7 +20,13 @@
     "name": "Jim Wright",
     "position": "Obrońca",
     "element": "Forest",
-    "hissatsu": [{ "name": "Coil Turn", "element": "Wind", "type": "Odbiór" }],
+    "hissatsu": [
+      {
+        "name": "Coil Turn",
+        "element": "Wind",
+        "type": "Odbiór"
+      }
+    ],
     "overall": 57,
     "chance_percent": 25.0,
     "tier": "BRĄZOWA",
@@ -26,8 +38,16 @@
     "position": "Obrońca",
     "element": "Fire",
     "hissatsu": [
-      { "name": "Spinning Cut (B)", "element": "Wind", "type": "Odbiór" },
-      { "name": "Deceptor Dribble", "element": "Forest", "type": "Drybling" }
+      {
+        "name": "Spinning Cut (B)",
+        "element": "Wind",
+        "type": "Odbiór"
+      },
+      {
+        "name": "Deceptor Dribble",
+        "element": "Forest",
+        "type": "Drybling"
+      }
     ],
     "overall": 73,
     "chance_percent": 3.2,
@@ -40,8 +60,16 @@
     "position": "Pomocnik",
     "element": "Forest",
     "hissatsu": [
-      { "name": "Kung Fu Head", "element": "Forest", "type": "Strzał" },
-      { "name": "Whirlwind Twister", "element": "Wind", "type": "Drybling" }
+      {
+        "name": "Kung Fu Head",
+        "element": "Forest",
+        "type": "Strzał"
+      },
+      {
+        "name": "Whirlwind Twister",
+        "element": "Wind",
+        "type": "Drybling"
+      }
     ],
     "overall": 70,
     "chance_percent": 3.2,
@@ -53,7 +81,13 @@
     "name": "Steve Grim",
     "position": "Pomocnik",
     "element": "Wind",
-    "hissatsu": [{ "name": "Rolling Kick", "element": "Forest", "type": "Strzał" }],
+    "hissatsu": [
+      {
+        "name": "Rolling Kick",
+        "element": "Forest",
+        "type": "Strzał"
+      }
+    ],
     "overall": 67,
     "chance_percent": 3.2,
     "tier": "SREBRNA",
@@ -64,7 +98,13 @@
     "name": "Sam Kincaid",
     "position": "Pomocnik",
     "element": "Fire",
-    "hissatsu": [{ "name": "Grenade Shot", "element": "Fire", "type": "Strzał" }],
+    "hissatsu": [
+      {
+        "name": "Grenade Shot",
+        "element": "Fire",
+        "type": "Strzał"
+      }
+    ],
     "overall": 66,
     "chance_percent": 3.2,
     "tier": "SREBRNA",
@@ -75,7 +115,13 @@
     "name": "Maxwell Carson",
     "position": "Napastnik",
     "element": "Wind",
-    "hissatsu": [{ "name": "Cross Drive (C)", "element": "Wind", "type": "Strzał" }],
+    "hissatsu": [
+      {
+        "name": "Cross Drive (C)",
+        "element": "Wind",
+        "type": "Strzał"
+      }
+    ],
     "overall": 71,
     "chance_percent": 3.2,
     "tier": "SREBRNA",
@@ -87,8 +133,16 @@
     "position": "Obrońca",
     "element": "Forest",
     "hissatsu": [
-      { "name": "Killer Slide", "element": null, "type": "Odbiór" },
-      { "name": "Volcano Cut (B)", "element": "Fire", "type": "Odbiór" }
+      {
+        "name": "Killer Slide",
+        "element": null,
+        "type": "Odbiór"
+      },
+      {
+        "name": "Volcano Cut (B)",
+        "element": "Fire",
+        "type": "Odbiór"
+      }
     ],
     "overall": 80,
     "chance_percent": 4.5,
@@ -101,8 +155,16 @@
     "position": "Napastnik",
     "element": "Forest",
     "hissatsu": [
-      { "name": "Dragon Crash", "element": null, "type": "Strzał" },
-      { "name": "Dragon Slayer", "element": null, "type": "Strzał" }
+      {
+        "name": "Dragon Crash",
+        "element": null,
+        "type": "Strzał"
+      },
+      {
+        "name": "Dragon Slayer",
+        "element": null,
+        "type": "Strzał"
+      }
     ],
     "overall": 82,
     "chance_percent": 4.5,
@@ -115,8 +177,16 @@
     "position": "Obrońca",
     "element": "Mountain",
     "hissatsu": [
-      { "name": "The Wall (B)", "element": null, "type": "Odbiór" },
-      { "name": "The Mountain (B)", "element": null, "type": "Odbiór" }
+      {
+        "name": "The Wall (B)",
+        "element": null,
+        "type": "Odbiór"
+      },
+      {
+        "name": "The Mountain (B)",
+        "element": null,
+        "type": "Odbiór"
+      }
     ],
     "overall": 85,
     "chance_percent": 1.33,
@@ -129,8 +199,16 @@
     "position": "Pomocnik",
     "element": "Forest",
     "hissatsu": [
-      { "name": "Flame Dance", "element": null, "type": "Odbiór" },
-      { "name": "Pegasus Shot", "element": null, "type": "Strzał" }
+      {
+        "name": "Flame Dance",
+        "element": null,
+        "type": "Odbiór"
+      },
+      {
+        "name": "Pegasus Shot",
+        "element": null,
+        "type": "Strzał"
+      }
     ],
     "overall": 86,
     "chance_percent": 1.33,
@@ -143,8 +221,16 @@
     "position": "Obrońca",
     "element": "Wind",
     "hissatsu": [
-      { "name": "Flurry Dash", "element": "Wind", "type": "Drybling" },
-      { "name": "Wind God's Dance", "element": "Wind", "type": "Drybling" }
+      {
+        "name": "Flurry Dash",
+        "element": "Wind",
+        "type": "Drybling"
+      },
+      {
+        "name": "Wind God's Dance",
+        "element": "Wind",
+        "type": "Drybling"
+      }
     ],
     "overall": 88,
     "chance_percent": 1.33,
@@ -157,8 +243,16 @@
     "position": "Bramkarz",
     "element": "Mountain",
     "hissatsu": [
-      { "name": "Majin The Hand", "element": "Mountain", "type": "Obrona bramkarska" },
-      { "name": "God Catch", "element": "Mountain", "type": "Obrona bramkarska" }
+      {
+        "name": "Majin The Hand",
+        "element": "Mountain",
+        "type": "Obrona bramkarska"
+      },
+      {
+        "name": "God Catch",
+        "element": "Mountain",
+        "type": "Obrona bramkarska"
+      }
     ],
     "overall": 91,
     "chance_percent": 0.5,
@@ -171,13 +265,82 @@
     "position": "Napastnik",
     "element": "Fire",
     "hissatsu": [
-      { "name": "Fire Tornado", "element": "Fire", "type": "Strzał" },
-      { "name": "Fireball Screw", "element": "Fire", "type": "Strzał" }
+      {
+        "name": "Fire Tornado",
+        "element": "Fire",
+        "type": "Strzał"
+      },
+      {
+        "name": "Fireball Screw",
+        "element": "Fire",
+        "type": "Strzał"
+      }
     ],
     "overall": 92,
     "chance_percent": 0.5,
     "tier": "ZŁOTA",
     "image": "cards/14_axel_blaze.png",
     "source_file": "OIP (14)(4).webp"
+  },
+  {
+    "name": "Gazelle",
+    "position": "Napastnik",
+    "element": "Wind",
+    "hissatsu": [
+      {
+        "name": "Northern Impact",
+        "element": "Wind",
+        "type": "Strzał"
+      }
+    ],
+    "overall": 83,
+    "chance_percent": 1.0,
+    "tier": "ZŁOTA",
+    "image": "cards/15_gazelle.png",
+    "source_file": "OIP (18)(1).webp"
+  },
+  {
+    "name": "Torch",
+    "position": "Napastnik",
+    "element": "Fire",
+    "hissatsu": [
+      {
+        "name": "Atomic Flare",
+        "element": "Fire",
+        "type": "Strzał"
+      },
+      {
+        "name": "Flame Veil",
+        "element": "Fire",
+        "type": "Drybling"
+      }
+    ],
+    "overall": 84,
+    "chance_percent": 1.0,
+    "tier": "ZŁOTA",
+    "image": "cards/16_torch.png",
+    "source_file": "R (1)(1).webp"
+  },
+  {
+    "name": "Dvalin",
+    "position": "Bramkarz",
+    "element": "Fire",
+    "hissatsu": [
+      {
+        "name": "Wormhole",
+        "element": "Forest",
+        "type": "Obrona bramkarska"
+      },
+      {
+        "name": "Drill Smasher",
+        "element": "Fire",
+        "type": "Obrona bramkarska"
+      }
+    ],
+    "overall": 82,
+    "chance_percent": 1.0,
+    "tier": "ZŁOTA",
+    "image": "cards/17_dvalin.png",
+    "source_file": "OIP (19)(1).webp"
   }
 ]
