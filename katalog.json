@@ -1,0 +1,114 @@
+[
+  {
+    "name": "William Glass",
+    "overall": 35,
+    "chance_percent": 45.0,
+    "tier": "BRĄZOWA",
+    "image": "cards/01_william_glass.png",
+    "source_file": "rating-every-ie-characters-day-12-william-glass-megane-v0-83y34akpe3gb1.webp"
+  },
+  {
+    "name": "Jim Wright",
+    "overall": 57,
+    "chance_percent": 25.0,
+    "tier": "BRĄZOWA",
+    "image": "cards/02_jim_wright.png",
+    "source_file": "OIP (4)(4).webp"
+  },
+  {
+    "name": "Tod Ironside",
+    "overall": 73,
+    "chance_percent": 3.2,
+    "tier": "SREBRNA",
+    "image": "cards/03_tod_ironside.png",
+    "source_file": "OIP (5)(4).webp"
+  },
+  {
+    "name": "Timmy Saunders",
+    "overall": 70,
+    "chance_percent": 3.2,
+    "tier": "SREBRNA",
+    "image": "cards/04_timmy_saunders.png",
+    "source_file": "OIP (6)(1).webp"
+  },
+  {
+    "name": "Steve Grim",
+    "overall": 67,
+    "chance_percent": 3.2,
+    "tier": "SREBRNA",
+    "image": "cards/05_steve_grim.png",
+    "source_file": "OIP (7)(4).webp"
+  },
+  {
+    "name": "Sam Kincaid",
+    "overall": 66,
+    "chance_percent": 3.2,
+    "tier": "SREBRNA",
+    "image": "cards/06_sam_kincaid.png",
+    "source_file": "OIP (8)(4).webp"
+  },
+  {
+    "name": "Maxwell Carson",
+    "overall": 71,
+    "chance_percent": 3.2,
+    "tier": "SREBRNA",
+    "image": "cards/07_maxwell_carson.png",
+    "source_file": "OIP (9)(4).webp"
+  },
+  {
+    "name": "Bobby Shearer",
+    "overall": 80,
+    "chance_percent": 4.5,
+    "tier": "ZŁOTA",
+    "image": "cards/08_bobby_shearer.png",
+    "source_file": "OIP (10)(4).webp"
+  },
+  {
+    "name": "Kevin Dragonfly",
+    "overall": 82,
+    "chance_percent": 4.5,
+    "tier": "ZŁOTA",
+    "image": "cards/09_kevin_dragonfly.png",
+    "source_file": "OIP (11)(4).webp"
+  },
+  {
+    "name": "Jack Wallside",
+    "overall": 85,
+    "chance_percent": 1.33,
+    "tier": "ZŁOTA",
+    "image": "cards/10_jack_wallside.png",
+    "source_file": "OIP (12)(4).webp"
+  },
+  {
+    "name": "Erik Eagle",
+    "overall": 86,
+    "chance_percent": 1.33,
+    "tier": "ZŁOTA",
+    "image": "cards/11_erik_eagle.png",
+    "source_file": "R.jpg"
+  },
+  {
+    "name": "Nathan Swift",
+    "overall": 88,
+    "chance_percent": 1.33,
+    "tier": "ZŁOTA",
+    "image": "cards/12_nathan_swift.png",
+    "source_file": "8cca717972b9f9750d21be0e79408e7f.jpg"
+  },
+  {
+    "name": "Mark Evans",
+    "overall": 91,
+    "chance_percent": 0.5,
+    "tier": "ZŁOTA",
+    "image": "cards/13_mark_evans.png",
+    "source_file": "OIP (13)(4).webp"
+  },
+  {
+    "name": "Axel Blaze",
+    "overall": 92,
+    "chance_percent": 0.5,
+    "tier": "ZŁOTA",
+    "image": "cards/14_axel_blaze.png",
+    "source_file": "OIP (14)(4).webp"
+  }
+]
