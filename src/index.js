@@ -44,6 +44,18 @@ if (!TOKEN) {
 
 const catalog = JSON.parse(fs.readFileSync(path.join(ASSETS, 'katalog.json'), 'utf8'));
 const emblems = JSON.parse(fs.readFileSync(path.join(ASSETS, 'emblems.json'), 'utf8'));
+for (const player of catalog) {
+  if (!player.image || !fs.existsSync(path.join(ASSETS, player.image))) {
+    console.error(`Brakuje zdjęcia zawodnika ${player.name}: assets/${player.image ?? '(brak ścieżki)'}`);
+    process.exit(1);
+  }
+}
+for (const emblem of emblems) {
+  if (!emblem.image || !fs.existsSync(path.join(ASSETS, emblem.image))) {
+    console.error(`Brakuje herbu ${emblem.name}: assets/${emblem.image ?? '(brak ścieżki)'}`);
+    process.exit(1);
+  }
+}
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 const FREE_REWARD = 8000;
 const OPENING_ANIMATION_MS = 3800;
@@ -753,7 +765,8 @@ client.on(Events.InteractionCreate, async (interaction) => {
     }
   } catch (error) {
     console.error('Błąd obsługi interakcji:', error);
-    const response = { content: 'Coś się nie udało. Sprawdź logi bota i spróbuj ponownie.', ephemeral: true };
+    const detail = `${error?.name ?? 'Błąd'}: ${error?.message ?? 'Nieznana przyczyna'}`.slice(0, 700);
+    const response = { content: `Operacja się nie udała. Szczegóły błędu: \`${detail}\``, ephemeral: true };
     if (interaction.deferred || interaction.replied) await interaction.followUp(response).catch(() => {});
     else await interaction.reply(response).catch(() => {});
   }
