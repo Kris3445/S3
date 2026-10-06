@@ -35,7 +35,7 @@ import {
   setCosmetic,
   setTeamEmblem,
 } from './economy.js';
-import { renderCollection, renderEmblemCard, renderEmblemPackPreview, renderPlayerCard, renderProfileBanner, renderSquadBuilderPreview, renderSquadPitch } from './gallery.js';
+import { renderCollection, renderPlayerCard, renderProfileBanner, renderSquadBuilderPreview, renderSquadPitch } from './gallery.js';
 
 if (!TOKEN) {
   console.error('Brakuje DISCORD_TOKEN. Skopiuj .env.example do .env i uzupełnij token.');
@@ -145,12 +145,11 @@ async function showShop(interaction, page = 0, edit = false) {
     .setStyle(ButtonStyle.Primary);
   const next = new ButtonBuilder().setCustomId('shop-next').setLabel('▶').setStyle(ButtonStyle.Secondary).setDisabled(emblemPage);
   const row = new ActionRowBuilder().addComponents(previous, buy, next);
-  const image = emblemPage
-    ? new AttachmentBuilder(Buffer.from(await renderEmblemPackPreview(emblems)), { name: imageName })
-    : new AttachmentBuilder(path.join(ASSETS, imageName));
+  const image = new AttachmentBuilder(path.join(ASSETS, imageName));
   const files = [image];
   if (emblemPage) files.push(new AttachmentBuilder(path.join(ASSETS, avatarName)));
-  const payload = { embeds: [embed], components: [row], files, attachments: [] };
+  const payload = { embeds: [embed], components: [row], files };
+  if (edit) payload.attachments = [];
   if (edit) await interaction.update(payload);
   else await interaction.reply(payload);
 }
@@ -226,7 +225,7 @@ async function showCollection(interaction, page = 0, edit = false) {
   const user = getUser(interaction.guildId, interaction.user.id);
   const pageCount = Math.max(1, ...catalog.map((player) => player.collection_page ?? 1));
   const safePage = Math.max(0, Math.min(page, pageCount - 1));
-  const image = await renderCollection(catalog, user.cards, safePage);
+  const image = await renderCollection(catalog, user.cards, safePage, emblems);
   const imageName = 'kolekcja-s2.png';
   const embed = new EmbedBuilder()
     .setColor(0x168cff)
@@ -579,14 +578,13 @@ async function buyHissatsuPack(interaction) {
     await interaction.reply({ content, ephemeral: true });
     return;
   }
-  const art = await renderEmblemCard(result.emblem);
-  const imageName = 'zdobyty-herb.png';
+  const imageName = `herb-${result.emblem.id}.png`;
   const embed = new EmbedBuilder()
-    .setColor(result.emblem.color)
+    .setColor(Number.parseInt(result.emblem.color.replace('#', ''), 16))
     .setTitle(`✨ Zdobywasz herb ${result.emblem.name}!`)
     .setDescription(`Pozostało **${result.balance} monet**. Załóż go na skład przez `/herb`.`)
     .setImage(`attachment://${imageName}`);
-  await interaction.reply({ embeds: [embed], files: [new AttachmentBuilder(Buffer.from(art), { name: imageName })], ephemeral: true });
+  await interaction.reply({ embeds: [embed], files: [new AttachmentBuilder(path.join(ASSETS, result.emblem.image), { name: imageName })], ephemeral: true });
 }
 
 async function handleGameSelect(interaction) {

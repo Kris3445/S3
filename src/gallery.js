@@ -10,7 +10,7 @@ const GAP_Y = 24;
 const TILE_WIDTH = (WIDTH - MARGIN * 2 - GAP_X * (COLUMNS - 1)) / COLUMNS;
 const IMAGE_HEIGHT = TILE_WIDTH * (900 / 640);
 const TILE_HEIGHT = IMAGE_HEIGHT;
-const TOP = 156;
+const TOP = 180;
 
 const rarityColors = {
   BRĄZOWA: '#c07042',
@@ -44,7 +44,7 @@ function tierFor(player) {
   return 'BRĄZOWA';
 }
 
-export async function renderCollection(catalog, ownedCards, page = 0) {
+export async function renderCollection(catalog, ownedCards, page = 0, teamEmblems = []) {
   const owned = new Set(ownedCards.map((card) => card.name));
   const pageCount = Math.max(1, ...catalog.map((player) => player.collection_page ?? 1));
   const pageCatalog = catalog.filter((player) => (player.collection_page ?? 1) === page + 1);
@@ -55,17 +55,36 @@ export async function renderCollection(catalog, ownedCards, page = 0) {
 
   ctx.fillStyle = '#0b1220';
   ctx.fillRect(0, 0, WIDTH, height);
-  ctx.fillStyle = '#f2f5fb';
-  ctx.font = 'bold 30px Arial';
-  const pageLabel = pageCatalog[0]?.team
-    ? `INAZUMA ELEVEN  •  ${pageCatalog[0].team.toUpperCase()}`
-    : 'INAZUMA ELEVEN S2  •  ZAWODNICY';
-  ctx.fillText(`${pageLabel}  •  ${page + 1}/${pageCount}`, MARGIN, 55);
+  const teamName = pageCatalog[0]?.team;
+  const teamEmblem = teamName
+    ? teamEmblems.find((entry) => entry.name.toLocaleLowerCase('pl') === teamName.toLocaleLowerCase('pl'))
+    : null;
+  if (teamEmblem) {
+    ctx.beginPath();
+    ctx.arc(78, 57, 37, 0, Math.PI * 2);
+    ctx.fillStyle = '#17263a';
+    ctx.fill();
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = teamEmblem.color;
+    ctx.stroke();
+    const emblemImage = await loadImage(path.join(ASSETS, teamEmblem.image));
+    drawEmblem(ctx, emblemImage, teamEmblem, 47, 26, 62, 62);
+    ctx.fillStyle = '#f2f5fb';
+    ctx.font = 'bold 31px Arial';
+    ctx.fillText(teamName.toUpperCase(), 132, 53);
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '15px Arial';
+    ctx.fillText(`KOLEKCJA  •  STRONA ${page + 1}/${pageCount}`, 133, 79);
+  } else {
+    ctx.fillStyle = '#f2f5fb';
+    ctx.font = 'bold 30px Arial';
+    ctx.fillText(`INAZUMA ELEVEN  •  ${page + 1}/${pageCount}`, MARGIN, 55);
+  }
   ctx.fillStyle = '#94a3b8';
-  ctx.font = '17px Arial';
-  ctx.fillText(`${owned.size} / ${catalog.length} ZAWODNIKÓW ODBLOKOWANYCH`, MARGIN, 88);
+  ctx.font = '15px Arial';
+  ctx.fillText(`${owned.size} / ${catalog.length} ZAWODNIKÓW ODBLOKOWANYCH`, MARGIN, 110);
 
-  const legendY = 122;
+  const legendY = 148;
   let legendX = MARGIN;
   for (const [tier, color] of Object.entries(rarityColors)) {
     ctx.fillStyle = color;
@@ -81,21 +100,11 @@ export async function renderCollection(catalog, ownedCards, page = 0) {
     const x = MARGIN + (index % COLUMNS) * (TILE_WIDTH + GAP_X);
     const y = TOP + Math.floor(index / COLUMNS) * (TILE_HEIGHT + GAP_Y);
     const isOwned = owned.has(player.name);
-    const tier = tierFor(player);
-    const accent = rarityColors[tier];
     const cardImage = await loadImage(await renderPlayerCard(player));
     ctx.save();
     if (!isOwned) ctx.filter = 'grayscale(1) brightness(0.48)';
     ctx.drawImage(cardImage, x, y, TILE_WIDTH, TILE_HEIGHT);
     ctx.restore();
-
-    const badge = isOwned ? 'MAM' : 'NIE MASZ';
-    ctx.font = 'bold 11px Arial';
-    const badgeWidth = ctx.measureText(badge).width + 16;
-    ctx.fillStyle = isOwned ? '#117c5b' : '#4b5563';
-    ctx.fillRect(x + TILE_WIDTH - badgeWidth - 8, y + 94, badgeWidth, 24);
-    ctx.fillStyle = '#ffffff';
-    ctx.fillText(badge, x + TILE_WIDTH - badgeWidth, y + 110);
   }
 
   return canvas.encode('png');
@@ -146,16 +155,18 @@ export async function renderPlayerCard(player) {
   ctx.stroke();
   ctx.fillStyle = '#f4f6fb';
   ctx.textAlign = 'center';
-  ctx.font = 'bold 30px Arial';
-  ctx.fillText(String(player.overall), 86, 840);
+  ctx.font = 'bold 11px sans-serif';
+  ctx.fillText('OVR', 86, 814);
+  ctx.font = 'bold 30px sans-serif';
+  ctx.fillText(String(player.overall), 86, 843);
   ctx.textAlign = 'left';
 
   ctx.fillStyle = '#f4f6fb';
-  ctx.font = 'bold 25px Arial';
+  ctx.font = 'bold 25px sans-serif';
   ctx.fillText(player.name.toUpperCase(), 142, 827, 310);
   ctx.fillStyle = '#cbd5e1';
-  ctx.font = '14px Arial';
-  ctx.fillText(player.position?.toUpperCase() ?? '', 144, 850, 300);
+  ctx.font = '14px sans-serif';
+  ctx.fillText(player.position?.toUpperCase() ?? '', 144, 852, 300);
 
   ctx.fillStyle = '#40516a';
   ctx.fillRect(464, 808, 2, 44);
