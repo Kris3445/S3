@@ -134,11 +134,13 @@ async function showShop(interaction, page = 0, edit = false) {
   const emblemPage = page === 1;
   const imageName = emblemPage ? 'hissatsu_pack.png' : 'paczka_s2.png';
   const avatarName = 'hissatsu_pack_avatar.png';
+  const emblemNames = emblems.map((entry) => entry.name).join(', ');
+  const herbCommand = '/herb';
   const embed = emblemPage
     ? new EmbedBuilder()
       .setColor(0x9868e8)
       .setTitle('✨ Hissatsu Pack — herby szkół')
-      .setDescription(`Paczka daje **1 nowy herb** spośród ${emblems.map((emblem) => emblem.name).join(', ')}.\nCena: **${EMBLEM_PACK_PRICE} monet**. Herbem możesz oznaczyć swój skład przez `/herb`.`)
+      .setDescription(`Paczka daje **1 nowy herb** spośród ${emblemNames}.\nCena: **${EMBLEM_PACK_PRICE} monet**. Herbem możesz oznaczyć swój skład przez \`${herbCommand}\`.`)
       .setImage(`attachment://${imageName}`)
       .setFooter({ text: 'Przełącz paczki strzałkami poniżej.' })
     : new EmbedBuilder()
