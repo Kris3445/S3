@@ -8,6 +8,6 @@ ZŁOTO: OVERALL 75–99
 
 Trzy animacje GIF można wysyłać na Discordzie jako zapowiedź otwarcia paczki. Po animacji bot powinien wysłać pięć kart wylosowanych zawodników.
 
-Zdjęcia przypisano w kolejności podanej w wiadomości: William, Jim, Tod, Timmy, Steve, Sam, Maxwell, Bobby, Kevin, Jack, Erik, Nathan, Mark, Axel.
-Szanse z tabeli sumują się do 99,99% z powodu zaokrągleń.
-Herby szkół do Hissatsu Pack znajdują się w folderze emblems/.
+Kolekcja jest podzielona na strony: strona 1 — pierwszych 14 zawodników, strona 2 — Gazelle, Torch i Dvalin, strona 3 — drużyna Occult (Nathan Jones, Ken Furan, Russell Walk, Jason Jones, Jerry Fulton, Alexander Brave, Ray Mannings, Robert Mayer, Burt Wolf, Troy Moon i Johan Tassman).
+Zdjęcia Occult przypisano w kolejności przesłania: Nathan Jones, Ken Furan, Russell Walk, Jason Jones, Jerry Fulton, Alexander Brave, Ray Mannings, Robert Mayer, Burt Wolf, Troy Moon i Johan Tassman.
+Herby do Hissatsu Pack znajdują się w folderze emblems/: Raimon, Zeus, Genesis i Occult. Podgląd sklepu jest generowany z emblems.json.

@@ -297,7 +297,8 @@
     "chance_percent": 1.0,
     "tier": "ZŁOTA",
     "image": "cards/15_gazelle.png",
-    "source_file": "OIP (18)(1).webp"
+    "source_file": "OIP (18)(1).webp",
+    "collection_page": 2
   },
   {
     "name": "Torch",
@@ -319,7 +320,8 @@
     "chance_percent": 1.0,
     "tier": "ZŁOTA",
     "image": "cards/16_torch.png",
-    "source_file": "R (1)(1).webp"
+    "source_file": "R (1)(1).webp",
+    "collection_page": 2
   },
   {
     "name": "Dvalin",
@@ -341,6 +343,185 @@
     "chance_percent": 1.0,
     "tier": "ZŁOTA",
     "image": "cards/17_dvalin.png",
-    "source_file": "OIP (19)(1).webp"
+    "source_file": "OIP (19)(1).webp",
+    "collection_page": 2
+  },
+  {
+    "name": "Nathan Jones",
+    "position": "Bramkarz",
+    "element": "Wind",
+    "hissatsu": [
+      {
+        "name": "Warp Space",
+        "element": "Forest",
+        "type": "Obrona bramkarska"
+      }
+    ],
+    "overall": 47,
+    "chance_percent": 1.0,
+    "tier": "BRĄZOWA",
+    "image": "cards/18_nathan_jones.png",
+    "source_file": "OIP (20)(1).webp",
+    "team": "Occult",
+    "collection_page": 3
+  },
+  {
+    "name": "Ken Furan",
+    "position": "Obrońca",
+    "element": "Mountain",
+    "hissatsu": [
+      {
+        "name": "Earthquake",
+        "element": "Mountain",
+        "type": "Odbiór"
+      }
+    ],
+    "overall": 42,
+    "chance_percent": 1.0,
+    "tier": "BRĄZOWA",
+    "image": "cards/19_ken_furan.png",
+    "source_file": "OIP (21)(1).webp",
+    "team": "Occult",
+    "collection_page": 3
+  },
+  {
+    "name": "Russell Walk",
+    "position": "Obrońca",
+    "element": "Forest",
+    "hissatsu": [
+      {
+        "name": "Ghost Pull",
+        "element": "Forest",
+        "type": "Odbiór"
+      }
+    ],
+    "overall": 44,
+    "chance_percent": 1.0,
+    "tier": "BRĄZOWA",
+    "image": "cards/20_russell_walk.png",
+    "source_file": "OIP (22).webp",
+    "team": "Occult",
+    "collection_page": 3
+  },
+  {
+    "name": "Jason Jones",
+    "position": "Obrońca",
+    "element": "Wind",
+    "hissatsu": [],
+    "overall": 36,
+    "chance_percent": 1.0,
+    "tier": "BRĄZOWA",
+    "image": "cards/21_jason_jones.png",
+    "source_file": "OIP (23).webp",
+    "team": "Occult",
+    "collection_page": 3
+  },
+  {
+    "name": "Jerry Fulton",
+    "position": "Obrońca",
+    "element": "Fire",
+    "hissatsu": [],
+    "overall": 49,
+    "chance_percent": 1.0,
+    "tier": "BRĄZOWA",
+    "image": "cards/22_jerry_fulton.png",
+    "source_file": "OIP (24).webp",
+    "team": "Occult",
+    "collection_page": 3
+  },
+  {
+    "name": "Alexander Brave",
+    "position": "Pomocnik",
+    "element": "Fire",
+    "hissatsu": [],
+    "overall": 48,
+    "chance_percent": 1.0,
+    "tier": "BRĄZOWA",
+    "image": "cards/23_alexander_brave.png",
+    "source_file": "OIP (25).webp",
+    "team": "Occult",
+    "collection_page": 3
+  },
+  {
+    "name": "Ray Mannings",
+    "position": "Pomocnik",
+    "element": "Wind",
+    "hissatsu": [],
+    "overall": 34,
+    "chance_percent": 1.0,
+    "tier": "BRĄZOWA",
+    "image": "cards/24_ray_mannings.png",
+    "source_file": "OIP (26).webp",
+    "team": "Occult",
+    "collection_page": 3
+  },
+  {
+    "name": "Robert Mayer",
+    "position": "Pomocnik",
+    "element": "Forest",
+    "hissatsu": [],
+    "overall": 46,
+    "chance_percent": 1.0,
+    "tier": "BRĄZOWA",
+    "image": "cards/25_robert_mayer.png",
+    "source_file": "OIP (28).webp",
+    "team": "Occult",
+    "collection_page": 3
+  },
+  {
+    "name": "Burt Wolf",
+    "position": "Pomocnik",
+    "element": "Mountain",
+    "hissatsu": [],
+    "overall": 50,
+    "chance_percent": 1.0,
+    "tier": "BRĄZOWA",
+    "image": "cards/26_burt_wolf.png",
+    "source_file": "OIP (29).webp",
+    "team": "Occult",
+    "collection_page": 3
+  },
+  {
+    "name": "Troy Moon",
+    "position": "Pomocnik",
+    "element": "Fire",
+    "hissatsu": [
+      {
+        "name": "Phantom Shot",
+        "element": "Forest",
+        "type": "Strzał"
+      },
+      {
+        "name": "Magic",
+        "element": "Forest",
+        "type": "Drybling"
+      }
+    ],
+    "overall": 53,
+    "chance_percent": 1.0,
+    "tier": "BRĄZOWA",
+    "image": "cards/27_troy_moon.png",
+    "source_file": "OIP (30).webp",
+    "team": "Occult",
+    "collection_page": 3
+  },
+  {
+    "name": "Johan Tassman",
+    "position": "Napastnik",
+    "element": "Forest",
+    "hissatsu": [
+      {
+        "name": "Phantom Shot",
+        "element": "Forest",
+        "type": "Strzał"
+      }
+    ],
+    "overall": 54,
+    "chance_percent": 1.0,
+    "tier": "BRĄZOWA",
+    "image": "cards/28_johan_tassman.png",
+    "source_file": "OIP (31).webp",
+    "team": "Occult",
+    "collection_page": 3
   }
 ]
