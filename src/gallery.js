@@ -163,17 +163,17 @@ export async function renderPlayerCard(player, { locked = false } = {}) {
   ctx.stroke();
   ctx.fillStyle = '#f4f6fb';
   ctx.textAlign = 'center';
-  ctx.font = 'bold 11px sans-serif';
+  ctx.font = 'bold 13px sans-serif';
   ctx.fillText('OVR', 86, 814);
-  ctx.font = 'bold 30px sans-serif';
+  ctx.font = 'bold 38px sans-serif';
   ctx.fillText(String(player.overall), 86, 843);
   ctx.textAlign = 'left';
 
   ctx.fillStyle = '#f4f6fb';
-  ctx.font = 'bold 25px sans-serif';
+  ctx.font = 'bold 34px sans-serif';
   ctx.fillText(player.name.toUpperCase(), 142, 827, 310);
   ctx.fillStyle = '#cbd5e1';
-  ctx.font = '14px sans-serif';
+  ctx.font = 'bold 17px sans-serif';
   ctx.fillText(player.position?.toUpperCase() ?? '', 144, 852, 300);
 
   ctx.fillStyle = '#40516a';
