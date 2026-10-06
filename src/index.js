@@ -596,7 +596,7 @@ async function buyHissatsuPack(interaction) {
   const embed = new EmbedBuilder()
     .setColor(Number.parseInt(result.emblem.color.replace('#', ''), 16))
     .setTitle(`✨ Zdobywasz herb ${result.emblem.name}!`)
-    .setDescription(`Pozostało **${result.balance} monet**. Załóż go na skład przez `/herb`.`)
+    .setDescription(`Pozostało **${result.balance} monet**. Załóż herb na skład komendą herb.`)
     .setImage(`attachment://${imageName}`);
   await interaction.reply({ embeds: [embed], files: [new AttachmentBuilder(path.join(ASSETS, result.emblem.image), { name: imageName })], ephemeral: true });
 }
