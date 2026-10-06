@@ -14,7 +14,8 @@
     "chance_percent": 42.01,
     "tier": "BRĄZOWA",
     "image": "cards/01_william_glass.png",
-    "source_file": "rating-every-ie-characters-day-12-william-glass-megane-v0-83y34akpe3gb1.webp"
+    "source_file": "rating-every-ie-characters-day-12-william-glass-megane-v0-83y34akpe3gb1.webp",
+    "team": "Raimon"
   },
   {
     "name": "Jim Wright",
@@ -31,7 +32,8 @@
     "chance_percent": 25.0,
     "tier": "BRĄZOWA",
     "image": "cards/02_jim_wright.png",
-    "source_file": "OIP (4)(4).webp"
+    "source_file": "OIP (4)(4).webp",
+    "team": "Raimon"
   },
   {
     "name": "Tod Ironside",
@@ -53,7 +55,8 @@
     "chance_percent": 3.2,
     "tier": "SREBRNA",
     "image": "cards/03_tod_ironside.png",
-    "source_file": "OIP (5)(4).webp"
+    "source_file": "OIP (5)(4).webp",
+    "team": "Raimon"
   },
   {
     "name": "Timmy Saunders",
@@ -75,7 +78,8 @@
     "chance_percent": 3.2,
     "tier": "SREBRNA",
     "image": "cards/04_timmy_saunders.png",
-    "source_file": "OIP (6)(1).webp"
+    "source_file": "OIP (6)(1).webp",
+    "team": "Raimon"
   },
   {
     "name": "Steve Grim",
@@ -92,7 +96,8 @@
     "chance_percent": 3.2,
     "tier": "SREBRNA",
     "image": "cards/05_steve_grim.png",
-    "source_file": "OIP (7)(4).webp"
+    "source_file": "OIP (7)(4).webp",
+    "team": "Raimon"
   },
   {
     "name": "Sam Kincaid",
@@ -109,7 +114,8 @@
     "chance_percent": 3.2,
     "tier": "SREBRNA",
     "image": "cards/06_sam_kincaid.png",
-    "source_file": "OIP (8)(4).webp"
+    "source_file": "OIP (8)(4).webp",
+    "team": "Raimon"
   },
   {
     "name": "Maxwell Carson",
@@ -126,7 +132,8 @@
     "chance_percent": 3.2,
     "tier": "SREBRNA",
     "image": "cards/07_maxwell_carson.png",
-    "source_file": "OIP (9)(4).webp"
+    "source_file": "OIP (9)(4).webp",
+    "team": "Raimon"
   },
   {
     "name": "Bobby Shearer",
@@ -148,7 +155,8 @@
     "chance_percent": 4.5,
     "tier": "ZŁOTA",
     "image": "cards/08_bobby_shearer.png",
-    "source_file": "OIP (10)(4).webp"
+    "source_file": "OIP (10)(4).webp",
+    "team": "Raimon"
   },
   {
     "name": "Kevin Dragonfly",
@@ -170,7 +178,8 @@
     "chance_percent": 4.5,
     "tier": "ZŁOTA",
     "image": "cards/09_kevin_dragonfly.png",
-    "source_file": "OIP (11)(4).webp"
+    "source_file": "OIP (11)(4).webp",
+    "team": "Raimon"
   },
   {
     "name": "Jack Wallside",
@@ -192,7 +201,8 @@
     "chance_percent": 1.33,
     "tier": "ZŁOTA",
     "image": "cards/10_jack_wallside.png",
-    "source_file": "OIP (12)(4).webp"
+    "source_file": "OIP (12)(4).webp",
+    "team": "Raimon"
   },
   {
     "name": "Erik Eagle",
@@ -214,7 +224,8 @@
     "chance_percent": 1.33,
     "tier": "ZŁOTA",
     "image": "cards/11_erik_eagle.png",
-    "source_file": "R.jpg"
+    "source_file": "R.jpg",
+    "team": "Raimon"
   },
   {
     "name": "Nathan Swift",
@@ -236,7 +247,8 @@
     "chance_percent": 1.33,
     "tier": "ZŁOTA",
     "image": "cards/12_nathan_swift.png",
-    "source_file": "8cca717972b9f9750d21be0e79408e7f.jpg"
+    "source_file": "8cca717972b9f9750d21be0e79408e7f.jpg",
+    "team": "Raimon"
   },
   {
     "name": "Mark Evans",
@@ -258,7 +270,8 @@
     "chance_percent": 0.5,
     "tier": "ZŁOTA",
     "image": "cards/13_mark_evans.png",
-    "source_file": "OIP (13)(4).webp"
+    "source_file": "OIP (13)(4).webp",
+    "team": "Raimon"
   },
   {
     "name": "Axel Blaze",
@@ -280,7 +293,8 @@
     "chance_percent": 0.5,
     "tier": "ZŁOTA",
     "image": "cards/14_axel_blaze.png",
-    "source_file": "OIP (14)(4).webp"
+    "source_file": "OIP (14)(4).webp",
+    "team": "Raimon"
   },
   {
     "name": "Gazelle",
@@ -298,7 +312,8 @@
     "tier": "ZŁOTA",
     "image": "cards/15_gazelle.png",
     "source_file": "OIP (18)(1).webp",
-    "collection_page": 2
+    "collection_page": 2,
+    "team": "Genesis"
   },
   {
     "name": "Torch",
@@ -321,7 +336,8 @@
     "tier": "ZŁOTA",
     "image": "cards/16_torch.png",
     "source_file": "R (1)(1).webp",
-    "collection_page": 2
+    "collection_page": 2,
+    "team": "Genesis"
   },
   {
     "name": "Dvalin",
@@ -344,7 +360,8 @@
     "tier": "ZŁOTA",
     "image": "cards/17_dvalin.png",
     "source_file": "OIP (19)(1).webp",
-    "collection_page": 2
+    "collection_page": 2,
+    "team": "Genesis"
   },
   {
     "name": "Nathan Jones",

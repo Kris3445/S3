@@ -14,13 +14,13 @@
   {
     "id": "genesis",
     "name": "Genesis",
-    "image": "emblems/genesis.webp",
+    "image": "emblems/genesis.png",
     "color": "#9467df"
   },
   {
     "id": "occult",
     "name": "Occult",
-    "image": "emblems/occult.webp",
+    "image": "emblems/occult.png",
     "color": "#7556a3"
   }
 ]
