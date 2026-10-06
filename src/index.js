@@ -284,7 +284,7 @@ async function showStats(interaction) {
     );
   const imageName = 'karta-zawodnika.png';
   embed.setImage(`attachment://${imageName}`);
-  const cardImage = await renderPlayerCard(player);
+  const cardImage = await renderPlayerCard(player, { locked: !owned });
   await interaction.reply({
     embeds: [embed],
     files: [new AttachmentBuilder(Buffer.from(cardImage), { name: imageName })],
@@ -663,7 +663,7 @@ async function playRouletteRound(interaction) {
 }
 
 client.once(Events.ClientReady, (readyClient) => {
-  console.log(`Bot działa jako ${readyClient.user.tag}`);
+  console.log(`Bot działa jako ${readyClient.user.tag} | poprawka kart i Hissatsu Pack 2026-10-07 | zawodnicy: ${catalog.length} | herby: ${emblems.length}`);
 });
 
 client.on(Events.InteractionCreate, async (interaction) => {

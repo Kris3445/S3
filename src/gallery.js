@@ -60,21 +60,27 @@ export async function renderCollection(catalog, ownedCards, page = 0, teamEmblem
     ? teamEmblems.find((entry) => entry.name.toLocaleLowerCase('pl') === teamName.toLocaleLowerCase('pl'))
     : null;
   if (teamEmblem) {
+    // Prominent club header: a large crest and an explicit team label.
+    ctx.fillStyle = '#111c2e';
+    ctx.fillRect(28, 16, WIDTH - 56, 104);
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = teamEmblem.color;
+    ctx.strokeRect(29, 17, WIDTH - 58, 102);
     ctx.beginPath();
-    ctx.arc(78, 57, 37, 0, Math.PI * 2);
-    ctx.fillStyle = '#17263a';
+    ctx.arc(82, 68, 48, 0, Math.PI * 2);
+    ctx.fillStyle = '#0b1220';
     ctx.fill();
-    ctx.lineWidth = 3;
+    ctx.lineWidth = 4;
     ctx.strokeStyle = teamEmblem.color;
     ctx.stroke();
     const emblemImage = await loadImage(path.join(ASSETS, teamEmblem.image));
-    drawEmblem(ctx, emblemImage, teamEmblem, 47, 26, 62, 62);
+    drawEmblem(ctx, emblemImage, teamEmblem, 38, 24, 88, 88);
     ctx.fillStyle = '#f2f5fb';
-    ctx.font = 'bold 31px Arial';
-    ctx.fillText(teamName.toUpperCase(), 132, 53);
-    ctx.fillStyle = '#94a3b8';
-    ctx.font = '15px Arial';
-    ctx.fillText(`KOLEKCJA  •  STRONA ${page + 1}/${pageCount}`, 133, 79);
+    ctx.font = 'bold 38px Arial';
+    ctx.fillText(`DRUŻYNA: ${teamName.toUpperCase()}`, 154, 65);
+    ctx.fillStyle = teamEmblem.color;
+    ctx.font = 'bold 16px Arial';
+    ctx.fillText(`KOLEKCJA  •  STRONA ${page + 1}/${pageCount}`, 156, 94);
   } else {
     ctx.fillStyle = '#f2f5fb';
     ctx.font = 'bold 30px Arial';
@@ -100,17 +106,16 @@ export async function renderCollection(catalog, ownedCards, page = 0, teamEmblem
     const x = MARGIN + (index % COLUMNS) * (TILE_WIDTH + GAP_X);
     const y = TOP + Math.floor(index / COLUMNS) * (TILE_HEIGHT + GAP_Y);
     const isOwned = owned.has(player.name);
-    const cardImage = await loadImage(await renderPlayerCard(player));
-    ctx.save();
-    if (!isOwned) ctx.filter = 'grayscale(1) brightness(0.48)';
+    // Gray out only the portrait. Filtering the whole card made its OVERALL
+    // and name unreadable for players who had not unlocked it yet.
+    const cardImage = await loadImage(await renderPlayerCard(player, { locked: !isOwned }));
     ctx.drawImage(cardImage, x, y, TILE_WIDTH, TILE_HEIGHT);
-    ctx.restore();
   }
 
   return canvas.encode('png');
 }
 
-export async function renderPlayerCard(player) {
+export async function renderPlayerCard(player, { locked = false } = {}) {
   const tier = tierFor(player);
   const accent = rarityColors[tier];
   const canvas = createCanvas(640, 900);
@@ -138,7 +143,10 @@ export async function renderPlayerCard(player) {
   ctx.textAlign = 'left';
 
   // All catalog portraits use the same 4:5 image ratio, avoiding stretching.
+  ctx.save();
+  if (locked) ctx.filter = 'grayscale(1) brightness(0.62)';
   ctx.drawImage(image, 40, 94, 560, 700);
+  ctx.restore();
 
   // Name and domain strip with the overall badge on the left.
   ctx.fillStyle = '#111c2e';
