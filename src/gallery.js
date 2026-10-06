@@ -4,13 +4,12 @@ import { ASSETS } from './config.js';
 
 const WIDTH = 1160;
 const COLUMNS = 4;
-const PAGE_SIZE = 16;
 const MARGIN = 44;
 const GAP_X = 20;
 const GAP_Y = 24;
 const TILE_WIDTH = (WIDTH - MARGIN * 2 - GAP_X * (COLUMNS - 1)) / COLUMNS;
-const IMAGE_HEIGHT = TILE_WIDTH * 1.25;
-const TILE_HEIGHT = IMAGE_HEIGHT + 72;
+const IMAGE_HEIGHT = TILE_WIDTH * (900 / 640);
+const TILE_HEIGHT = IMAGE_HEIGHT;
 const TOP = 156;
 
 const rarityColors = {
@@ -25,6 +24,20 @@ const rarityDarkColors = {
   ZŁOTA: '#493b1d',
 };
 
+const elementColors = {
+  Wind: '#39c9d6',
+  Fire: '#f07a45',
+  Forest: '#70bd74',
+  Mountain: '#c6a267',
+};
+
+const elementNames = {
+  Wind: 'WIATR',
+  Fire: 'OGIEŃ',
+  Forest: 'LAS',
+  Mountain: 'GÓRA',
+};
+
 function tierFor(player) {
   if (player.overall >= 75) return 'ZŁOTA';
   if (player.overall >= 65) return 'SREBRNA';
@@ -33,8 +46,8 @@ function tierFor(player) {
 
 export async function renderCollection(catalog, ownedCards, page = 0) {
   const owned = new Set(ownedCards.map((card) => card.name));
-  const pageCount = Math.ceil(catalog.length / PAGE_SIZE);
-  const pageCatalog = catalog.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+  const pageCount = Math.max(1, ...catalog.map((player) => player.collection_page ?? 1));
+  const pageCatalog = catalog.filter((player) => (player.collection_page ?? 1) === page + 1);
   const rows = Math.max(1, Math.ceil(pageCatalog.length / COLUMNS));
   const height = TOP + rows * TILE_HEIGHT + (rows - 1) * GAP_Y + 42;
   const canvas = createCanvas(WIDTH, height);
@@ -44,7 +57,10 @@ export async function renderCollection(catalog, ownedCards, page = 0) {
   ctx.fillRect(0, 0, WIDTH, height);
   ctx.fillStyle = '#f2f5fb';
   ctx.font = 'bold 30px Arial';
-  ctx.fillText(`INAZUMA ELEVEN S2  •  ZAWODNICY  •  ${page + 1}/${pageCount}`, MARGIN, 55);
+  const pageLabel = pageCatalog[0]?.team
+    ? `INAZUMA ELEVEN  •  ${pageCatalog[0].team.toUpperCase()}`
+    : 'INAZUMA ELEVEN S2  •  ZAWODNICY';
+  ctx.fillText(`${pageLabel}  •  ${page + 1}/${pageCount}`, MARGIN, 55);
   ctx.fillStyle = '#94a3b8';
   ctx.font = '17px Arial';
   ctx.fillText(`${owned.size} / ${catalog.length} ZAWODNIKÓW ODBLOKOWANYCH`, MARGIN, 88);
@@ -67,37 +83,19 @@ export async function renderCollection(catalog, ownedCards, page = 0) {
     const isOwned = owned.has(player.name);
     const tier = tierFor(player);
     const accent = rarityColors[tier];
-    const imagePath = path.join(ASSETS, player.image);
-    const image = await loadImage(imagePath);
-
-    ctx.fillStyle = '#111c2e';
-    ctx.fillRect(x, y, TILE_WIDTH, TILE_HEIGHT);
-    ctx.strokeStyle = isOwned ? accent : '#505967';
-    ctx.lineWidth = 5;
-    ctx.strokeRect(x + 2.5, y + 2.5, TILE_WIDTH - 5, TILE_HEIGHT - 5);
+    const cardImage = await loadImage(await renderPlayerCard(player));
     ctx.save();
     if (!isOwned) ctx.filter = 'grayscale(1) brightness(0.48)';
-    ctx.drawImage(image, x + 6, y + 6, TILE_WIDTH - 12, IMAGE_HEIGHT - 8);
+    ctx.drawImage(cardImage, x, y, TILE_WIDTH, TILE_HEIGHT);
     ctx.restore();
-
-    ctx.fillStyle = isOwned ? rarityDarkColors[tier] : '#263449';
-    ctx.fillRect(x + 5, y + IMAGE_HEIGHT, TILE_WIDTH - 10, TILE_HEIGHT - IMAGE_HEIGHT - 5);
-    ctx.fillStyle = isOwned ? accent : '#596273';
-    ctx.fillRect(x + 5, y + IMAGE_HEIGHT, TILE_WIDTH - 10, 4);
-    ctx.fillStyle = '#f2f5fb';
-    ctx.font = 'bold 17px Arial';
-    ctx.fillText(player.name, x + 9, y + IMAGE_HEIGHT + 27, TILE_WIDTH - 18);
-    ctx.fillStyle = isOwned ? accent : '#cbd5e1';
-    ctx.font = 'bold 13px Arial';
-    ctx.fillText(`OVERALL ${player.overall}  •  ${tier}`, x + 9, y + IMAGE_HEIGHT + 50, TILE_WIDTH - 18);
 
     const badge = isOwned ? 'MAM' : 'NIE MASZ';
     ctx.font = 'bold 11px Arial';
     const badgeWidth = ctx.measureText(badge).width + 16;
     ctx.fillStyle = isOwned ? '#117c5b' : '#4b5563';
-    ctx.fillRect(x + TILE_WIDTH - badgeWidth - 8, y + 8, badgeWidth, 24);
+    ctx.fillRect(x + TILE_WIDTH - badgeWidth - 8, y + 94, badgeWidth, 24);
     ctx.fillStyle = '#ffffff';
-    ctx.fillText(badge, x + TILE_WIDTH - badgeWidth, y + 24);
+    ctx.fillText(badge, x + TILE_WIDTH - badgeWidth, y + 110);
   }
 
   return canvas.encode('png');
@@ -106,37 +104,69 @@ export async function renderCollection(catalog, ownedCards, page = 0) {
 export async function renderPlayerCard(player) {
   const tier = tierFor(player);
   const accent = rarityColors[tier];
-  const canvas = createCanvas(640, 820);
+  const canvas = createCanvas(640, 900);
   const ctx = canvas.getContext('2d');
   const image = await loadImage(path.join(ASSETS, player.image));
 
   ctx.fillStyle = '#0b1220';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
-  const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-  gradient.addColorStop(0, accent);
-  gradient.addColorStop(0.5, rarityDarkColors[tier]);
-  gradient.addColorStop(1, accent);
-  ctx.fillStyle = gradient;
-  ctx.fillRect(20, 20, 600, 780);
-  ctx.fillStyle = '#0d192a';
-  ctx.fillRect(32, 32, 576, 756);
-  ctx.drawImage(image, 42, 42, 556, 600);
-  const footerGradient = ctx.createLinearGradient(42, 642, 598, 778);
-  footerGradient.addColorStop(0, rarityDarkColors[tier]);
-  footerGradient.addColorStop(1, '#101827');
-  ctx.fillStyle = footerGradient;
-  ctx.fillRect(42, 642, 556, 136);
+  // A single restrained frame layout is shared by all players. Only the
+  // rarity accent changes, so every card keeps the same dimensions.
   ctx.fillStyle = accent;
-  ctx.fillRect(42, 642, 556, 7);
+  ctx.fillRect(18, 18, 604, 864);
+  ctx.fillStyle = '#101a2a';
+  ctx.fillRect(26, 26, 588, 848);
+
+  // Small rarity header
+  ctx.fillStyle = rarityDarkColors[tier];
+  ctx.fillRect(34, 34, 572, 52);
+  ctx.fillStyle = accent;
+  ctx.fillRect(34, 82, 572, 4);
   ctx.fillStyle = '#f4f6fb';
-  ctx.font = 'bold 36px Arial';
-  ctx.fillText(player.name, 62, 695, 516);
-  ctx.fillStyle = '#cbd5e1';
-  ctx.font = '18px Arial';
-  ctx.fillText(`${player.position}  •  ${player.element}`, 64, 725, 516);
+  ctx.font = 'bold 22px Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText(tier, 320, 67);
+  ctx.textAlign = 'left';
+
+  // All catalog portraits use the same 4:5 image ratio, avoiding stretching.
+  ctx.drawImage(image, 40, 94, 560, 700);
+
+  // Name and domain strip with the overall badge on the left.
+  ctx.fillStyle = '#111c2e';
+  ctx.fillRect(34, 794, 572, 72);
   ctx.fillStyle = accent;
-  ctx.font = 'bold 23px Arial';
-  ctx.fillText(`OVERALL ${player.overall}  •  ${tier}`, 62, 763, 516);
+  ctx.fillRect(34, 794, 572, 4);
+
+  ctx.beginPath();
+  ctx.arc(86, 830, 40, 0, Math.PI * 2);
+  ctx.fillStyle = '#0b1220';
+  ctx.fill();
+  ctx.lineWidth = 4;
+  ctx.strokeStyle = accent;
+  ctx.stroke();
+  ctx.fillStyle = '#f4f6fb';
+  ctx.textAlign = 'center';
+  ctx.font = 'bold 30px Arial';
+  ctx.fillText(String(player.overall), 86, 840);
+  ctx.textAlign = 'left';
+
+  ctx.fillStyle = '#f4f6fb';
+  ctx.font = 'bold 25px Arial';
+  ctx.fillText(player.name.toUpperCase(), 142, 827, 310);
+  ctx.fillStyle = '#cbd5e1';
+  ctx.font = '14px Arial';
+  ctx.fillText(player.position?.toUpperCase() ?? '', 144, 850, 300);
+
+  ctx.fillStyle = '#40516a';
+  ctx.fillRect(464, 808, 2, 44);
+  const elementColor = elementColors[player.element] ?? '#cbd5e1';
+  ctx.beginPath();
+  ctx.arc(488, 830, 8, 0, Math.PI * 2);
+  ctx.fillStyle = elementColor;
+  ctx.fill();
+  ctx.fillStyle = elementColor;
+  ctx.font = 'bold 13px Arial';
+  ctx.fillText(elementNames[player.element] ?? String(player.element ?? '').toUpperCase(), 502, 835, 96);
   return canvas.encode('png');
 }
 
@@ -172,7 +202,7 @@ export async function renderEmblemCard(emblem) {
   ctx.fillRect(20, 20, 600, 780);
   ctx.fillStyle = '#0d192a';
   ctx.fillRect(32, 32, 576, 756);
-  ctx.fillStyle = '#f8fafc';
+  ctx.fillStyle = '#15243a';
   ctx.fillRect(54, 62, 532, 536);
   drawEmblem(ctx, image, emblem, 72, 82, 496, 496);
   ctx.fillStyle = '#111c2e';
@@ -189,7 +219,7 @@ export async function renderEmblemCard(emblem) {
 }
 
 export async function renderEmblemPackPreview(emblems) {
-  const canvas = createCanvas(1200, 460);
+  const canvas = createCanvas(1200, 480);
   const ctx = canvas.getContext('2d');
   const background = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
   background.addColorStop(0, '#081426');
@@ -197,25 +227,248 @@ export async function renderEmblemPackPreview(emblems) {
   ctx.fillStyle = background;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   ctx.fillStyle = '#f4f6fb';
-  ctx.font = 'bold 34px Arial';
+  ctx.font = 'bold 30px Arial';
   ctx.fillText('HISSATSU PACK  •  HERBY SZKÓŁ', 42, 52);
-  const cardWidth = 330;
+  const cardWidth = 260;
+  const cardHeight = 350;
+  const gap = 20;
+  const left = (canvas.width - (emblems.length * cardWidth + Math.max(0, emblems.length - 1) * gap)) / 2;
   for (let index = 0; index < emblems.length; index += 1) {
     const emblem = emblems[index];
     const image = await loadImage(path.join(ASSETS, emblem.image));
-    const x = 42 + index * 382;
+    const x = left + index * (cardWidth + gap);
     ctx.fillStyle = '#111c2e';
-    ctx.fillRect(x, 78, cardWidth, 340);
+    ctx.fillRect(x, 78, cardWidth, cardHeight);
     ctx.strokeStyle = emblem.color;
     ctx.lineWidth = 6;
-    ctx.strokeRect(x + 3, 81, cardWidth - 6, 334);
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(x + 28, 98, cardWidth - 56, 250);
-    drawEmblem(ctx, image, emblem, x + 45, 110, cardWidth - 90, 226);
+    ctx.strokeRect(x + 3, 81, cardWidth - 6, cardHeight - 6);
+    ctx.fillStyle = '#15243a';
+    ctx.fillRect(x + 18, 96, cardWidth - 36, 210);
+    drawEmblem(ctx, image, emblem, x + 28, 106, cardWidth - 56, 190);
     ctx.fillStyle = '#f4f6fb';
-    ctx.font = 'bold 25px Arial';
-    ctx.fillText(emblem.name, x + 28, 389, cardWidth - 56);
+    ctx.font = 'bold 20px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText(emblem.name.toUpperCase(), x + cardWidth / 2, 352, cardWidth - 28);
+    ctx.textAlign = 'left';
   }
+  return canvas.encode('png');
+}
+
+export async function renderSquadPitch(lineup, formation, emblem = null) {
+  const canvas = createCanvas(1200, 980);
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#0b1220';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  ctx.fillStyle = '#f4f6fb';
+  ctx.font = 'bold 28px Arial';
+  ctx.fillText(`TEAM SQUAD  •  ${formation}`, 36, 52);
+  ctx.fillStyle = '#94a3b8';
+  ctx.font = '15px Arial';
+  ctx.fillText('SKŁAD ZAPISANY', 38, 79);
+
+  // Team information panel, styled after the compact crest and OVR column
+  // in the supplied squad builder reference.
+  ctx.fillStyle = '#111c2e';
+  ctx.fillRect(34, 108, 198, 810);
+  ctx.strokeStyle = '#334155';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(35, 109, 196, 808);
+  ctx.fillStyle = '#f8fafc';
+  ctx.fillRect(62, 142, 142, 142);
+  if (emblem) {
+    const image = await loadImage(path.join(ASSETS, emblem.image));
+    drawEmblem(ctx, image, emblem, 70, 150, 126, 126);
+  } else {
+    ctx.beginPath();
+    ctx.arc(133, 213, 48, 0, Math.PI * 2);
+    ctx.fillStyle = '#168cff';
+    ctx.fill();
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 24px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('IE', 133, 221);
+    ctx.textAlign = 'left';
+  }
+  ctx.fillStyle = '#cbd5e1';
+  ctx.font = 'bold 14px Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText(emblem?.name?.toUpperCase() ?? 'TWOJA DRUŻYNA', 133, 309, 170);
+  const avgOverall = Math.round(lineup.reduce((sum, entry) => sum + entry.player.overall, 0) / lineup.length);
+  ctx.fillStyle = '#0b1220';
+  ctx.fillRect(68, 360, 130, 104);
+  ctx.strokeStyle = '#475569';
+  ctx.strokeRect(68, 360, 130, 104);
+  ctx.fillStyle = '#94a3b8';
+  ctx.font = '12px Arial';
+  ctx.fillText('ŚREDNIE OVR', 133, 386);
+  ctx.fillStyle = '#f4f6fb';
+  ctx.font = 'bold 34px Arial';
+  ctx.fillText(String(avgOverall), 133, 433);
+  ctx.fillStyle = '#94a3b8';
+  ctx.font = '13px Arial';
+  ctx.fillText(`${lineup.length} ZAWODNIKÓW`, 133, 505);
+  ctx.textAlign = 'left';
+
+  // Vertical pitch with all cards at the same dimensions.
+  const px = 270;
+  const py = 108;
+  const pw = 895;
+  const ph = 810;
+  ctx.fillStyle = '#125322';
+  ctx.fillRect(px, py, pw, ph);
+  for (let band = 0; band < 10; band += 1) {
+    if (band % 2 === 0) {
+      ctx.fillStyle = 'rgba(255,255,255,0.035)';
+      ctx.fillRect(px, py + band * (ph / 10), pw, ph / 10);
+    }
+  }
+  ctx.strokeStyle = 'rgba(230,255,235,0.72)';
+  ctx.lineWidth = 3;
+  ctx.strokeRect(px + 8, py + 8, pw - 16, ph - 16);
+  ctx.beginPath();
+  ctx.moveTo(px + 8, py + ph / 2);
+  ctx.lineTo(px + pw - 8, py + ph / 2);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(px + pw / 2, py + ph / 2, 78, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(px + pw / 2, py + ph / 2, 5, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(230,255,235,0.8)';
+  ctx.fill();
+  for (const top of [true, false]) {
+    const boxY = top ? py + 8 : py + ph - 8 - 178;
+    ctx.strokeRect(px + 214, boxY, pw - 428, 170);
+    const smallY = top ? py + 8 : py + ph - 8 - 64;
+    ctx.strokeRect(px + 310, smallY, pw - 620, 56);
+  }
+
+  const rows = [
+    { position: 'Napastnik', y: 0.19 },
+    { position: 'Pomocnik', y: 0.40 },
+    { position: 'Obrońca', y: 0.63 },
+    { position: 'Bramkarz', y: 0.83 },
+  ];
+  const cardW = 118;
+  const cardH = cardW * 900 / 640;
+  const xsByCount = {
+    1: [0.5], 2: [0.35, 0.65], 3: [0.2, 0.5, 0.8],
+    4: [0.14, 0.38, 0.62, 0.86],
+    5: [0.1, 0.3, 0.5, 0.7, 0.9],
+  };
+  for (const row of rows) {
+    const members = lineup.filter((entry) => entry.position === row.position);
+    const slots = xsByCount[members.length] ?? members.map((_, i) => (i + 1) / (members.length + 1));
+    for (let index = 0; index < members.length; index += 1) {
+      const member = members[index];
+      const card = await loadImage(await renderPlayerCard(member.player));
+      const cx = px + slots[index] * pw;
+      const cy = py + row.y * ph;
+      ctx.save();
+      ctx.shadowColor = 'rgba(0,0,0,0.55)';
+      ctx.shadowBlur = 12;
+      ctx.shadowOffsetY = 4;
+      ctx.drawImage(card, cx - cardW / 2, cy - cardH / 2, cardW, cardH);
+      ctx.restore();
+    }
+  }
+  return canvas.encode('png');
+}
+
+export async function renderSquadBuilderPreview(formation) {
+  const canvas = createCanvas(1200, 980);
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#0b1220';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = '#f4f6fb';
+  ctx.font = 'bold 28px Arial';
+  ctx.fillText(`BUDOWANIE SKŁADU  •  ${formation}`, 36, 52);
+  ctx.fillStyle = '#94a3b8';
+  ctx.font = '15px Arial';
+  ctx.fillText('WYBIERZ 11 KART Z KOLEKCJI', 38, 79);
+  ctx.fillStyle = '#111c2e';
+  ctx.fillRect(34, 108, 198, 810);
+  ctx.strokeStyle = '#334155';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(35, 109, 196, 808);
+  ctx.fillStyle = '#94a3b8';
+  ctx.font = 'bold 14px Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText('TRYB', 133, 170);
+  ctx.fillText('BUDOWANIA', 133, 194);
+  ctx.fillStyle = '#f4f6fb';
+  ctx.font = 'bold 38px Arial';
+  ctx.fillText('11', 133, 284);
+  ctx.fillStyle = '#94a3b8';
+  ctx.font = '13px Arial';
+  ctx.fillText('MIEJSC W SKŁADZIE', 133, 312);
+  ctx.fillText('Wybierz piłkarzy', 133, 365);
+  ctx.fillText('z menu poniżej.', 133, 389);
+
+  const px = 270;
+  const py = 108;
+  const pw = 895;
+  const ph = 810;
+  ctx.fillStyle = '#125322';
+  ctx.fillRect(px, py, pw, ph);
+  for (let band = 0; band < 10; band += 1) {
+    if (band % 2 === 0) {
+      ctx.fillStyle = 'rgba(255,255,255,0.035)';
+      ctx.fillRect(px, py + band * (ph / 10), pw, ph / 10);
+    }
+  }
+  ctx.strokeStyle = 'rgba(230,255,235,0.72)';
+  ctx.lineWidth = 3;
+  ctx.strokeRect(px + 8, py + 8, pw - 16, ph - 16);
+  ctx.beginPath();
+  ctx.moveTo(px + 8, py + ph / 2);
+  ctx.lineTo(px + pw - 8, py + ph / 2);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(px + pw / 2, py + ph / 2, 78, 0, Math.PI * 2);
+  ctx.stroke();
+  for (const top of [true, false]) {
+    const boxY = top ? py + 8 : py + ph - 8 - 178;
+    ctx.strokeRect(px + 214, boxY, pw - 428, 170);
+    const smallY = top ? py + 8 : py + ph - 8 - 64;
+    ctx.strokeRect(px + 310, smallY, pw - 620, 56);
+  }
+  const [defenders, midfielders, forwards] = formation.split('-').map(Number);
+  const groups = [
+    { label: 'FW', count: forwards, y: 0.19 },
+    { label: 'MF', count: midfielders, y: 0.40 },
+    { label: 'DF', count: defenders, y: 0.63 },
+    { label: 'GK', count: 1, y: 0.83 },
+  ];
+  const cardW = 118;
+  const cardH = cardW * 900 / 640;
+  const xsByCount = { 1: [0.5], 2: [0.35, 0.65], 3: [0.2, 0.5, 0.8], 4: [0.14, 0.38, 0.62, 0.86], 5: [0.1, 0.3, 0.5, 0.7, 0.9] };
+  for (const group of groups) {
+    const xs = xsByCount[group.count] ?? Array.from({ length: group.count }, (_, i) => (i + 1) / (group.count + 1));
+    for (const xRatio of xs) {
+      const cx = px + xRatio * pw;
+      const cy = py + group.y * ph;
+      const x = cx - cardW / 2;
+      const y = cy - cardH / 2;
+      ctx.fillStyle = '#17263a';
+      ctx.fillRect(x, y, cardW, cardH);
+      ctx.strokeStyle = '#94a3b8';
+      ctx.lineWidth = 3;
+      ctx.strokeRect(x + 1.5, y + 1.5, cardW - 3, cardH - 3);
+      ctx.beginPath();
+      ctx.arc(cx, y + 55, 22, 0, Math.PI * 2);
+      ctx.fillStyle = '#263950';
+      ctx.fill();
+      ctx.fillStyle = '#e2e8f0';
+      ctx.font = 'bold 15px Arial';
+      ctx.fillText(group.label, cx, y + cardH - 22);
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '11px Arial';
+      ctx.fillText('PUSTE MIEJSCE', cx, y + cardH - 7);
+    }
+  }
+  ctx.textAlign = 'left';
   return canvas.encode('png');
 }
 

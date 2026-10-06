@@ -35,7 +35,7 @@ import {
   setCosmetic,
   setTeamEmblem,
 } from './economy.js';
-import { renderCollection, renderEmblemCard, renderPlayerCard, renderProfileBanner } from './gallery.js';
+import { renderCollection, renderEmblemCard, renderEmblemPackPreview, renderPlayerCard, renderProfileBanner, renderSquadBuilderPreview, renderSquadPitch } from './gallery.js';
 
 if (!TOKEN) {
   console.error('Brakuje DISCORD_TOKEN. Skopiuj .env.example do .env i uzupełnij token.');
@@ -121,6 +121,7 @@ function cardEmbed(card, index, imageName, duplicateCoins = 0) {
 async function showShop(interaction, page = 0, edit = false) {
   const emblemPage = page === 1;
   const imageName = emblemPage ? 'hissatsu_pack.png' : 'paczka_s2.png';
+  const avatarName = 'hissatsu_pack_avatar.png';
   const embed = emblemPage
     ? new EmbedBuilder()
       .setColor(0x9868e8)
@@ -134,6 +135,7 @@ async function showShop(interaction, page = 0, edit = false) {
       .setDescription(`Jedna paczka zawiera **${PACK_SIZE} zawodników**.\nCena: **${PACK_PRICE} monet**\n\nDuplikaty zamieniają się na monety: brąz 10, srebro 20, złoto 30.`)
       .setImage(`attachment://${imageName}`)
       .setFooter({ text: 'Zarabiaj przez /work, /training lub /job albo odbierz jednorazowe /free.' });
+  if (emblemPage) embed.setThumbnail(`attachment://${avatarName}`);
 
   const previous = new ButtonBuilder().setCustomId('shop-prev').setLabel('◀').setStyle(ButtonStyle.Secondary).setDisabled(!emblemPage);
   const buy = new ButtonBuilder()
@@ -143,8 +145,12 @@ async function showShop(interaction, page = 0, edit = false) {
     .setStyle(ButtonStyle.Primary);
   const next = new ButtonBuilder().setCustomId('shop-next').setLabel('▶').setStyle(ButtonStyle.Secondary).setDisabled(emblemPage);
   const row = new ActionRowBuilder().addComponents(previous, buy, next);
-  const image = new AttachmentBuilder(path.join(ASSETS, imageName));
-  const payload = { embeds: [embed], components: [row], files: [image], attachments: [] };
+  const image = emblemPage
+    ? new AttachmentBuilder(Buffer.from(await renderEmblemPackPreview(emblems)), { name: imageName })
+    : new AttachmentBuilder(path.join(ASSETS, imageName));
+  const files = [image];
+  if (emblemPage) files.push(new AttachmentBuilder(path.join(ASSETS, avatarName)));
+  const payload = { embeds: [embed], components: [row], files, attachments: [] };
   if (edit) await interaction.update(payload);
   else await interaction.reply(payload);
 }
@@ -193,14 +199,14 @@ async function openPack(interaction) {
     const card = cards[index];
     const delay = index === 0 ? OPENING_ANIMATION_MS : CARD_REVEAL_DELAY_MS;
     await new Promise((resolve) => setTimeout(resolve, delay));
-    const sourcePath = path.join(ASSETS, card.image);
     const imageName = `zawodnik-${index + 1}.png`;
+    const renderedCard = await renderPlayerCard(card);
     const duplicateIndex = duplicateQueue.findIndex((duplicate) => duplicate.name === card.name);
     const duplicate = duplicateIndex >= 0 ? duplicateQueue.splice(duplicateIndex, 1)[0] : null;
     await interaction.followUp({
       content: index === 0 ? '⚡ Zawodnicy z paczki pojawiają się po kolei:' : undefined,
       embeds: [cardEmbed(card, index, imageName, duplicate?.coins ?? 0)],
-      files: [new AttachmentBuilder(sourcePath, { name: imageName })],
+      files: [new AttachmentBuilder(Buffer.from(renderedCard), { name: imageName })],
     });
   }
 }
@@ -218,7 +224,7 @@ async function claimFree(interaction) {
 async function showCollection(interaction, page = 0, edit = false) {
   if (!edit && !requireGuild(interaction)) return;
   const user = getUser(interaction.guildId, interaction.user.id);
-  const pageCount = Math.ceil(catalog.length / 16);
+  const pageCount = Math.max(1, ...catalog.map((player) => player.collection_page ?? 1));
   const safePage = Math.max(0, Math.min(page, pageCount - 1));
   const image = await renderCollection(catalog, user.cards, safePage);
   const imageName = 'kolekcja-s2.png';
@@ -228,8 +234,8 @@ async function showCollection(interaction, page = 0, edit = false) {
     .setDescription(`Masz **${new Set(user.cards.map((card) => card.name)).size} z ${catalog.length}** zawodników. Szare karty nie są jeszcze w Twojej kolekcji.`)
     .setImage(`attachment://${imageName}`);
   const controls = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('collection-prev').setLabel('◀ Poprzednia').setStyle(ButtonStyle.Secondary).setDisabled(safePage === 0),
-    new ButtonBuilder().setCustomId('collection-next').setLabel('Następna ▶').setStyle(ButtonStyle.Secondary).setDisabled(safePage >= pageCount - 1),
+    new ButtonBuilder().setCustomId(`collection-page:${safePage - 1}`).setLabel('◀ Poprzednia').setStyle(ButtonStyle.Secondary).setDisabled(safePage === 0),
+    new ButtonBuilder().setCustomId(`collection-page:${safePage + 1}`).setLabel('Następna ▶').setStyle(ButtonStyle.Secondary).setDisabled(safePage >= pageCount - 1),
   );
   const payload = {
     embeds: [embed],
@@ -479,19 +485,19 @@ function teamEmblemRow(user) {
 async function teamMessage(user, username) {
   const lineup = arrangeTeam(user.team.players, user.team.formation);
   const avgOverall = Math.round(lineup.reduce((sum, entry) => sum + entry.player.overall, 0) / lineup.length);
-  const lines = lineup.map((entry) => `**${entry.position} ${entry.slot}:** ${entry.player.name} (${entry.player.overall})`);
   const emblem = emblems.find((item) => item.id === user.team.emblem);
   const embed = new EmbedBuilder()
     .setColor(emblem?.color ?? 0x168cff)
     .setTitle(`⚽ Skład — ${username}`)
-    .setDescription(`Formacja **${user.team.formation}** · średni OVERALL **${avgOverall}**${emblem ? `\nHerb: **${emblem.name}**` : ''}\n\n${lines.join('\n')}`);
-  const payload = { embeds: [embed], components: teamEmblemRow(user) };
-  if (emblem) {
-    const image = await renderEmblemCard(emblem);
-    payload.files = [new AttachmentBuilder(Buffer.from(image), { name: 'herb-druzyny.png' })];
-    embed.setThumbnail('attachment://herb-druzyny.png');
-  }
-  return payload;
+    .setDescription(`Formacja **${user.team.formation}** · średni OVERALL **${avgOverall}**${emblem ? `\nHerb: **${emblem.name}**` : ''}\n\nUstawienie zawodników zmienisz przez `/team`. Herb możesz zmienić przez `/herb`.`)
+    .setImage('attachment://squad-pitch.png');
+  const image = await renderSquadPitch(lineup, user.team.formation, emblem);
+  return {
+    embeds: [embed],
+    components: teamEmblemRow(user),
+    files: [new AttachmentBuilder(Buffer.from(image), { name: 'squad-pitch.png' })],
+    attachments: [],
+  };
 }
 
 async function showTeam(interaction) {
@@ -519,11 +525,31 @@ async function showTeam(interaction) {
       const player = catalog.find((entry) => entry.name === name);
       return { label: player.name, value: player.name, description: `${player.position} · OVERALL ${player.overall}` };
     }));
+  const preview = await renderSquadBuilderPreview(formation);
+  const embed = new EmbedBuilder()
+    .setColor(0x168cff)
+    .setTitle(`🧩 Budowanie składu — ${formation}`)
+    .setDescription('Wybierz dokładnie 11 różnych zawodników. Po zapisaniu zobaczysz ich karty ustawione na boisku.')
+    .setImage('attachment://squad-builder.png');
   await interaction.reply({
-    content: `Formacja **${formation}**. Wybierz dokładnie 11 różnych zawodników. Pozycje zostaną ustawione automatycznie według formacji.`,
+    content: `Masz **${ownedNames.length}** zawodników do wyboru. Pozycje zostaną ustawione automatycznie według formacji.`,
+    embeds: [embed],
+    files: [new AttachmentBuilder(Buffer.from(preview), { name: 'squad-builder.png' })],
     components: [new ActionRowBuilder().addComponents(menu)],
     ephemeral: true,
   });
+}
+
+async function showSquad(interaction) {
+  const user = getUser(interaction.guildId, interaction.user.id);
+  if (!user.team) {
+    await interaction.reply({
+      content: 'Nie masz jeszcze zapisanego składu. Użyj `/team`, wybierz formację i 11 zawodników.',
+      ephemeral: true,
+    });
+    return;
+  }
+  await interaction.reply({ ...await teamMessage(user, interaction.user.username), ephemeral: true });
 }
 
 async function chooseTeamEmblem(interaction) {
@@ -548,7 +574,7 @@ async function buyHissatsuPack(interaction) {
   const result = buyEmblemPack(interaction.guildId, interaction.user.id, EMBLEM_PACK_PRICE, emblems);
   if (!result.ok) {
     const content = result.reason === 'all-owned'
-      ? 'Masz już herby Raimon, Zeus i Genesis.'
+      ? `Masz już wszystkie herby: ${emblems.map((emblem) => emblem.name).join(', ')}.`
       : `Masz **${result.balance} monet**, a Hissatsu Pack kosztuje **${EMBLEM_PACK_PRICE}**.`;
     await interaction.reply({ content, ephemeral: true });
     return;
@@ -632,10 +658,28 @@ client.once(Events.ClientReady, (readyClient) => {
 
 client.on(Events.InteractionCreate, async (interaction) => {
   try {
+    if (interaction.isAutocomplete()) {
+      if (!interaction.memberPermissions?.has(PermissionFlagsBits.Administrator)) {
+        await interaction.respond([]);
+        return;
+      }
+      if (interaction.commandName === 'stats') {
+        const query = interaction.options.getFocused().toLocaleLowerCase('pl');
+        const choices = catalog
+          .filter((player) => player.name.toLocaleLowerCase('pl').includes(query))
+          .slice(0, 25)
+          .map((player) => ({ name: player.name, value: player.name }));
+        await interaction.respond(choices);
+      }
+      return;
+    }
     if (interaction.isButton()) {
-      if (!requireGuild(interaction) || !(await requireGameAccess(interaction))) return;
+      if (!requireGuild(interaction) || !(await requireAdmin(interaction)) || !(await requireGameAccess(interaction))) return;
       if (interaction.customId === 'shop-prev' || interaction.customId === 'shop-next') {
         await showShop(interaction, interaction.customId === 'shop-next' ? 1 : 0, true);
+      } else if (interaction.customId.startsWith('collection-page:')) {
+        const page = Number(interaction.customId.split(':')[1]);
+        await showCollection(interaction, page, true);
       } else if (interaction.customId === 'collection-prev' || interaction.customId === 'collection-next') {
         await showCollection(interaction, interaction.customId === 'collection-next' ? 1 : 0, true);
       } else if (interaction.customId === 'buy-player-pack') {
@@ -646,12 +690,12 @@ client.on(Events.InteractionCreate, async (interaction) => {
       return;
     }
     if (interaction.isStringSelectMenu()) {
-      if (!requireGuild(interaction) || !(await requireGameAccess(interaction))) return;
+      if (!requireGuild(interaction) || !(await requireAdmin(interaction)) || !(await requireGameAccess(interaction))) return;
       await handleGameSelect(interaction);
       return;
     }
     if (!interaction.isChatInputCommand()) return;
-    if (!requireGuild(interaction) || !(await requireGameAccess(interaction))) return;
+    if (!requireGuild(interaction) || !(await requireAdmin(interaction)) || !(await requireGameAccess(interaction))) return;
     if (interaction.commandName === 'save' && Date.now() < BETA_END_AT && !(await requireAdmin(interaction))) return;
 
     switch (interaction.commandName) {
@@ -699,6 +743,9 @@ client.on(Events.InteractionCreate, async (interaction) => {
         break;
       case 'team':
         await showTeam(interaction);
+        break;
+      case 'squad':
+        await showSquad(interaction);
         break;
       case 'herb':
         await chooseTeamEmblem(interaction);

@@ -1,10 +1,4 @@
-import { SlashCommandBuilder } from 'discord.js';
-
-const playerChoices = [
-  'William Glass', 'Jim Wright', 'Tod Ironside', 'Timmy Saunders', 'Steve Grim',
-  'Sam Kincaid', 'Maxwell Carson', 'Bobby Shearer', 'Kevin Dragonfly', 'Jack Wallside',
-  'Erik Eagle', 'Nathan Swift', 'Mark Evans', 'Axel Blaze', 'Gazelle', 'Torch', 'Dvalin',
-].map((name) => ({ name, value: name }));
+import { PermissionFlagsBits, SlashCommandBuilder } from 'discord.js';
 
 const commandBuilders = [
   new SlashCommandBuilder().setName('sklep').setDescription('Otwórz sklep i przełączaj paczki strzałkami.'),
@@ -19,7 +13,7 @@ const commandBuilders = [
   new SlashCommandBuilder().setName('profil').setDescription('Zobacz profil i ustaw odblokowane ozdoby.'),
   new SlashCommandBuilder()
     .setName('team')
-    .setDescription('Pokaż skład lub wybierz 11 zawodników i formację.')
+    .setDescription('Zbuduj skład: wybierz formację i 11 zawodników.')
     .addStringOption((option) => option
       .setName('formacja')
       .setDescription('Wybierz formację dla składu.')
@@ -28,6 +22,7 @@ const commandBuilders = [
         { name: '4-3-3', value: '4-3-3' },
         { name: '3-5-2', value: '3-5-2' },
       )),
+  new SlashCommandBuilder().setName('squad').setDescription('Pokaż zbudowany skład na boisku.'),
   new SlashCommandBuilder().setName('herb').setDescription('Załóż zdobyty herb na swój skład.'),
   new SlashCommandBuilder()
     .setName('ruletke')
@@ -53,12 +48,12 @@ const commandBuilders = [
     .setDescription('Zobacz kartę i statystyki zawodnika.')
     .addStringOption((option) => option
       .setName('zawodnik')
-      .setDescription('Wybierz zawodnika.')
-      .addChoices(...playerChoices)
+      .setDescription('Wpisz lub wybierz zawodnika.')
+      .setAutocomplete(true)
       .setRequired(true)),
 ];
 
 export const commands = commandBuilders.map((command) => {
-  command.setDefaultMemberPermissions(null);
+  command.setDefaultMemberPermissions(PermissionFlagsBits.Administrator);
   return command.toJSON();
 });
