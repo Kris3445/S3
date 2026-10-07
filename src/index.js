@@ -517,7 +517,7 @@ async function teamMessage(user, username, slot = 1) {
   const embed = new EmbedBuilder()
     .setColor(emblem?.color ?? 0x168cff)
     .setTitle(`⚽ Skład ${slot}/4 — ${username}`)
-    .setDescription(`Formacja **${team.formation}** · średni OVERALL **${avgOverall}**${emblem ? `\nHerb: **${emblem.name}**` : ''}\n\nUstawienie zawodników zmienisz przez `/team slot:${slot}`. Herb możesz zmienić przez `/herb slot:${slot}`.`)
+    .setDescription(`Formacja **${team.formation}** · średni OVERALL **${avgOverall}**${emblem ? `\nHerb: **${emblem.name}**` : ''}\n\nUstawienie zmienisz komendą /team (slot: ${slot}). Herb wybierzesz przez /herb (slot: ${slot}).`)
     .setImage('attachment://squad-pitch.png');
   const image = await renderSquadPitch(lineup, team.formation, emblem);
   return {
