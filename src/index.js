@@ -513,6 +513,120 @@ async function teamMessage(user, username) {
   };
 }
 
+const teamBuildSessions = new Map();
+const TEAM_FORMATIONS = new Set(['4-4-2', '4-3-3', '3-5-2']);
+const TEAM_PAGE_SIZE = 25;
+
+function teamBuildKey(interaction) {
+  return `${interaction.guildId}:${interaction.user.id}`;
+}
+
+function teamBuildPositionOptions() {
+  const positions = [...new Set(catalog.map((player) => player.position).filter(Boolean))];
+  return ['Wszystkie', ...positions];
+}
+
+function teamBuildElementOptions() {
+  const elements = [...new Set(catalog.map((player) => player.element).filter(Boolean))];
+  return ['Wszystkie', ...elements];
+}
+
+function teamBuildRows(state) {
+  const selected = new Set(state.selected);
+  const allAvailable = catalog.filter((player) => state.ownedNames.includes(player.name) && !selected.has(player.name));
+  let filtered = allAvailable.filter((player) =>
+    (state.positionFilter === 'Wszystkie' || player.position === state.positionFilter) &&
+    (state.elementFilter === 'Wszystkie' || player.element === state.elementFilter));
+  filtered.sort((a, b) => state.sort === 'asc'
+    ? a.overall - b.overall || a.name.localeCompare(b.name, 'pl')
+    : b.overall - a.overall || a.name.localeCompare(b.name, 'pl'));
+  const maxPage = Math.max(0, Math.ceil(filtered.length / TEAM_PAGE_SIZE) - 1);
+  state.page = Math.min(state.page, maxPage);
+  const pagePlayers = filtered.slice(state.page * TEAM_PAGE_SIZE, (state.page + 1) * TEAM_PAGE_SIZE);
+  const currentSlot = state.selected.length;
+  const targetPosition = state.positions[currentSlot];
+  const rows = [];
+
+  if (currentSlot < 11) {
+    const playerMenu = new StringSelectMenuBuilder()
+      .setCustomId('team-build-player')
+      .setPlaceholder(pagePlayers.length ? `Wybierz ${targetPosition.toLocaleLowerCase('pl')} — strona ${state.page + 1}/${maxPage + 1}` : 'Brak wyników — zmień filtry')
+      .addOptions(pagePlayers.length
+        ? pagePlayers.map((player) => ({
+          label: player.name,
+          value: player.name,
+          description: `${player.position} · ${player.element} · OVERALL ${player.overall}`,
+        }))
+        : [{ label: 'Brak wyników — zmień filtry', value: '__no_results__', description: 'Zmień pozycję lub żywioł poniżej.' }]);
+    rows.push(new ActionRowBuilder().addComponents(playerMenu));
+  }
+
+  const positionMenu = new StringSelectMenuBuilder()
+    .setCustomId('team-build-position')
+    .setPlaceholder('Pozycja')
+    .addOptions(teamBuildPositionOptions().map((value) => ({
+      label: value,
+      value,
+      default: value === state.positionFilter,
+    })));
+  rows.push(new ActionRowBuilder().addComponents(positionMenu));
+
+  const elementMenu = new StringSelectMenuBuilder()
+    .setCustomId('team-build-element')
+    .setPlaceholder('Żywioł')
+    .addOptions(teamBuildElementOptions().map((value) => ({
+      label: value,
+      value,
+      default: value === state.elementFilter,
+    })));
+  rows.push(new ActionRowBuilder().addComponents(elementMenu));
+
+  const sortMenu = new StringSelectMenuBuilder()
+    .setCustomId('team-build-sort')
+    .setPlaceholder('Sortowanie po OVERALL')
+    .addOptions([
+      { label: 'Od najmniejszego OVERALL', value: 'asc', default: state.sort === 'asc' },
+      { label: 'Od największego OVERALL', value: 'desc', default: state.sort === 'desc' },
+    ]);
+  rows.push(new ActionRowBuilder().addComponents(sortMenu));
+
+  const buttons = new ActionRowBuilder().addComponents(
+    new ButtonBuilder().setCustomId('team-build:back').setLabel('◀ Cofnij').setStyle(ButtonStyle.Secondary).setDisabled(state.selected.length === 0),
+    new ButtonBuilder().setCustomId('team-build:page-prev').setLabel('◀ Karty').setStyle(ButtonStyle.Secondary).setDisabled(state.page === 0 || currentSlot >= 11),
+    new ButtonBuilder().setCustomId('team-build:page-next').setLabel('Karty ▶').setStyle(ButtonStyle.Secondary).setDisabled(state.page >= maxPage || currentSlot >= 11),
+    new ButtonBuilder().setCustomId('team-build:cancel').setLabel('Anuluj').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('team-build:save').setLabel('Zapisz skład').setStyle(ButtonStyle.Success).setDisabled(state.selected.length !== 11),
+  );
+  rows.push(buttons);
+  return rows;
+}
+
+async function renderTeamBuilder(interaction, state) {
+  const currentSlot = state.selected.length;
+  const positions = state.positions;
+  const targetPosition = currentSlot < 11 ? positions[currentSlot] : 'Gotowe';
+  const preview = await renderSquadBuilderPreview(state.formation);
+  const embed = new EmbedBuilder()
+    .setColor(0x168cff)
+    .setTitle(`🧩 Budowanie składu — ${state.formation}`)
+    .setDescription(
+      currentSlot < 11
+        ? `**Pozycja ${currentSlot + 1}/11: ${targetPosition}**\nWybierz jednego zawodnika w menu. Pozycję, żywioł i kolejność overall możesz filtrować poniżej.\n\nUstawiona pozycja slotu: **${targetPosition}**.`
+        : '✅ Wybrano 11 zawodników. Zapisz skład przyciskiem poniżej.',
+    )
+    .setImage('attachment://squad-builder.png')
+    .setFooter({ text: `Pozycja: ${state.positionFilter} · Żywioł: ${state.elementFilter} · OVERALL: ${state.sort === 'asc' ? 'rosnąco' : 'malejąco'}` });
+  const payload = {
+    content: `Postęp składu: **${state.selected.length}/11** · Pozostało kart do wyboru: **${state.ownedNames.length - state.selected.length}**.`,
+    embeds: [embed],
+    files: [new AttachmentBuilder(Buffer.from(preview), { name: 'squad-builder.png' })],
+    components: teamBuildRows(state),
+    attachments: [],
+  };
+  if (interaction.isButton() || interaction.isStringSelectMenu()) await interaction.update(payload);
+  else await interaction.reply({ ...payload, ephemeral: true });
+}
+
 async function showTeam(interaction) {
   const user = getUser(interaction.guildId, interaction.user.id);
   const formation = interaction.options.getString('formacja');
@@ -524,33 +638,29 @@ async function showTeam(interaction) {
     await interaction.reply({ ...await teamMessage(user, interaction.user.username), ephemeral: true });
     return;
   }
-  const ownedNames = [...new Set(user.cards.map((card) => card.name))].filter((name) => catalog.some((player) => player.name === name));
+  if (!TEAM_FORMATIONS.has(formation)) {
+    await interaction.reply({ content: 'Wybierz jedną z formacji: 4-4-2, 4-3-3 albo 3-5-2.', ephemeral: true });
+    return;
+  }
+  const ownedNames = [...new Set(user.cards.map((card) => card.name))]
+    .filter((name) => catalog.some((player) => player.name === name));
   if (ownedNames.length < 11) {
     await interaction.reply({ content: `Do ustawienia składu potrzebujesz 11 różnych zawodników. Masz **${ownedNames.length}**.`, ephemeral: true });
     return;
   }
-  const menu = new StringSelectMenuBuilder()
-    .setCustomId(`team-select:${formation}`)
-    .setPlaceholder('Wybierz 11 zawodników ze swojej kolekcji')
-    .setMinValues(11)
-    .setMaxValues(11)
-    .addOptions(ownedNames.slice(0, 25).map((name) => {
-      const player = catalog.find((entry) => entry.name === name);
-      return { label: player.name, value: player.name, description: `${player.position} · OVERALL ${player.overall}` };
-    }));
-  const preview = await renderSquadBuilderPreview(formation);
-  const embed = new EmbedBuilder()
-    .setColor(0x168cff)
-    .setTitle(`🧩 Budowanie składu — ${formation}`)
-    .setDescription('Wybierz dokładnie 11 różnych zawodników. Po zapisaniu zobaczysz ich karty ustawione na boisku.')
-    .setImage('attachment://squad-builder.png');
-  await interaction.reply({
-    content: `Masz **${ownedNames.length}** zawodników do wyboru. Pozycje zostaną ustawione automatycznie według formacji.`,
-    embeds: [embed],
-    files: [new AttachmentBuilder(Buffer.from(preview), { name: 'squad-builder.png' })],
-    components: [new ActionRowBuilder().addComponents(menu)],
-    ephemeral: true,
-  });
+  const positions = formationGroups(formation);
+  const session = {
+    formation,
+    positions,
+    ownedNames,
+    selected: [],
+    positionFilter: positions[0],
+    elementFilter: 'Wszystkie',
+    sort: 'desc',
+    page: 0,
+  };
+  teamBuildSessions.set(teamBuildKey(interaction), session);
+  await renderTeamBuilder(interaction, session);
 }
 
 async function showSquad(interaction) {
@@ -602,6 +712,48 @@ async function buyHissatsuPack(interaction) {
 }
 
 async function handleGameSelect(interaction) {
+  if (interaction.customId.startsWith('team-build-')) {
+    const state = teamBuildSessions.get(teamBuildKey(interaction));
+    if (!state) {
+      await interaction.update({ content: 'Sesja budowania składu wygasła. Uruchom ponownie `/team`.', embeds: [], components: [], attachments: [] });
+      return;
+    }
+    if (interaction.customId === 'team-build-position') {
+      state.positionFilter = interaction.values[0];
+      state.page = 0;
+      await renderTeamBuilder(interaction, state);
+      return;
+    }
+    if (interaction.customId === 'team-build-element') {
+      state.elementFilter = interaction.values[0];
+      state.page = 0;
+      await renderTeamBuilder(interaction, state);
+      return;
+    }
+    if (interaction.customId === 'team-build-sort') {
+      state.sort = interaction.values[0];
+      state.page = 0;
+      await renderTeamBuilder(interaction, state);
+      return;
+    }
+    if (interaction.customId === 'team-build-player') {
+      const name = interaction.values[0];
+      if (name === '__no_results__') {
+        await renderTeamBuilder(interaction, state);
+        return;
+      }
+      if (state.selected.includes(name) || !state.ownedNames.includes(name)) {
+        await interaction.update({ content: 'Tej karty nie można dodać do składu. Wybierz inną.', embeds: [], components: [] });
+        return;
+      }
+      state.selected.push(name);
+      state.page = 0;
+      state.positionFilter = state.positions[state.selected.length] ?? 'Wszystkie';
+      state.elementFilter = 'Wszystkie';
+      await renderTeamBuilder(interaction, state);
+      return;
+    }
+  }
   if (interaction.customId.startsWith('team-select:')) {
     const formation = interaction.customId.split(':')[1];
     const result = saveTeam(interaction.guildId, interaction.user.id, formation, interaction.values);
@@ -665,7 +817,7 @@ async function playRouletteRound(interaction) {
 }
 
 client.once(Events.ClientReady, (readyClient) => {
-  console.log(`Bot działa jako ${readyClient.user.tag} | KARTY-OVR-NAME-v6 | Hissatsu Pack 2026-10-07 | zawodnicy: ${catalog.length} | herby: ${emblems.length}`);
+  console.log(`Bot działa jako ${readyClient.user.tag} | TEAM-BUILDER-FILTERS-v7 | Hissatsu Pack 2026-10-07 | zawodnicy: ${catalog.length} | herby: ${emblems.length}`);
 });
 
 client.on(Events.InteractionCreate, async (interaction) => {
@@ -687,7 +839,35 @@ client.on(Events.InteractionCreate, async (interaction) => {
     }
     if (interaction.isButton()) {
       if (!requireGuild(interaction) || !(await requireAdmin(interaction)) || !(await requireGameAccess(interaction))) return;
-      if (interaction.customId === 'shop-prev' || interaction.customId === 'shop-next') {
+      if (interaction.customId.startsWith('team-build:')) {
+        const state = teamBuildSessions.get(teamBuildKey(interaction));
+        if (!state) {
+          await interaction.update({ content: 'Sesja budowania składu wygasła. Uruchom ponownie `/team`.', embeds: [], components: [], attachments: [] });
+          return;
+        }
+        const action = interaction.customId.split(':')[1];
+        if (action === 'cancel') {
+          teamBuildSessions.delete(teamBuildKey(interaction));
+          await interaction.update({ content: 'Budowanie składu anulowane.', embeds: [], components: [], attachments: [] });
+        } else if (action === 'back') {
+          if (state.selected.length) state.selected.pop();
+          const nextPosition = state.positions[state.selected.length];
+          state.positionFilter = nextPosition ?? 'Wszystkie';
+          state.page = 0;
+          await renderTeamBuilder(interaction, state);
+        } else if (action === 'page-prev' || action === 'page-next') {
+          state.page = Math.max(0, state.page + (action === 'page-next' ? 1 : -1));
+          await renderTeamBuilder(interaction, state);
+        } else if (action === 'save') {
+          const result = saveTeam(interaction.guildId, interaction.user.id, state.formation, state.selected);
+          if (!result.ok) {
+            await interaction.update({ content: 'Nie udało się zapisać składu. Sprawdź, czy wybrano 11 różnych posiadanych kart.', embeds: [], components: [] });
+            return;
+          }
+          teamBuildSessions.delete(teamBuildKey(interaction));
+          await interaction.update({ content: '✅ Skład zapisany. Możesz wybrać herb w menu poniżej.', ...await teamMessage(getUser(interaction.guildId, interaction.user.id), interaction.user.username) });
+        }
+      } else if (interaction.customId === 'shop-prev' || interaction.customId === 'shop-next') {
         await showShop(interaction, interaction.customId === 'shop-next' ? 1 : 0, true);
       } else if (interaction.customId.startsWith('collection-page:')) {
         const page = Number(interaction.customId.split(':')[1]);
