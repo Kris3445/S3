@@ -59,7 +59,16 @@ Zostaw uruchomiony terminal, kiedy testujesz bota na komputerze. Komendy do spra
 3. Wgraj do niego zawartość folderu `inazuma-discord-bot`.
 4. Upewnij się, że **nie wgrywasz `.env`** ani `node_modules`.
 
-GitHub przechowuje tutaj kod. Żeby bot działał cały czas, trzeba uruchomić go na hostingu obsługującym aplikacje Node.js; samo GitHub Pages nie uruchamia procesu bota. Na hostingu dodaj te same zmienne `DISCORD_TOKEN`, `CLIENT_ID` i `GUILD_ID`, uruchom `npm run deploy` raz, a potem komendę `npm start`. Hosting musi zachować plik `data/users.json`, bo tam zapisują się monety i kolekcje.
+GitHub przechowuje kod, a hosting uruchamia bota. Na hostingu ustaw `DISCORD_TOKEN`, `CLIENT_ID` i `GUILD_ID`, uruchom `npm run deploy`, a potem `npm start`. Dane kont, monet, kart, składów i trofeów są zapisywane w `data/users.json` (na tym kontenerze: `/app/data/users.json`).
+
+
+## Zachowanie postępów przy aktualizacji
+
+Plik z postępami nie jest częścią kodu i jest pomijany przez Git. Żeby aktualizacja nie wyzerowała zapisów, hosting musi mieć trwały dysk podłączony do folderu z danymi. Dla obecnego układu aplikacji ustaw punkt montowania dysku na `/app/data`; bot będzie wtedy nadal używał `/app/data/users.json` po każdym wdrożeniu.
+
+Jeśli hosting pozwala zamontować dysk tylko w innym miejscu, ustaw zmienną środowiskową `DATA_FILE` na pełną ścieżkę pliku na tym dysku, na przykład `/data/users.json` przy dysku zamontowanym jako `/data`.
+
+Przed pierwszym podłączeniem nowego, pustego dysku użyj `/save` i zachowaj kopię zapisu. Nowy dysk zaczyna pusty; kod nie może odzyskać pliku, który znajdował się tylko w poprzednim, nietrwałym kontenerze. Po podłączeniu dysku nie usuwaj ani nie nadpisuj `users.json` podczas kolejnych aktualizacji.
 
 ## Ważne
 
