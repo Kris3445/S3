@@ -276,10 +276,11 @@ async function claimFree(interaction) {
 }
 
 async function importDatabase(interaction) {
+  await interaction.deferReply({ ephemeral: true });
   const attachment = interaction.options.getAttachment('plik', true);
   const maxBytes = 10 * 1024 * 1024;
   if (attachment.size > maxBytes) {
-    await interaction.reply({ content: 'Plik kopii jest za duży. Maksymalny rozmiar to 10 MB.', ephemeral: true });
+    await interaction.editReply({ content: 'Plik kopii jest za duży. Maksymalny rozmiar to 10 MB.' });
     return;
   }
 
@@ -291,9 +292,8 @@ async function importDatabase(interaction) {
     if (Buffer.byteLength(text, 'utf8') > maxBytes) throw new Error('Plik przekracza 10 MB.');
     backup = JSON.parse(text);
   } catch {
-    await interaction.reply({
+    await interaction.editReply({
       content: 'Nie mogę odczytać tego pliku. Ta komenda przyjmuje kopię JSON z /save lub plik users.json tego bota. Baza SQLite, np. coinflip.db, ma inny format i nie jest zgodna.',
-      ephemeral: true,
     });
     return;
   }
@@ -304,7 +304,7 @@ async function importDatabase(interaction) {
     const message = result.reason === 'no-guild-data'
       ? 'W kopii nie ma zapisów z tego serwera Discord.'
       : 'Plik nie ma poprawnego formatu kopii bazy Inazumy. Użyj pliku JSON pobranego przez /save.';
-    await interaction.reply({ content: message, ephemeral: true });
+    await interaction.editReply({ content: message });
     return;
   }
 
@@ -312,9 +312,8 @@ async function importDatabase(interaction) {
   const safety = result.safetyBackup
     ? '\\nUtworzyłem też kopię bezpieczeństwa bieżącej bazy przed zastąpieniem danych.'
     : '';
-  await interaction.reply({
+  await interaction.editReply({
     content: '✅ Import kopii zakończony. ' + summary + '.' + safety,
-    ephemeral: true,
   });
 }
 async function showCollection(interaction, page = 0, edit = false) {
