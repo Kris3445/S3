@@ -27,6 +27,13 @@ function userKey(guildId, userId) {
   return `${guildId}:${userId}`;
 }
 
+function unlockTrophy(user, id, unlocked = null) {
+  if (!user.trophies.includes(id)) {
+    user.trophies.push(id);
+    unlocked?.push(id);
+  }
+}
+
 function getOrCreate(data, guildId, userId) {
   const key = userKey(guildId, userId);
   data[key] ??= {};
@@ -34,6 +41,10 @@ function getOrCreate(data, guildId, userId) {
   user.balance ??= 0;
   user.nextEarnAt ??= 0;
   if (!Array.isArray(user.cards)) user.cards = [];
+  if (!Array.isArray(user.trophies)) user.trophies = [];
+  user.profileImage ??= null;
+  user.profileCardName ??= null;
+  user.matchStats ??= { played: 0, wins: 0, draws: 0, losses: 0 };
   if (typeof user.freeClaimed !== 'boolean') user.freeClaimed = false;
   user.workCount ??= 0;
   if (!Array.isArray(user.claimedWorkMilestones)) user.claimedWorkMilestones = [];
@@ -55,12 +66,22 @@ function getOrCreate(data, guildId, userId) {
   for (const type of ['frames', 'titles', 'backgrounds']) {
     if (!Array.isArray(user.unlockedCosmetics[type])) user.unlockedCosmetics[type] = ['standard'];
   }
+  for (const count of [100, 250, 500]) {
+    if (user.workCount >= count) unlockTrophy(user, `work_${count}`);
+  }
+  if (user.dailyStreak >= 3) unlockTrophy(user, 'daily_3');
+  const ownedCount = new Set(user.cards.map((card) => card.name)).size;
+  if (ownedCount >= 10) unlockTrophy(user, 'cards_10');
+  if (ownedCount >= 25) unlockTrophy(user, 'cards_25');
+  if (user.teams.some(Boolean) && !user.trophies.includes('first_team')) unlockTrophy(user, 'first_team');
   return user;
 }
 
 export function getUser(guildId, userId) {
   const data = readAll();
-  return structuredClone(getOrCreate(data, guildId, userId));
+  const user = getOrCreate(data, guildId, userId);
+  writeAll(data);
+  return structuredClone(user);
 }
 
 export function getSaveBackup() {
@@ -84,6 +105,7 @@ export function claimReward(guildId, userId, reward, cooldownMs, activity) {
   user.balance += reward;
   user.nextEarnAt = now + cooldownMs;
   const achievements = [];
+  const trophies = [];
   if (activity === 'work') {
     user.workCount += 1;
     for (const milestone of WORK_MILESTONES) {
@@ -95,11 +117,12 @@ export function claimReward(guildId, userId, reward, cooldownMs, activity) {
           if (!user.unlockedCosmetics[listName].includes(id)) user.unlockedCosmetics[listName].push(id);
         }
         achievements.push({ count: milestone.count, reward: milestone.reward });
+        unlockTrophy(user, `work_${milestone.count}`, trophies);
       }
     }
   }
   writeAll(data);
-  return { ok: true, balance: user.balance, nextEarnAt: user.nextEarnAt, workCount: user.workCount, achievements };
+  return { ok: true, balance: user.balance, nextEarnAt: user.nextEarnAt, workCount: user.workCount, achievements, trophies };
 }
 
 export function claimDailyReward(guildId, userId, dateKey, eventBackground) {
@@ -111,6 +134,8 @@ export function claimDailyReward(guildId, userId, dateKey, eventBackground) {
   const currentDate = Date.parse(`${dateKey}T00:00:00Z`);
   user.dailyStreak = previousDate === currentDate - 86_400_000 ? Math.min(user.dailyStreak + 1, 3) : 1;
   const reward = [10, 25, 50][user.dailyStreak - 1];
+  const trophies = [];
+  if (user.dailyStreak >= 3) unlockTrophy(user, 'daily_3', trophies);
   user.lastDaily = dateKey;
   user.balance += reward;
   let unlockedBackground = false;
@@ -119,7 +144,7 @@ export function claimDailyReward(guildId, userId, dateKey, eventBackground) {
     unlockedBackground = true;
   }
   writeAll(data);
-  return { ok: true, reward, streak: user.dailyStreak, balance: user.balance, unlockedBackground };
+  return { ok: true, reward, streak: user.dailyStreak, balance: user.balance, unlockedBackground, trophies };
 }
 
 export function claimFreeReward(guildId, userId, reward) {
@@ -157,8 +182,12 @@ export function buyPack(guildId, userId, price, cards) {
     }
   }
   user.cards.push(...newCards);
+  const trophies = [];
+  const uniqueCount = new Set(user.cards.map((card) => card.name)).size;
+  if (uniqueCount >= 10) unlockTrophy(user, 'cards_10', trophies);
+  if (uniqueCount >= 25) unlockTrophy(user, 'cards_25', trophies);
   writeAll(data);
-  return { ok: true, balance: user.balance, cards: newCards, duplicates, pulls, duplicateCoins: duplicates.reduce((sum, card) => sum + card.coins, 0) };
+  return { ok: true, balance: user.balance, cards: newCards, duplicates, pulls, trophies, duplicateCoins: duplicates.reduce((sum, card) => sum + card.coins, 0) };
 }
 
 const FORMATIONS = new Set(['4-4-2', '4-3-3', '3-5-2']);
@@ -175,12 +204,14 @@ export function saveTeam(guildId, userId, formation, playerNames, slotPositions 
   const user = getOrCreate(data, guildId, userId);
   const owned = new Set(user.cards.map((card) => card.name));
   if (playerNames.some((name) => !owned.has(name))) return { ok: false, reason: 'not-owned' };
+  const trophies = [];
+  if (!user.teams.some(Boolean)) unlockTrophy(user, 'first_team', trophies);
   const previous = user.teams[teamSlot - 1] ?? {};
   const savedTeam = { ...previous, formation, players: [...playerNames], ...(slotPositions ? { positions: [...slotPositions] } : {}) };
   user.teams[teamSlot - 1] = savedTeam;
   if (teamSlot === 1) user.team = savedTeam;
   writeAll(data);
-  return { ok: true, team: structuredClone(savedTeam), slot: teamSlot };
+  return { ok: true, team: structuredClone(savedTeam), slot: teamSlot, trophies };
 }
 
 export function setTeamEmblem(guildId, userId, emblemId, teamSlot = 1) {
@@ -209,6 +240,15 @@ export function buyEmblemPack(guildId, userId, price, emblemCatalog) {
   else user.emblems.push(emblem.id);
   writeAll(data);
   return { ok: true, emblem, duplicate, duplicateCoins, balance: user.balance };
+}
+
+export function setProfileImage(guildId, userId, imageUrl, cardName = null) {
+  const data = readAll();
+  const user = getOrCreate(data, guildId, userId);
+  user.profileImage = imageUrl || null;
+  user.profileCardName = cardName || null;
+  writeAll(data);
+  return structuredClone(user);
 }
 
 export function setCosmetic(guildId, userId, type, value) {
