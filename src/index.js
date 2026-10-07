@@ -488,33 +488,41 @@ function arrangeTeam(playerNames, formation, savedPositions = null) {
   });
 }
 
-function teamEmblemRow(user) {
+function getSavedTeam(user, slot = 1) {
+  if (!Number.isInteger(slot) || slot < 1 || slot > 4) return null;
+  return user.teams?.[slot - 1] ?? (slot === 1 ? user.team : null);
+}
+
+function teamEmblemRow(user, slot, team) {
   const owned = emblems.filter((emblem) => user.emblems.includes(emblem.id));
-  if (!owned.length || !user.team) return [];
+  if (!owned.length || !team) return [];
   const menu = new StringSelectMenuBuilder()
-    .setCustomId('team-equip-emblem')
-    .setPlaceholder('Załóż herb na skład')
+    .setCustomId(`team-equip-emblem:${slot}`)
+    .setPlaceholder(`Herb dla składu ${slot}/4`)
     .addOptions(owned.map((emblem) => ({
       label: emblem.name,
       value: emblem.id,
-      default: user.team.emblem === emblem.id,
+      default: team.emblem === emblem.id,
     })));
   return [new ActionRowBuilder().addComponents(menu)];
 }
 
-async function teamMessage(user, username) {
-  const lineup = arrangeTeam(user.team.players, user.team.formation, user.team.positions);
+async function teamMessage(user, username, slot = 1) {
+  const team = getSavedTeam(user, slot);
+  if (!team) throw new Error(`Nie ma zapisanego składu w slocie ${slot}/4.`);
+  const lineup = arrangeTeam(team.players, team.formation, team.positions);
+  if (lineup.length !== 11) throw new Error(`Skład w slocie ${slot}/4 nie zawiera 11 poprawnych zawodników.`);
   const avgOverall = Math.round(lineup.reduce((sum, entry) => sum + entry.player.overall, 0) / lineup.length);
-  const emblem = emblems.find((item) => item.id === user.team.emblem);
+  const emblem = emblems.find((item) => item.id === team.emblem);
   const embed = new EmbedBuilder()
     .setColor(emblem?.color ?? 0x168cff)
-    .setTitle(`⚽ Skład — ${username}`)
-    .setDescription(`Formacja **${user.team.formation}** · średni OVERALL **${avgOverall}**${emblem ? `\nHerb: **${emblem.name}**` : ''}\n\nUstawienie zawodników zmienisz przez `/team`. Herb możesz zmienić przez `/herb`.`)
+    .setTitle(`⚽ Skład ${slot}/4 — ${username}`)
+    .setDescription(`Formacja **${team.formation}** · średni OVERALL **${avgOverall}**${emblem ? `\nHerb: **${emblem.name}**` : ''}\n\nUstawienie zawodników zmienisz przez `/team slot:${slot}`. Herb możesz zmienić przez `/herb slot:${slot}`.`)
     .setImage('attachment://squad-pitch.png');
-  const image = await renderSquadPitch(lineup, user.team.formation, emblem);
+  const image = await renderSquadPitch(lineup, team.formation, emblem);
   return {
     embeds: [embed],
-    components: teamEmblemRow(user),
+    components: teamEmblemRow(user, slot, team),
     files: [new AttachmentBuilder(Buffer.from(image), { name: 'squad-pitch.png' })],
     attachments: [],
   };
@@ -619,7 +627,7 @@ async function renderTeamBuilder(interaction, state) {
   const preview = await renderSquadBuilderPreview(state.formation, selectedPreview);
   const embed = new EmbedBuilder()
     .setColor(0x168cff)
-    .setTitle(`🧩 Budowanie składu — ${state.formation}`)
+    .setTitle(`🧩 Budowanie składu ${state.slot}/4 — ${state.formation}`)
     .setDescription(
       currentSlot < 11
         ? `**Pozycja ${currentSlot + 1}/11: ${targetPosition}**\nWybierz jednego zawodnika w menu. Pozycję, żywioł i kolejność overall możesz filtrować poniżej.\n\nUstawiona pozycja slotu: **${targetPosition}**.`
@@ -640,13 +648,14 @@ async function renderTeamBuilder(interaction, state) {
 
 async function showTeam(interaction) {
   const user = getUser(interaction.guildId, interaction.user.id);
+  const slot = interaction.options.getInteger('slot') ?? 1;
   const formation = interaction.options.getString('formacja');
   if (!formation) {
-    if (!user.team) {
-      await interaction.reply({ content: 'Nie masz jeszcze ustawionego składu. Użyj `/team formacja:4-4-2` i wybierz 11 kart.', ephemeral: true });
+    if (!getSavedTeam(user, slot)) {
+      await interaction.reply({ content: `Slot ${slot}/4 jest pusty. Użyj \`/team slot:${slot} formacja:4-4-2\` i wybierz 11 kart.`, ephemeral: true });
       return;
     }
-    await interaction.reply({ ...await teamMessage(user, interaction.user.username), ephemeral: true });
+    await interaction.reply({ ...await teamMessage(user, interaction.user.username, slot), ephemeral: true });
     return;
   }
   if (!TEAM_FORMATIONS.has(formation)) {
@@ -662,6 +671,7 @@ async function showTeam(interaction) {
   const positions = formationGroups(formation);
   const session = {
     formation,
+    slot,
     positions,
     ownedNames,
     selected: [],
@@ -676,20 +686,23 @@ async function showTeam(interaction) {
 
 async function showSquad(interaction) {
   const user = getUser(interaction.guildId, interaction.user.id);
-  if (!user.team) {
+  const slot = interaction.options.getInteger('slot') ?? 1;
+  if (!getSavedTeam(user, slot)) {
     await interaction.reply({
-      content: 'Nie masz jeszcze zapisanego składu. Użyj `/team`, wybierz formację i 11 zawodników.',
+      content: `Slot ${slot}/4 jest pusty. Użyj `/team slot:${slot}`, wybierz formację i 11 zawodników.`,
       ephemeral: true,
     });
     return;
   }
-  await interaction.reply({ ...await teamMessage(user, interaction.user.username), ephemeral: true });
+  await interaction.reply({ ...await teamMessage(user, interaction.user.username, slot), ephemeral: true });
 }
 
 async function chooseTeamEmblem(interaction) {
   const user = getUser(interaction.guildId, interaction.user.id);
-  if (!user.team) {
-    await interaction.reply({ content: 'Najpierw ustaw swój skład przez `/team`.', ephemeral: true });
+  const slot = interaction.options.getInteger('slot') ?? 1;
+  const team = getSavedTeam(user, slot);
+  if (!team) {
+    await interaction.reply({ content: `Slot ${slot}/4 jest pusty. Najpierw ustaw skład przez `/team slot:${slot}`.`, ephemeral: true });
     return;
   }
   const owned = emblems.filter((emblem) => user.emblems.includes(emblem.id));
@@ -698,10 +711,10 @@ async function chooseTeamEmblem(interaction) {
     return;
   }
   const menu = new StringSelectMenuBuilder()
-    .setCustomId('team-equip-emblem')
-    .setPlaceholder('Wybierz herb dla składu')
-    .addOptions(owned.map((emblem) => ({ label: emblem.name, value: emblem.id, default: user.team.emblem === emblem.id })));
-  await interaction.reply({ content: 'Wybierz herb drużyny:', components: [new ActionRowBuilder().addComponents(menu)], ephemeral: true });
+    .setCustomId(`team-equip-emblem:${slot}`)
+    .setPlaceholder(`Wybierz herb dla składu ${slot}/4`)
+    .addOptions(owned.map((emblem) => ({ label: emblem.name, value: emblem.id, default: team.emblem === emblem.id })));
+  await interaction.reply({ content: `Wybierz herb dla składu ${slot}/4:`, components: [new ActionRowBuilder().addComponents(menu)], ephemeral: true });
 }
 
 async function buyHissatsuPack(interaction) {
@@ -767,7 +780,7 @@ async function handleGameSelect(interaction) {
   }
   if (interaction.customId.startsWith('team-select:')) {
     const formation = interaction.customId.split(':')[1];
-    const result = saveTeam(interaction.guildId, interaction.user.id, formation, interaction.values);
+    const result = saveTeam(interaction.guildId, interaction.user.id, formation, interaction.values, null, Number(interaction.customId.split(':')[2] ?? 1));
     if (!result.ok) {
       await interaction.update({ content: 'Nie udało się zapisać składu. Sprawdź, czy wybrano 11 posiadanych zawodników.', components: [], embeds: [] });
       return;
@@ -776,13 +789,14 @@ async function handleGameSelect(interaction) {
     await interaction.update({ content: '✅ Skład zapisany. Możesz wybrać herb w menu poniżej.', ...await teamMessage(user, interaction.user.username) });
     return;
   }
-  if (interaction.customId === 'team-equip-emblem') {
-    const result = setTeamEmblem(interaction.guildId, interaction.user.id, interaction.values[0]);
+  if (interaction.customId.startsWith('team-equip-emblem')) {
+    const slot = Number(interaction.customId.split(':')[1] ?? 1);
+    const result = setTeamEmblem(interaction.guildId, interaction.user.id, interaction.values[0], slot);
     if (!result.ok) {
       await interaction.update({ content: 'Nie udało się założyć herbu. Najpierw ustaw skład i zdobądź herb.', components: [] });
       return;
     }
-    await interaction.update({ content: '✅ Herb założony na Twój skład.', ...await teamMessage(getUser(interaction.guildId, interaction.user.id), interaction.user.username) });
+    await interaction.update({ content: `✅ Herb założony na skład ${slot}/4.`, ...await teamMessage(getUser(interaction.guildId, interaction.user.id), interaction.user.username, slot) });
     return;
   }
   if (interaction.customId.startsWith('profile:')) {
@@ -828,7 +842,7 @@ async function playRouletteRound(interaction) {
 }
 
 client.once(Events.ClientReady, (readyClient) => {
-  console.log(`Bot działa jako ${readyClient.user.tag} | TEAM-DUPLICATES-GK-PREVIEW-v8 | Hissatsu Pack 2026-10-07 | zawodnicy: ${catalog.length} | herby: ${emblems.length}`);
+  console.log(`Bot działa jako ${readyClient.user.tag} | TEAM-SQUAD-SLOTS-SAVE-FIX-v9 | Hissatsu Pack 2026-10-07 | zawodnicy: ${catalog.length} | herby: ${emblems.length}`);
 });
 
 client.on(Events.InteractionCreate, async (interaction) => {
@@ -870,13 +884,13 @@ client.on(Events.InteractionCreate, async (interaction) => {
           state.page = Math.max(0, state.page + (action === 'page-next' ? 1 : -1));
           await renderTeamBuilder(interaction, state);
         } else if (action === 'save') {
-          const result = saveTeam(interaction.guildId, interaction.user.id, state.formation, state.selected, state.positions);
+          const result = saveTeam(interaction.guildId, interaction.user.id, state.formation, state.selected, state.positions, state.slot);
           if (!result.ok) {
             await interaction.update({ content: 'Nie udało się zapisać składu. Sprawdź, czy wybrano 11 różnych posiadanych kart.', embeds: [], components: [] });
             return;
           }
           teamBuildSessions.delete(teamBuildKey(interaction));
-          await interaction.update({ content: '✅ Skład zapisany. Możesz wybrać herb w menu poniżej.', ...await teamMessage(getUser(interaction.guildId, interaction.user.id), interaction.user.username) });
+          await interaction.update({ content: `✅ Skład zapisany w slocie ${state.slot}/4. Możesz wybrać herb w menu poniżej.`, ...await teamMessage(getUser(interaction.guildId, interaction.user.id), interaction.user.username, state.slot) });
         }
       } else if (interaction.customId === 'shop-prev' || interaction.customId === 'shop-next') {
         await showShop(interaction, interaction.customId === 'shop-next' ? 1 : 0, true);
