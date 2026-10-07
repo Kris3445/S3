@@ -100,7 +100,7 @@ export function importSaveBackup(guildId, backup, overwriteExisting = false) {
 
   for (const [key, user] of entries) {
     const backupUserId = key.slice(prefix.length);
-    if (!/^\\d+$/.test(backupUserId) || !user || typeof user !== 'object' || Array.isArray(user)) {
+    if (!/^[0-9]+$/.test(backupUserId) || !user || typeof user !== 'object' || Array.isArray(user)) {
       return { ok: false, reason: 'invalid-format' };
     }
     if (user.balance !== undefined && (!Number.isFinite(user.balance) || user.balance < 0)) {
