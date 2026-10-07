@@ -14,6 +14,15 @@ const commandBuilders = [
   new SlashCommandBuilder()
     .setName('team')
     .setDescription('Zbuduj skład: wybierz formację i 11 zawodników.')
+    .addIntegerOption((option) => option
+      .setName('slot')
+      .setDescription('Wybierz jeden z czterech zapisanych składów.')
+      .addChoices(
+        { name: 'Slot 1', value: 1 },
+        { name: 'Slot 2', value: 2 },
+        { name: 'Slot 3', value: 3 },
+        { name: 'Slot 4', value: 4 },
+      ))
     .addStringOption((option) => option
       .setName('formacja')
       .setDescription('Wybierz formację dla składu.')
@@ -22,8 +31,24 @@ const commandBuilders = [
         { name: '4-3-3', value: '4-3-3' },
         { name: '3-5-2', value: '3-5-2' },
       )),
-  new SlashCommandBuilder().setName('squad').setDescription('Pokaż zbudowany skład na boisku.'),
-  new SlashCommandBuilder().setName('herb').setDescription('Załóż zdobyty herb na swój skład.'),
+  new SlashCommandBuilder().setName('squad').setDescription('Pokaż zbudowany skład na boisku.').addIntegerOption((option) => option
+      .setName('slot')
+      .setDescription('Wybierz jeden z czterech zapisanych składów.')
+      .addChoices(
+        { name: 'Slot 1', value: 1 },
+        { name: 'Slot 2', value: 2 },
+        { name: 'Slot 3', value: 3 },
+        { name: 'Slot 4', value: 4 },
+      )),
+  new SlashCommandBuilder().setName('herb').setDescription('Załóż zdobyty herb na wybrany skład.').addIntegerOption((option) => option
+      .setName('slot')
+      .setDescription('Wybierz jeden z czterech zapisanych składów.')
+      .addChoices(
+        { name: 'Slot 1', value: 1 },
+        { name: 'Slot 2', value: 2 },
+        { name: 'Slot 3', value: 3 },
+        { name: 'Slot 4', value: 4 },
+      )),
   new SlashCommandBuilder()
     .setName('ruletke')
     .setDescription('Postaw do 100 monet na kolor w ruletce.')
