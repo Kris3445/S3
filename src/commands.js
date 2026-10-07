@@ -81,6 +81,17 @@ const commandBuilders = [
   new SlashCommandBuilder().setName('kolekcja').setDescription('Zobacz planszę zdobytych zawodników.'),
   new SlashCommandBuilder().setName('save').setDescription('Wyślij prywatną kopię zapisu kolekcji i monet.'),
   new SlashCommandBuilder()
+    .setName('import_baza')
+    .setDescription('Przywróć kopię JSON z /save lub users.json. Tylko administrator.')
+    .addAttachmentOption((option) => option
+      .setName('plik')
+      .setDescription('Plik kopii zapasowej JSON tego bota.')
+      .setRequired(true))
+    .addBooleanOption((option) => option
+      .setName('nadpisz')
+      .setDescription('Zastąp zapisy graczy, którzy już mają dane.')),
+
+  new SlashCommandBuilder()
     .setName('stats')
     .setDescription('Pokaż statystyki gracza lub szczegóły zawodnika.')
     .addUserOption((option) => option.setName('gracz').setDescription('Gracz, którego statystyki chcesz zobaczyć.'))
