@@ -137,32 +137,39 @@ export function buyPack(guildId, userId, price, cards) {
   const duplicateRates = { BRĄZOWA: 10, SREBRNA: 20, ZŁOTA: 30 };
   const newCards = [];
   const duplicates = [];
+  const pulls = [];
   for (const card of cards) {
     if (existingNames.has(card.name)) {
       const coins = duplicateRates[card.tier] ?? 10;
       user.balance += coins;
-      duplicates.push({ name: card.name, coins });
+      const duplicate = { name: card.name, coins, isDuplicate: true };
+      duplicates.push(duplicate);
+      pulls.push({ ...card, ...duplicate });
     } else {
       existingNames.add(card.name);
       newCards.push({ name: card.name, overall: card.overall, tier: card.tier, obtainedAt });
+      pulls.push({ ...card, isDuplicate: false, coins: 0 });
     }
   }
   user.cards.push(...newCards);
   writeAll(data);
-  return { ok: true, balance: user.balance, cards: newCards, duplicates, duplicateCoins: duplicates.reduce((sum, card) => sum + card.coins, 0) };
+  return { ok: true, balance: user.balance, cards: newCards, duplicates, pulls, duplicateCoins: duplicates.reduce((sum, card) => sum + card.coins, 0) };
 }
 
 const FORMATIONS = new Set(['4-4-2', '4-3-3', '3-5-2']);
 
-export function saveTeam(guildId, userId, formation, playerNames) {
+export function saveTeam(guildId, userId, formation, playerNames, slotPositions = null) {
   if (!FORMATIONS.has(formation) || !Array.isArray(playerNames) || playerNames.length !== 11 || new Set(playerNames).size !== 11) {
+    return { ok: false, reason: 'invalid-team' };
+  }
+  if (slotPositions !== null && (!Array.isArray(slotPositions) || slotPositions.length !== 11)) {
     return { ok: false, reason: 'invalid-team' };
   }
   const data = readAll();
   const user = getOrCreate(data, guildId, userId);
   const owned = new Set(user.cards.map((card) => card.name));
   if (playerNames.some((name) => !owned.has(name))) return { ok: false, reason: 'not-owned' };
-  user.team = { ...(user.team ?? {}), formation, players: playerNames };
+  user.team = { ...(user.team ?? {}), formation, players: playerNames, ...(slotPositions ? { positions: slotPositions } : {}) };
   writeAll(data);
   return { ok: true, team: structuredClone(user.team) };
 }
@@ -180,14 +187,16 @@ export function setTeamEmblem(guildId, userId, emblemId) {
 export function buyEmblemPack(guildId, userId, price, emblemCatalog) {
   const data = readAll();
   const user = getOrCreate(data, guildId, userId);
-  const available = emblemCatalog.filter((emblem) => !user.emblems.includes(emblem.id));
-  if (!available.length) return { ok: false, reason: 'all-owned', balance: user.balance };
+  if (!emblemCatalog.length) return { ok: false, reason: 'no-emblems', balance: user.balance };
   if (user.balance < price) return { ok: false, reason: 'insufficient-funds', balance: user.balance };
-  const emblem = available[Math.floor(Math.random() * available.length)];
+  const emblem = emblemCatalog[Math.floor(Math.random() * emblemCatalog.length)];
+  const duplicate = user.emblems.includes(emblem.id);
+  const duplicateCoins = duplicate ? 10 : 0;
   user.balance -= price;
-  user.emblems.push(emblem.id);
+  if (duplicate) user.balance += duplicateCoins;
+  else user.emblems.push(emblem.id);
   writeAll(data);
-  return { ok: true, emblem, balance: user.balance };
+  return { ok: true, emblem, duplicate, duplicateCoins, balance: user.balance };
 }
 
 export function setCosmetic(guildId, userId, type, value) {
