@@ -29,6 +29,7 @@ import {
   claimFreeReward,
   claimReward,
   getSaveBackup,
+  importSaveBackup,
   getUser,
   playRoulette,
   saveTeam,
@@ -274,6 +275,48 @@ async function claimFree(interaction) {
   await interaction.reply(`🎁 ${interaction.user}, odbierasz **${FREE_REWARD} darmowych monet**! Masz teraz **${result.balance} monet**.`);
 }
 
+async function importDatabase(interaction) {
+  const attachment = interaction.options.getAttachment('plik', true);
+  const maxBytes = 10 * 1024 * 1024;
+  if (attachment.size > maxBytes) {
+    await interaction.reply({ content: 'Plik kopii jest za duży. Maksymalny rozmiar to 10 MB.', ephemeral: true });
+    return;
+  }
+
+  let backup;
+  try {
+    const response = await fetch(attachment.url);
+    if (!response.ok) throw new Error('Pobieranie pliku nie powiodło się.');
+    const text = await response.text();
+    if (Buffer.byteLength(text, 'utf8') > maxBytes) throw new Error('Plik przekracza 10 MB.');
+    backup = JSON.parse(text);
+  } catch {
+    await interaction.reply({
+      content: 'Nie mogę odczytać tego pliku. Ta komenda przyjmuje kopię JSON z /save lub plik users.json tego bota. Baza SQLite, np. coinflip.db, ma inny format i nie jest zgodna.',
+      ephemeral: true,
+    });
+    return;
+  }
+
+  const overwrite = interaction.options.getBoolean('nadpisz') ?? false;
+  const result = importSaveBackup(interaction.guildId, backup, overwrite);
+  if (!result.ok) {
+    const message = result.reason === 'no-guild-data'
+      ? 'W kopii nie ma zapisów z tego serwera Discord.'
+      : 'Plik nie ma poprawnego formatu kopii bazy Inazumy. Użyj pliku JSON pobranego przez /save.';
+    await interaction.reply({ content: message, ephemeral: true });
+    return;
+  }
+
+  const summary = 'dodano: **' + result.imported + '** · zastąpiono: **' + result.replaced + '** · pominięto: **' + result.skipped + '** (już istnieją)';
+  const safety = result.safetyBackup
+    ? '\\nUtworzyłem też kopię bezpieczeństwa bieżącej bazy przed zastąpieniem danych.'
+    : '';
+  await interaction.reply({
+    content: '✅ Import kopii zakończony. ' + summary + '.' + safety,
+    ephemeral: true,
+  });
+}
 async function showCollection(interaction, page = 0, edit = false) {
   if (!edit && !requireGuild(interaction)) return;
   const user = getUser(interaction.guildId, interaction.user.id);
@@ -1124,6 +1167,9 @@ client.on(Events.InteractionCreate, async (interaction) => {
         break;
       case 'save':
         await sendSave(interaction);
+        break;
+      case 'import_baza':
+        await importDatabase(interaction);
         break;
       case 'ruletke':
         await playRouletteRound(interaction);
