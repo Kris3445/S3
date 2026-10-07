@@ -33,6 +33,7 @@ import {
   playRoulette,
   saveTeam,
   setCosmetic,
+  setProfileImage,
   setTeamEmblem,
 } from './economy.js';
 import { renderCollection, renderPlayerCard, renderProfileBanner, renderSquadBuilderPreview, renderSquadPitch } from './gallery.js';
@@ -218,9 +219,10 @@ async function earn(interaction, activity) {
     return;
   }
   const achievementText = result.achievements.map((achievement) => `🏅 Osiągnięcie ${achievement.count} użyć /work: **+${achievement.reward} monet** i nowe ozdoby profilu!`).join('\n');
+  const trophyText = trophyNotice(result.trophies);
   const progress = activityKey === 'work' ? ` Postęp /work: **${result.workCount}**.` : '';
   await interaction.reply({
-    content: `💰 ${interaction.user} ${activity}. Dostajesz **${EARN_REWARD} monet**.${progress}\n${achievementText}\nMasz teraz **${result.balance} monet**. Następna praca za minutę.`,
+    content: `💰 ${interaction.user} ${activity}. Dostajesz **${EARN_REWARD} monet**.${progress}\n${achievementText}${trophyText}\nMasz teraz **${result.balance} monet**. Następna praca za minutę.`,
     ephemeral: true,
   });
 }
@@ -240,7 +242,7 @@ async function openPack(interaction) {
   const animationName = animationFor(cards);
   const animation = new AttachmentBuilder(path.join(ASSETS, animationName));
   await interaction.reply({
-    content: `🎁 ${interaction.user} otwiera paczkę S2!${result.duplicateCoins ? ` Duplikaty dały **${result.duplicateCoins} monet**.` : ''} Pozostało **${result.balance} monet**.`,
+    content: `🎁 ${interaction.user} otwiera paczkę S2!${result.duplicateCoins ? ` Duplikaty dały **${result.duplicateCoins} monet**.` : ''}${trophyNotice(result.trophies)} Pozostało **${result.balance} monet**.`,
     files: [animation],
   });
 
@@ -295,9 +297,153 @@ async function showCollection(interaction, page = 0, edit = false) {
   else await interaction.reply({ ...payload, ephemeral: true });
 }
 
+const TROPHIES = [
+  { id: 'work_100', name: 'Pracowity debiutant', condition: 'Użyj /work 100 razy.' },
+  { id: 'work_250', name: 'Mistrz pracy', condition: 'Użyj /work 250 razy.' },
+  { id: 'work_500', name: 'Legenda etatów', condition: 'Użyj /work 500 razy.' },
+  { id: 'daily_3', name: 'Rytm Inazumy', condition: 'Odbierz /daily przez 3 dni z rzędu.' },
+  { id: 'first_team', name: 'Kapitan jedenastki', condition: 'Zapisz swój pierwszy pełny skład.' },
+  { id: 'cards_10', name: 'Łowca talentów', condition: 'Zbierz 10 różnych kart.' },
+  { id: 'cards_25', name: 'Skaut Inazumy', condition: 'Zbierz 25 różnych kart.' },
+];
+
+function trophyNotice(ids = []) {
+  if (!ids?.length) return '';
+  const names = ids.map((id) => TROPHIES.find((trophy) => trophy.id === id)?.name ?? id);
+  return `\n🏆 Zdobywasz trofeum: **${names.join(', ')}**!`;
+}
+
+function displayNameOf(user) {
+  return user?.globalName ?? user?.username ?? 'Gracz';
+}
+
+function playerAccountEmbed(user, name, ownedCards, avatarUrl) {
+  const uniqueCards = new Set(user.cards.map((card) => card.name)).size;
+  const best = ownedCards.slice().sort((a, b) => b.overall - a.overall)[0];
+  const bestName = best ? `${best.name} · ${best.overall} OVR` : 'Brak zdobytej karty';
+  const frame = PROFILE_OPTIONS.frames[user.cosmetics?.frame] ?? PROFILE_OPTIONS.frames.standard;
+  return new EmbedBuilder()
+    .setColor(frame.color)
+    .setTitle(`⚽ Karta gracza — ${name}`)
+    .setDescription(`**Tytuł:** ${PROFILE_OPTIONS.titles[user.cosmetics?.title]?.name ?? 'Nowy zawodnik'}\n**Najlepsza karta:** ${bestName}`)
+    .addFields(
+      { name: 'Monety', value: String(user.balance), inline: true },
+      { name: 'Kolekcja', value: `${uniqueCards}/${catalog.length}`, inline: true },
+      { name: 'Trofea', value: String((user.trophies ?? []).length), inline: true },
+      { name: '/work', value: `${user.workCount} użyć`, inline: true },
+      { name: 'Seria /daily', value: `${user.dailyStreak}/3 dni`, inline: true },
+      { name: 'Mecze', value: 'Statystyki meczowe pojawią się po dodaniu trybu meczów.', inline: false },
+    )
+    .setThumbnail(avatarUrl);
+}
+
+async function showPlayerProfile(interaction) {
+  const target = interaction.options.getUser('gracz') ?? interaction.user;
+  const account = getUser(interaction.guildId, target.id);
+  const ownedCards = account.cards
+    .map((card) => catalog.find((player) => player.name === card.name))
+    .filter(Boolean);
+  const bestCard = ownedCards.slice().sort((a, b) => b.overall - a.overall)[0];
+  const embed = playerAccountEmbed(account, displayNameOf(target), ownedCards, target.displayAvatarURL({ extension: 'png', size: 256 }));
+  const files = [];
+  if (account.profileImage) {
+    embed.setImage(account.profileImage);
+  } else if (bestCard) {
+    const selectedCard = catalog.find((player) => player.name === account.profileCardName) ?? bestCard;
+    const imageName = 'karta-profilowa.png';
+    const image = await renderPlayerCard(selectedCard);
+    embed.setImage(`attachment://${imageName}`);
+    files.push(new AttachmentBuilder(Buffer.from(image), { name: imageName }));
+  }
+  await interaction.reply({ embeds: [embed], files, ephemeral: true });
+}
+
+async function setProfilePhoto(interaction) {
+  const attachment = interaction.options.getAttachment('zdjecie');
+  const user = getUser(interaction.guildId, interaction.user.id);
+  if (!attachment) {
+    const best = user.cards
+      .map((card) => catalog.find((player) => player.name === card.name))
+      .filter(Boolean)
+      .sort((a, b) => b.overall - a.overall)[0];
+    if (!best) {
+      await interaction.reply({ content: 'Najpierw zdobądź zawodnika z paczki. Nie masz jeszcze karty, do której można wrócić.', ephemeral: true });
+      return;
+    }
+    setProfileImage(interaction.guildId, interaction.user.id, null, best.name);
+    await interaction.reply({ content: `✅ Przywrócono kartę **${best.name}** jako zdjęcie profilu.`, ephemeral: true });
+    return;
+  }
+  if (!attachment.contentType?.startsWith('image/')) {
+    await interaction.reply({ content: 'Załącz plik graficzny (PNG, JPG, WEBP lub GIF).', ephemeral: true });
+    return;
+  }
+  if (attachment.size > 8 * 1024 * 1024) {
+    await interaction.reply({ content: 'Zdjęcie musi mieć maksymalnie 8 MB.', ephemeral: true });
+    return;
+  }
+  setProfileImage(interaction.guildId, interaction.user.id, attachment.url, null);
+  await interaction.reply({ content: '✅ Ustawiono Twoje zdjęcie. Zobacz je przez /profile.', ephemeral: true });
+}
+
+async function showTrophyList(interaction) {
+  const target = interaction.options.getUser('gracz');
+  if (!target) {
+    const lines = TROPHIES.map((trophy) => `🏆 **${trophy.name}** — ${trophy.condition}`);
+    const embed = new EmbedBuilder()
+      .setColor(0xffbe37)
+      .setTitle('🏆 Trofea serwera')
+      .setDescription(`Trofea zdobywa się za aktywności w grze.\n\n${lines.join('\n')}`)
+      .setFooter({ text: 'Po zdobyciu trofeum zostaje ono zapisane na Twoim koncie.' });
+    await interaction.reply({ embeds: [embed], ephemeral: true });
+    return;
+  }
+  const user = getUser(interaction.guildId, target.id);
+  const earned = new Set(user.trophies ?? []);
+  const lines = TROPHIES.map((trophy) => `${earned.has(trophy.id) ? '🏆' : '🔒'} **${trophy.name}** — ${trophy.condition}`);
+  const embed = new EmbedBuilder()
+    .setColor(0xffbe37)
+    .setTitle(`🏆 Trofea — ${displayNameOf(target)}`)
+    .setDescription(lines.join('\n'))
+    .setFooter({ text: `Zdobyte: ${earned.size}/${TROPHIES.length}` });
+  await interaction.reply({ embeds: [embed], ephemeral: true });
+}
+
+async function showPlayerStats(interaction, target) {
+  const user = getUser(interaction.guildId, target.id);
+  const uniqueCards = new Set(user.cards.map((card) => card.name)).size;
+  const teamNames = new Set(user.teams?.[0]?.players ?? user.team?.players ?? []);
+  const match = user.matchStats ?? { played: 0, wins: 0, draws: 0, losses: 0 };
+  const embed = new EmbedBuilder()
+    .setColor(0x168cff)
+    .setTitle(`📊 Statystyki — ${displayNameOf(target)}`)
+    .setThumbnail(target.displayAvatarURL({ extension: 'png', size: 256 }))
+    .addFields(
+      { name: 'Monety', value: String(user.balance), inline: true },
+      { name: 'Karty', value: `${uniqueCards}/${catalog.length}`, inline: true },
+      { name: 'Trofea', value: String((user.trophies ?? []).length), inline: true },
+      { name: 'Prace /work', value: String(user.workCount), inline: true },
+      { name: 'Seria /daily', value: `${user.dailyStreak}/3 dni`, inline: true },
+      { name: 'Skład — slot 1', value: `${teamNames.size}/11 zawodników`, inline: true },
+      { name: 'Mecze rozegrane', value: String(match.played ?? 0), inline: true },
+      { name: 'Wygrane / remisy / porażki', value: `${match.wins ?? 0} / ${match.draws ?? 0} / ${match.losses ?? 0}`, inline: true },
+    )
+    .setFooter({ text: 'Statystyki meczów zaczną rosnąć po uruchomieniu trybu meczów.' });
+  await interaction.reply({ embeds: [embed], ephemeral: true });
+}
+
 async function showStats(interaction) {
   if (!requireGuild(interaction)) return;
-  const name = interaction.options.getString('zawodnik', true);
+  const target = interaction.options.getUser('gracz');
+  const name = interaction.options.getString('zawodnik');
+  if (target && name) {
+    await interaction.reply({ content: 'Wybierz tylko jedną opcję: gracz albo zawodnik.', ephemeral: true });
+    return;
+  }
+  if (!name) {
+    await showPlayerStats(interaction, target ?? interaction.user);
+    return;
+  }
   const player = catalog.find((entry) => entry.name === name);
   if (!player) {
     await interaction.reply({ content: 'Nie znaleziono tego zawodnika.', ephemeral: true });
@@ -317,7 +463,7 @@ async function showStats(interaction) {
     .addFields(
       { name: 'Pozycja', value: player.position ?? 'Niepodana', inline: true },
       { name: 'Element', value: player.element ?? 'Niepodany', inline: true },
-      { name: 'Rzadkość', value: player.tier, inline: true },
+      { name: 'Rzadkość', value: player.tier ?? 'Niepodana', inline: true },
       { name: 'Hissatsu', value: hissatsu.length ? hissatsu.join('\n') : 'Nie podano technik.' },
     );
   const imageName = 'karta-zawodnika.png';
@@ -391,8 +537,9 @@ async function claimDaily(interaction) {
     return;
   }
   const unlock = result.unlockedBackground ? `\n🎨 Odblokowano tło profilu: **${event.name}**! Ustawisz je przez /profil.` : '';
+  const trophyText = trophyNotice(result.trophies);
   await interaction.reply({
-    content: `📅 ${event.name} — dzień serii **${result.streak}/3**. Odbierasz **${result.reward} monet**. Masz **${result.balance} monet**.${unlock}`,
+    content: `📅 ${event.name} — dzień serii **${result.streak}/3**. Odbierasz **${result.reward} monet**. Masz **${result.balance} monet**.${unlock}${trophyText}`,
     ephemeral: true,
   });
 }
@@ -889,7 +1036,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
         await interaction.respond([]);
         return;
       }
-      if (interaction.commandName === 'stats') {
+      if (interaction.commandName === 'stats' && interaction.options.getFocused(true).name === 'zawodnik') {
         const query = interaction.options.getFocused().toLocaleLowerCase('pl');
         const choices = catalog
           .filter((player) => player.name.toLocaleLowerCase('pl').includes(query))
@@ -927,7 +1074,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
             return;
           }
           teamBuildSessions.delete(teamBuildKey(interaction));
-          await interaction.update({ content: `✅ Skład zapisany w slocie ${state.slot}/4. Możesz wybrać herb w menu poniżej.`, ...await teamMessage(getUser(interaction.guildId, interaction.user.id), interaction.user.username, state.slot) });
+          await interaction.update({ content: `✅ Skład zapisany w slocie ${state.slot}/4.${trophyNotice(result.trophies)} Możesz wybrać herb w menu poniżej.`, ...await teamMessage(getUser(interaction.guildId, interaction.user.id), interaction.user.username, state.slot) });
         }
       } else if (interaction.customId === 'shop-prev' || interaction.customId === 'shop-next') {
         await showShop(interaction, interaction.customId === 'shop-next' ? 1 : 0, true);
@@ -996,6 +1143,15 @@ client.on(Events.InteractionCreate, async (interaction) => {
         break;
       case 'profil':
         await showProfile(interaction);
+        break;
+      case 'profile':
+        await showPlayerProfile(interaction);
+        break;
+      case 'profile_image':
+        await setProfilePhoto(interaction);
+        break;
+      case 'trophy_list':
+        await showTrophyList(interaction);
         break;
       case 'team':
         await showTeam(interaction);
