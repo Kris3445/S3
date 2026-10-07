@@ -15,6 +15,7 @@ import {
 import {
   ASSETS,
   BETA_END_AT,
+  HISSATSU_CHALLENGE_TIMEOUT_MS,
   JOB_COOLDOWN_MS,
   JOB_LOSS_MAX,
   JOB_LOSS_MIN,
@@ -45,6 +46,8 @@ import {
   setCosmetic,
   setProfileImage,
   setTeamEmblem,
+  recordHissatsuChallenge,
+  startHissatsuChallenge,
   verifyEarnAction,
 } from './economy.js';
 import { renderCollection, renderPlayerCard, renderProfileBanner, renderSquadBuilderPreview, renderSquadPitch } from './gallery.js';
@@ -56,6 +59,27 @@ if (!TOKEN) {
 
 const catalog = JSON.parse(fs.readFileSync(path.join(ASSETS, 'katalog.json'), 'utf8'));
 const emblems = JSON.parse(fs.readFileSync(path.join(ASSETS, 'emblems.json'), 'utf8'));
+
+const ELEMENT_NAMES = { Fire: 'Ogień', Wind: 'Wiatr', Forest: 'Las', Mountain: 'Góra' };
+function normalizeHissatsuType(type) {
+  if (type === 'Odbiór' || type === 'Odbierająca') return 'Odbiór';
+  if (type === 'Strzał' || type === 'Drybling' || type === 'Obrona bramkarska') return type;
+  return null;
+}
+const HISSATSU_QUESTIONS = catalog.flatMap((player) => (player.hissatsu ?? []).flatMap((hissatsu) => {
+  if (!hissatsu?.name) return [];
+  const question = { player: player.name, hissatsu: hissatsu.name };
+  const options = [];
+  const element = ELEMENT_NAMES[hissatsu.element];
+  const type = normalizeHissatsuType(hissatsu.type);
+  if (element) options.push({ ...question, kind: 'element', answer: element });
+  if (type) options.push({ ...question, kind: 'type', answer: type });
+  return options;
+}));
+const HISSATSU_ANSWERS = {
+  element: Object.values(ELEMENT_NAMES),
+  type: ['Strzał', 'Drybling', 'Odbiór', 'Obrona bramkarska'],
+};
 for (const player of catalog) {
   if (!player.image || !fs.existsSync(path.join(ASSETS, player.image))) {
     console.error(`Brakuje zdjęcia zawodnika ${player.name}: assets/${player.image ?? '(brak ścieżki)'}`);
@@ -227,8 +251,8 @@ async function earn(interaction, activity) {
   if (!requireGuild(interaction)) return;
   const settings = {
     work: { min: WORK_MIN_REWARD, max: WORK_MAX_REWARD, cooldown: WORK_COOLDOWN_MS, text: 'wykonujesz pracę' },
-    training: { min: TRAINING_MIN_REWARD, max: TRAINING_MAX_REWARD, cooldown: TRAINING_COOLDOWN_MS, text: 'kończysz trening' },
-    job: { min: JOB_MIN_REWARD, max: JOB_MAX_REWARD, cooldown: JOB_COOLDOWN_MS, text: 'wracasz z pracy' },
+    training: { min: TRAINING_MIN_REWARD, max: TRAINING_MAX_REWARD, cooldown: TRAINING_COOLDOWN_MS, text: 'kończysz trening', tasks: ['ćwiczysz celność strzałów', 'trenujesz slalom z piłką', 'poprawiasz refleks bramkarski', 'powtarzasz technikę Hissatsu', 'pracujesz nad szybkością'] },
+    job: { min: JOB_MIN_REWARD, max: JOB_MAX_REWARD, cooldown: JOB_COOLDOWN_MS, text: 'wracasz z pracy', tasks: ['zbierasz piłki po treningu', 'przygotowujesz boisko przed zajęciami', 'pomagasz w klubowym sklepiku', 'roznosisz plakaty o naborze', 'porządkujesz sprzęt sportowy'] },
   }[activity];
   if (!settings) throw new Error('Nieznana komenda zarobkowa.');
 
@@ -254,6 +278,7 @@ async function earn(interaction, activity) {
   const achievementText = result.achievements.map((achievement) => '🏅 Osiągnięcie ' + achievement.count + ' użyć /work: **+' + achievement.reward + ' monet** i nowe ozdoby profilu!').join('\n');
   const trophyText = trophyNotice(result.trophies);
   const progress = activity === 'work' ? ' Postęp /work: **' + result.workCount + '**.' : '';
+  const taskText = settings.tasks ? ' Zadanie: **' + settings.tasks[Math.floor(Math.random() * settings.tasks.length)] + '**.' : '';
   const rewardText = result.reward < 0
     ? 'Nieudana praca — tracisz **' + Math.abs(result.reward) + ' monet**.'
     : 'Dostajesz **' + result.reward + ' monet**.';
@@ -269,7 +294,7 @@ async function earn(interaction, activity) {
       .setStyle(ButtonStyle.Success))]
     : [];
   await interaction.reply({
-    content: '💰 ' + interaction.user + ' ' + settings.text + '. ' + rewardText + progress + '\n' + achievementText + trophyText + '\nMasz teraz **' + result.balance + ' monet**. Następna ' + activity + ' za ' + nextText + '.' + verificationText,
+    content: '💰 ' + interaction.user + ' ' + settings.text + '.' + taskText + ' ' + rewardText + progress + '\n' + achievementText + trophyText + '\nMasz teraz **' + result.balance + ' monet**. Następna ' + activity + ' za ' + nextText + '.' + verificationText,
     components,
     ephemeral: true,
   });
@@ -358,6 +383,87 @@ async function importDatabase(interaction) {
     : '';
   await interaction.editReply({
     content: '✅ Import kopii zakończony. ' + summary + '.' + safety,
+  });
+}
+function trainingRank(points) {
+  if (points >= 150) return 'Mistrz Hissatsu';
+  if (points >= 50) return 'Zawodnik';
+  return 'Początkujący';
+}
+
+async function startHissatsuChallengeCommand(interaction) {
+  if (!requireGuild(interaction)) return;
+  if (!HISSATSU_QUESTIONS.length) {
+    await interaction.reply({ content: 'W katalogu nie ma jeszcze technik Hissatsu do quizu.', ephemeral: true });
+    return;
+  }
+  const started = startHissatsuChallenge(interaction.guildId, interaction.user.id);
+  if (!started.ok) {
+    await interaction.reply({ content: '⏱️ Następne wyzwanie możesz rozpocząć <t:' + Math.ceil(started.nextAt / 1000) + ':R>.', ephemeral: true });
+    return;
+  }
+  const prompt = HISSATSU_QUESTIONS[Math.floor(Math.random() * HISSATSU_QUESTIONS.length)];
+  const allAnswers = HISSATSU_ANSWERS[prompt.kind];
+  const choices = [prompt.answer, ...allAnswers.filter((answer) => answer !== prompt.answer)]
+    .sort(() => Math.random() - 0.5);
+  const token = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+  const buttons = new ActionRowBuilder().addComponents(choices.map((answer, index) =>
+    new ButtonBuilder()
+      .setCustomId('hissatsu:' + token + ':' + index)
+      .setLabel(answer)
+      .setStyle(ButtonStyle.Secondary)));
+  const promptText = prompt.kind === 'element'
+    ? 'Jaki żywioł ma technika **' + prompt.hissatsu + '** zawodnika **' + prompt.player + '**?'
+    : 'Jaki rodzaj ma technika **' + prompt.hissatsu + '** zawodnika **' + prompt.player + '**?';
+  const rank = trainingRank(started.points);
+  const challenge = {
+    userId: interaction.user.id,
+    choices,
+    answer: prompt.answer,
+    timer: null,
+  };
+  hissatsuChallengeSessions.set(token, challenge);
+  await interaction.reply({
+    content: '⚡ **Trening Hissatsu**\n' + promptText + '\n\nMasz **15 sekund**. Za dobrą odpowiedź: punkty treningu i monety. Seria zwiększa nagrodę.\nRanga: **' + rank + '** · Punkty treningu: **' + started.points + '** · Seria: **' + started.streak + '**',
+    components: [buttons],
+    ephemeral: true,
+  });
+  challenge.timer = setTimeout(async () => {
+    if (!hissatsuChallengeSessions.has(token)) return;
+    hissatsuChallengeSessions.delete(token);
+    recordHissatsuChallenge(interaction.guildId, interaction.user.id, false);
+    await interaction.editReply({ content: '⌛ Czas minął! Seria została wyzerowana. Następnym razem zdążysz.', components: [] }).catch(() => {});
+  }, HISSATSU_CHALLENGE_TIMEOUT_MS);
+  challenge.timer.unref?.();
+}
+
+async function answerHissatsuChallenge(interaction) {
+  const [, token, answerIndexText] = interaction.customId.split(':');
+  const challenge = hissatsuChallengeSessions.get(token);
+  if (!challenge) {
+    await interaction.update({ content: '⌛ To wyzwanie już wygasło. Uruchom ponownie /wyzwanie.', components: [] });
+    return;
+  }
+  if (challenge.userId !== interaction.user.id) {
+    await interaction.reply({ content: 'To wyzwanie należy do innego gracza.', ephemeral: true });
+    return;
+  }
+  clearTimeout(challenge.timer);
+  hissatsuChallengeSessions.delete(token);
+  const selected = challenge.choices[Number(answerIndexText)];
+  const correct = selected === challenge.answer;
+  const result = recordHissatsuChallenge(interaction.guildId, interaction.user.id, correct);
+  if (!correct) {
+    await interaction.update({ content: '❌ Nie tym razem. Poprawna odpowiedź: **' + challenge.answer + '**. Seria została wyzerowana. Punkty treningu: **' + result.points + '** · Ranga: **' + trainingRank(result.points) + '**.', components: [] });
+    return;
+  }
+  const previousPoints = result.points - result.pointsEarned;
+  const levelUp = trainingRank(previousPoints) !== trainingRank(result.points);
+  const streakMessage = result.streak > 1 ? ' Seria: **' + result.streak + '**.' : '';
+  const levelMessage = levelUp ? '\\n🏅 Awansujesz na rangę **' + trainingRank(result.points) + '**!' : '';
+  await interaction.update({
+    content: '✅ Dobra odpowiedź! **+' + result.pointsEarned + ' pkt treningu** i **+' + result.coinsEarned + ' monet**.' + streakMessage + '\\nRanga: **' + trainingRank(result.points) + '** · Punkty: **' + result.points + '** · Rekord serii: **' + result.bestStreak + '**.' + levelMessage,
+    components: [],
   });
 }
 async function showCollection(interaction, page = 0, edit = false) {
@@ -801,6 +907,7 @@ async function teamMessage(user, username, slot = 1) {
 }
 
 const teamBuildSessions = new Map();
+const hissatsuChallengeSessions = new Map();
 const TEAM_FORMATIONS = new Set(['4-4-2', '4-3-3', '3-5-2']);
 const TEAM_PAGE_SIZE = 25;
 
@@ -1150,6 +1257,8 @@ client.on(Events.InteractionCreate, async (interaction) => {
         } else {
           await interaction.update({ content: 'Ta weryfikacja jest już nieaktualna. Użyj ponownie /work, /training lub /job.', components: [] });
         }
+      } else if (interaction.customId.startsWith('hissatsu:')) {
+        await answerHissatsuChallenge(interaction);
       } else if (interaction.customId.startsWith('team-build:')) {
         const state = teamBuildSessions.get(teamBuildKey(interaction));
         if (!state) {
@@ -1218,6 +1327,9 @@ client.on(Events.InteractionCreate, async (interaction) => {
         break;
       case 'free':
         await claimFree(interaction);
+        break;
+      case 'wyzwanie':
+        await startHissatsuChallengeCommand(interaction);
         break;
       case 'saldo':
         await showBalance(interaction);

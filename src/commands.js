@@ -6,6 +6,7 @@ const commandBuilders = [
   new SlashCommandBuilder().setName('training').setDescription('Zarabiaj 10–25 monet. Odnawia się co 2 minuty.'),
   new SlashCommandBuilder().setName('job').setDescription('Co 5 minut: 50% na 25–30 monet lub stratę 5–10.'),
   new SlashCommandBuilder().setName('free').setDescription('Odbierz jednorazową nagrodę 8000 monet.'),
+  new SlashCommandBuilder().setName('wyzwanie').setDescription('Sprawdź się w krótkim quizie o technikach Hissatsu.'),
   new SlashCommandBuilder().setName('daily').setDescription('Odbierz dzienną nagrodę z kalendarza wydarzenia.'),
   new SlashCommandBuilder().setName('calendar').setDescription('Pokaż kalendarz wydarzeń i dzienne nagrody.'),
   new SlashCommandBuilder().setName('osiągnięcia').setDescription('Sprawdź postęp osiągnięć za pracę.'),

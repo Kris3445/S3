@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { DATA_FILE, EARN_VERIFY_EVERY, EARN_VERIFY_PENALTY_MS, EARN_VERIFY_TIMEOUT_MS } from './config.js';
+import { DATA_FILE, EARN_VERIFY_EVERY, EARN_VERIFY_PENALTY_MS, EARN_VERIFY_TIMEOUT_MS, HISSATSU_CHALLENGE_COOLDOWN_MS } from './config.js';
 
 function ensureDataFile() {
   fs.mkdirSync(path.dirname(DATA_FILE), { recursive: true });
@@ -44,6 +44,10 @@ function getOrCreate(data, guildId, userId) {
   if (!Number.isInteger(user.earnActionCount) || user.earnActionCount < 0) user.earnActionCount = 0;
   if (!Number.isFinite(user.earnVerificationUntil)) user.earnVerificationUntil = 0;
   if (!Number.isFinite(user.earnBlockedUntil)) user.earnBlockedUntil = 0;
+  if (!Number.isFinite(user.hissatsuChallengeNextAt)) user.hissatsuChallengeNextAt = 0;
+  if (!Number.isInteger(user.trainingPoints) || user.trainingPoints < 0) user.trainingPoints = 0;
+  if (!Number.isInteger(user.hissatsuStreak) || user.hissatsuStreak < 0) user.hissatsuStreak = 0;
+  if (!Number.isInteger(user.hissatsuBestStreak) || user.hissatsuBestStreak < 0) user.hissatsuBestStreak = 0;
   if (!Array.isArray(user.cards)) user.cards = [];
   if (!Array.isArray(user.trophies)) user.trophies = [];
   user.profileImage ??= null;
@@ -224,6 +228,39 @@ export function verifyEarnAction(guildId, userId, challengeUntil) {
   user.earnActionCount = 0;
   writeAll(data);
   return { ok: true };
+}
+export function startHissatsuChallenge(guildId, userId) {
+  const data = readAll();
+  const user = getOrCreate(data, guildId, userId);
+  const now = Date.now();
+  if (now < user.hissatsuChallengeNextAt) {
+    return { ok: false, nextAt: user.hissatsuChallengeNextAt };
+  }
+  user.hissatsuChallengeNextAt = now + HISSATSU_CHALLENGE_COOLDOWN_MS;
+  writeAll(data);
+  return { ok: true, points: user.trainingPoints, streak: user.hissatsuStreak, bestStreak: user.hissatsuBestStreak };
+}
+
+export function recordHissatsuChallenge(guildId, userId, correct) {
+  const data = readAll();
+  const user = getOrCreate(data, guildId, userId);
+  if (!correct) {
+    user.hissatsuStreak = 0;
+    writeAll(data);
+    return { correct: false, streak: 0, bestStreak: user.hissatsuBestStreak, points: user.trainingPoints, balance: user.balance };
+  }
+  user.hissatsuStreak += 1;
+  user.hissatsuBestStreak = Math.max(user.hissatsuBestStreak, user.hissatsuStreak);
+  const streakBonus = Math.min(user.hissatsuStreak - 1, 4);
+  const pointsEarned = 5 + streakBonus;
+  const coinsEarned = 5 + streakBonus;
+  user.trainingPoints += pointsEarned;
+  user.balance += coinsEarned;
+  writeAll(data);
+  return {
+    correct: true, pointsEarned, coinsEarned, points: user.trainingPoints, balance: user.balance,
+    streak: user.hissatsuStreak, bestStreak: user.hissatsuBestStreak,
+  };
 }
 export function claimDailyReward(guildId, userId, dateKey, eventBackground) {
   const data = readAll();

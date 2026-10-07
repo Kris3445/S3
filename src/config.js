@@ -31,5 +31,7 @@ export const JOB_COOLDOWN_MS = 300_000;
 export const EARN_VERIFY_EVERY = 8;
 export const EARN_VERIFY_TIMEOUT_MS = 60_000;
 export const EARN_VERIFY_PENALTY_MS = 180_000;
+export const HISSATSU_CHALLENGE_COOLDOWN_MS = 120_000;
+export const HISSATSU_CHALLENGE_TIMEOUT_MS = 15_000;
 export const PACK_SIZE = 5;
 export const BETA_END_AT = Date.parse('2026-10-07T21:21:26+02:00');
