@@ -353,7 +353,7 @@ async function claimDaily(interaction) {
     await interaction.reply({ content: `Dzisiejszą nagrodę już odebrano. Twoja seria: **${result.streak}/3 dni**.`, ephemeral: true });
     return;
   }
-  const unlock = result.unlockedBackground ? `\n🎨 Odblokowano tło profilu: **${event.name}**! Ustawisz je przez `/profil`.` : '';
+  const unlock = result.unlockedBackground ? `\n🎨 Odblokowano tło profilu: **${event.name}**! Ustawisz je przez /profil.` : '';
   await interaction.reply({
     content: `📅 ${event.name} — dzień serii **${result.streak}/3**. Odbierasz **${result.reward} monet**. Masz **${result.balance} monet**.${unlock}`,
     ephemeral: true,
@@ -369,7 +369,7 @@ async function showCalendar(interaction) {
   const embed = new EmbedBuilder()
     .setColor(event.accent)
     .setTitle(`📅 Kalendarz wydarzeń — ${event.name}`)
-    .setDescription(`Wydarzenie zmienia szkołę co tydzień. Odbierz nagrodę przez `/daily`.\n\n${dailyTrack}`)
+    .setDescription(`Wydarzenie zmienia szkołę co tydzień. Odbierz nagrodę przez /daily.\n\n${dailyTrack}`)
     .addFields(
       { name: 'Twoja seria', value: `${user.dailyStreak}/3 dni`, inline: true },
       { name: 'Dzisiejsza nagroda', value: claimed ? 'Już odebrana' : 'Dostępna', inline: true },
@@ -689,7 +689,7 @@ async function showSquad(interaction) {
   const slot = interaction.options.getInteger('slot') ?? 1;
   if (!getSavedTeam(user, slot)) {
     await interaction.reply({
-      content: `Slot ${slot}/4 jest pusty. Użyj `/team slot:${slot}`, wybierz formację i 11 zawodników.`,
+      content: `Slot ${slot}/4 jest pusty. Użyj /team z slotem ${slot}, wybierz formację i 11 zawodników.`,
       ephemeral: true,
     });
     return;
@@ -702,7 +702,7 @@ async function chooseTeamEmblem(interaction) {
   const slot = interaction.options.getInteger('slot') ?? 1;
   const team = getSavedTeam(user, slot);
   if (!team) {
-    await interaction.reply({ content: `Slot ${slot}/4 jest pusty. Najpierw ustaw skład przez `/team slot:${slot}`.`, ephemeral: true });
+    await interaction.reply({ content: `Slot ${slot}/4 jest pusty. Najpierw ustaw skład przez /team z slotem ${slot}.`, ephemeral: true });
     return;
   }
   const owned = emblems.filter((emblem) => user.emblems.includes(emblem.id));
