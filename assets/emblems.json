@@ -22,5 +22,12 @@
     "name": "Occult",
     "image": "emblems/occult.png",
     "color": "#7556a3"
+  },
+  {
+    "id": "wild",
+    "name": "Wild",
+    "image": "emblems/wild.png",
+    "color": "#4b913c",
+    "source_file": "Nose_emblem_29(1).webp"
   }
 ]

@@ -540,5 +540,196 @@
     "source_file": "OIP (31).webp",
     "team": "Occult",
     "collection_page": 3
+  },
+  {
+    "name": "Charlie Boardfield",
+    "position": "Bramkarz",
+    "element": "Fire",
+    "hissatsu": [
+      {
+        "name": "Wild Claw",
+        "element": "Mountain",
+        "type": "Obrona bramkarska"
+      }
+    ],
+    "overall": 43,
+    "chance_percent": 0.9009,
+    "tier": "BRĄZOWA",
+    "image": "cards/29_charlie_boardfield.jpg",
+    "source_file": "OIP (32).webp",
+    "team": "Wild",
+    "collection_page": 4
+  },
+  {
+    "name": "Wilson Fishman",
+    "position": "Obrońca",
+    "element": "Forest",
+    "hissatsu": [],
+    "overall": 40,
+    "chance_percent": 0.9009,
+    "tier": "BRĄZOWA",
+    "image": "cards/30_wilson_fishman.jpg",
+    "source_file": "OIP (33).webp",
+    "team": "Wild",
+    "collection_page": 4
+  },
+  {
+    "name": "Peter Johnson",
+    "position": "Obrońca",
+    "element": "Forest",
+    "hissatsu": [],
+    "overall": 44,
+    "chance_percent": 0.9009,
+    "tier": "BRĄZOWA",
+    "image": "cards/31_peter_johnson.jpg",
+    "source_file": "OIP (34).webp",
+    "team": "Wild",
+    "collection_page": 4
+  },
+  {
+    "name": "Leonard O'Shea",
+    "position": "Obrońca",
+    "element": "Mountain",
+    "hissatsu": [
+      {
+        "name": "Super Armadillo",
+        "element": "Mountain",
+        "type": "Odbierająca"
+      }
+    ],
+    "overall": 51,
+    "chance_percent": 0.9009,
+    "tier": "BRĄZOWA",
+    "image": "cards/32_leonard_oshea.jpg",
+    "source_file": "OIP (35).webp",
+    "team": "Wild",
+    "collection_page": 4
+  },
+  {
+    "name": "Cham Lion",
+    "position": "Pomocnik",
+    "element": "Wind",
+    "hissatsu": [],
+    "overall": 46,
+    "chance_percent": 0.9009,
+    "tier": "BRĄZOWA",
+    "image": "cards/33_cham_lion.jpg",
+    "source_file": "OIP (36).webp",
+    "team": "Wild",
+    "collection_page": 4
+  },
+  {
+    "name": "Bruce Monkey",
+    "position": "Pomocnik",
+    "element": "Wind",
+    "hissatsu": [
+      {
+        "name": "Monkey Turn",
+        "element": "Mountain",
+        "type": "Drybling"
+      }
+    ],
+    "overall": 47,
+    "chance_percent": 0.9009,
+    "tier": "BRĄZOWA",
+    "image": "cards/34_bruce_monkey.jpg",
+    "source_file": "OIP (37).webp",
+    "team": "Wild",
+    "collection_page": 4
+  },
+  {
+    "name": "Hugo Tallgeese",
+    "position": "Pomocnik",
+    "element": "Fire",
+    "hissatsu": [
+      {
+        "name": "Dash Accelerator",
+        "element": "Mountain",
+        "type": "Drybling"
+      }
+    ],
+    "overall": 58,
+    "chance_percent": 0.9009,
+    "tier": "BRĄZOWA",
+    "image": "cards/35_hugo_tallgeese.jpg",
+    "source_file": "OIP (38).webp",
+    "team": "Wild",
+    "collection_page": 4
+  },
+  {
+    "name": "Steve Eagle",
+    "position": "Pomocnik",
+    "element": "Wind",
+    "hissatsu": [
+      {
+        "name": "Condor Dive",
+        "element": "Wind",
+        "type": "Strzał"
+      }
+    ],
+    "overall": 52,
+    "chance_percent": 0.9009,
+    "tier": "BRĄZOWA",
+    "image": "cards/36_steve_eagle.jpg",
+    "source_file": "OIP (39).webp",
+    "team": "Wild",
+    "collection_page": 4
+  },
+  {
+    "name": "Adrian Speed",
+    "position": "Napastnik",
+    "element": "Wind",
+    "hissatsu": [
+      {
+        "name": "Tarzan Kick",
+        "element": "Mountain",
+        "type": "Strzał"
+      }
+    ],
+    "overall": 56,
+    "chance_percent": 0.9009,
+    "tier": "BRĄZOWA",
+    "image": "cards/37_adrian_speed.jpg",
+    "source_file": "OIP (40).webp",
+    "team": "Wild",
+    "collection_page": 4
+  },
+  {
+    "name": "Gary Lancaster",
+    "position": "Napastnik",
+    "element": "Mountain",
+    "hissatsu": [
+      {
+        "name": "Tarzan Kick",
+        "element": "Mountain",
+        "type": "Strzał"
+      }
+    ],
+    "overall": 51,
+    "chance_percent": 0.9009,
+    "tier": "BRĄZOWA",
+    "image": "cards/38_gary_lancaster.jpg",
+    "source_file": "OIP (41).webp",
+    "team": "Wild",
+    "collection_page": 4
+  },
+  {
+    "name": "Harry Snake",
+    "position": "Napastnik",
+    "element": "Forest",
+    "hissatsu": [
+      {
+        "name": "Snake Shot",
+        "element": "Mountain",
+        "type": "Strzał"
+      }
+    ],
+    "overall": 52,
+    "chance_percent": 0.9009,
+    "tier": "BRĄZOWA",
+    "image": "cards/39_harry_snake.jpg",
+    "source_file": "OIP (42).webp",
+    "team": "Wild",
+    "collection_page": 4
   }
 ]
