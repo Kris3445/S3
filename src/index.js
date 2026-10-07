@@ -665,7 +665,7 @@ async function playRouletteRound(interaction) {
 }
 
 client.once(Events.ClientReady, (readyClient) => {
-  console.log(`Bot działa jako ${readyClient.user.tag} | KARTY-OVR-NAME-v5 | Hissatsu Pack 2026-10-07 | zawodnicy: ${catalog.length} | herby: ${emblems.length}`);
+  console.log(`Bot działa jako ${readyClient.user.tag} | KARTY-OVR-NAME-v6 | Hissatsu Pack 2026-10-07 | zawodnicy: ${catalog.length} | herby: ${emblems.length}`);
 });
 
 client.on(Events.InteractionCreate, async (interaction) => {
