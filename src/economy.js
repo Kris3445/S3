@@ -41,6 +41,11 @@ function getOrCreate(data, guildId, userId) {
   user.lastDaily ??= null;
   if (!Array.isArray(user.emblems)) user.emblems = [];
   user.team ??= null;
+  if (!Array.isArray(user.teams)) user.teams = [user.team ?? null, null, null, null];
+  user.teams = user.teams.slice(0, 4);
+  while (user.teams.length < 4) user.teams.push(null);
+  if (!user.teams[0] && user.team) user.teams[0] = user.team;
+  user.team = user.teams[0] ?? null;
   user.unlockedCosmetics ??= {
     frames: ['standard'],
     titles: ['rookie'],
@@ -158,7 +163,8 @@ export function buyPack(guildId, userId, price, cards) {
 
 const FORMATIONS = new Set(['4-4-2', '4-3-3', '3-5-2']);
 
-export function saveTeam(guildId, userId, formation, playerNames, slotPositions = null) {
+export function saveTeam(guildId, userId, formation, playerNames, slotPositions = null, teamSlot = 1) {
+  if (!Number.isInteger(teamSlot) || teamSlot < 1 || teamSlot > 4) return { ok: false, reason: 'invalid-slot' };
   if (!FORMATIONS.has(formation) || !Array.isArray(playerNames) || playerNames.length !== 11 || new Set(playerNames).size !== 11) {
     return { ok: false, reason: 'invalid-team' };
   }
@@ -169,19 +175,25 @@ export function saveTeam(guildId, userId, formation, playerNames, slotPositions 
   const user = getOrCreate(data, guildId, userId);
   const owned = new Set(user.cards.map((card) => card.name));
   if (playerNames.some((name) => !owned.has(name))) return { ok: false, reason: 'not-owned' };
-  user.team = { ...(user.team ?? {}), formation, players: playerNames, ...(slotPositions ? { positions: slotPositions } : {}) };
+  const previous = user.teams[teamSlot - 1] ?? {};
+  const savedTeam = { ...previous, formation, players: [...playerNames], ...(slotPositions ? { positions: [...slotPositions] } : {}) };
+  user.teams[teamSlot - 1] = savedTeam;
+  if (teamSlot === 1) user.team = savedTeam;
   writeAll(data);
-  return { ok: true, team: structuredClone(user.team) };
+  return { ok: true, team: structuredClone(savedTeam), slot: teamSlot };
 }
 
-export function setTeamEmblem(guildId, userId, emblemId) {
+export function setTeamEmblem(guildId, userId, emblemId, teamSlot = 1) {
+  if (!Number.isInteger(teamSlot) || teamSlot < 1 || teamSlot > 4) return { ok: false, reason: 'invalid-slot' };
   const data = readAll();
   const user = getOrCreate(data, guildId, userId);
-  if (!user.team) return { ok: false, reason: 'no-team' };
+  const team = user.teams[teamSlot - 1];
+  if (!team) return { ok: false, reason: 'no-team' };
   if (!user.emblems.includes(emblemId)) return { ok: false, reason: 'not-owned' };
-  user.team.emblem = emblemId;
+  team.emblem = emblemId;
+  if (teamSlot === 1) user.team = team;
   writeAll(data);
-  return { ok: true, team: structuredClone(user.team) };
+  return { ok: true, team: structuredClone(team), slot: teamSlot };
 }
 
 export function buyEmblemPack(guildId, userId, price, emblemCatalog) {
