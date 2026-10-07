@@ -12,6 +12,18 @@ const commandBuilders = [
   new SlashCommandBuilder().setName('saldo').setDescription('Sprawdź swoje monety.'),
   new SlashCommandBuilder().setName('profil').setDescription('Zobacz profil i ustaw odblokowane ozdoby.'),
   new SlashCommandBuilder()
+    .setName('profile')
+    .setDescription('Pokaż kartę gracza i statystyki swoje lub innego gracza.')
+    .addUserOption((option) => option.setName('gracz').setDescription('Gracz, którego profil chcesz zobaczyć.')),
+  new SlashCommandBuilder()
+    .setName('profile_image')
+    .setDescription('Ustaw zdjęcie swojej karty albo wróć do karty zawodnika z kolekcji.')
+    .addAttachmentOption((option) => option.setName('zdjecie').setDescription('Zdjęcie na Twoją kartę. Puste pole przywraca kartę z kolekcji.')),
+  new SlashCommandBuilder()
+    .setName('trophy_list')
+    .setDescription('Pokaż trofea serwera lub trofea wybranego gracza.')
+    .addUserOption((option) => option.setName('gracz').setDescription('Gracz, którego trofea chcesz zobaczyć.')),
+  new SlashCommandBuilder()
     .setName('team')
     .setDescription('Zbuduj skład: wybierz formację i 11 zawodników.')
     .addIntegerOption((option) => option
@@ -70,12 +82,12 @@ const commandBuilders = [
   new SlashCommandBuilder().setName('save').setDescription('Wyślij prywatną kopię zapisu kolekcji i monet.'),
   new SlashCommandBuilder()
     .setName('stats')
-    .setDescription('Zobacz kartę i statystyki zawodnika.')
+    .setDescription('Pokaż statystyki gracza lub szczegóły zawodnika.')
+    .addUserOption((option) => option.setName('gracz').setDescription('Gracz, którego statystyki chcesz zobaczyć.'))
     .addStringOption((option) => option
       .setName('zawodnik')
-      .setDescription('Wpisz lub wybierz zawodnika.')
-      .setAutocomplete(true)
-      .setRequired(true)),
+      .setDescription('Zawodnik, którego kartę chcesz zobaczyć.')
+      .setAutocomplete(true)),
 ];
 
 export const commands = commandBuilders.map((command) => {
