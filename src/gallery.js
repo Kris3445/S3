@@ -1,6 +1,11 @@
 import path from 'node:path';
-import { createCanvas, loadImage } from '@napi-rs/canvas';
+import { createCanvas, loadImage, GlobalFonts } from '@napi-rs/canvas';
 import { ASSETS } from './config.js';
+
+const ROBOTO_FONT = path.join(ASSETS, 'fonts', 'Roboto-Variable.ttf');
+if (!GlobalFonts.registerFromPath(ROBOTO_FONT, 'Roboto')) {
+  throw new Error(`Nie udało się załadować czcionki Roboto: ${ROBOTO_FONT}`);
+}
 
 const WIDTH = 1160;
 const COLUMNS = 4;
@@ -76,18 +81,18 @@ export async function renderCollection(catalog, ownedCards, page = 0, teamEmblem
     const emblemImage = await loadImage(path.join(ASSETS, teamEmblem.image));
     drawEmblem(ctx, emblemImage, teamEmblem, 38, 24, 88, 88);
     ctx.fillStyle = '#f2f5fb';
-    ctx.font = 'bold 38px Arial';
+    ctx.font = 'bold 38px Roboto';
     ctx.fillText(`DRUŻYNA: ${teamName.toUpperCase()}`, 154, 65);
     ctx.fillStyle = teamEmblem.color;
-    ctx.font = 'bold 16px Arial';
+    ctx.font = 'bold 16px Roboto';
     ctx.fillText(`KOLEKCJA  •  STRONA ${page + 1}/${pageCount}`, 156, 94);
   } else {
     ctx.fillStyle = '#f2f5fb';
-    ctx.font = 'bold 30px Arial';
+    ctx.font = 'bold 30px Roboto';
     ctx.fillText(`INAZUMA ELEVEN  •  ${page + 1}/${pageCount}`, MARGIN, 55);
   }
   ctx.fillStyle = '#94a3b8';
-  ctx.font = '15px Arial';
+  ctx.font = '15px Roboto';
   ctx.fillText(`${owned.size} / ${catalog.length} ZAWODNIKÓW ODBLOKOWANYCH`, MARGIN, 110);
 
   const legendY = 148;
@@ -96,7 +101,7 @@ export async function renderCollection(catalog, ownedCards, page = 0, teamEmblem
     ctx.fillStyle = color;
     ctx.fillRect(legendX, legendY - 10, 13, 13);
     ctx.fillStyle = '#cbd5e1';
-    ctx.font = '13px Arial';
+    ctx.font = '13px Roboto';
     ctx.fillText(tier, legendX + 20, legendY + 1);
     legendX += tier === 'SREBRNA' ? 125 : 118;
   }
@@ -137,7 +142,7 @@ export async function renderPlayerCard(player, { locked = false } = {}) {
   ctx.fillStyle = accent;
   ctx.fillRect(34, 82, 572, 4);
   ctx.fillStyle = '#f4f6fb';
-  ctx.font = 'bold 22px Arial';
+  ctx.font = 'bold 22px Roboto';
   ctx.textAlign = 'center';
   ctx.fillText(tier, 320, 67);
   ctx.textAlign = 'left';
@@ -169,9 +174,9 @@ export async function renderPlayerCard(player, { locked = false } = {}) {
   ctx.fillStyle = '#ffffff';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.font = 'bold 14px Arial';
+  ctx.font = 'bold 14px Roboto';
   ctx.fillText('OVR', 86, 808);
-  ctx.font = 'bold 34px Arial';
+  ctx.font = 'bold 34px Roboto';
   ctx.fillText(String(player.overall ?? '—'), 86, 840);
 
   const cardName = String(player.name ?? 'ZAWODNIK').trim().toLocaleUpperCase('pl');
@@ -179,10 +184,10 @@ export async function renderPlayerCard(player, { locked = false } = {}) {
   ctx.textAlign = 'left';
   ctx.textBaseline = 'middle';
   ctx.fillStyle = '#ffffff';
-  ctx.font = `bold ${nameFontSize}px Arial`;
+  ctx.font = `bold ${nameFontSize}px Roboto`;
   ctx.fillText(cardName, 140, 819, 306);
   ctx.fillStyle = '#e2e8f0';
-  ctx.font = 'bold 17px Arial';
+  ctx.font = 'bold 17px Roboto';
   ctx.fillText(String(player.position ?? '').toLocaleUpperCase('pl'), 142, 848, 300);
 
   ctx.fillStyle = '#40516a';
@@ -193,7 +198,7 @@ export async function renderPlayerCard(player, { locked = false } = {}) {
   ctx.fillStyle = elementColor;
   ctx.fill();
   ctx.fillStyle = elementColor;
-  ctx.font = 'bold 14px Arial';
+  ctx.font = 'bold 14px Roboto';
   ctx.textAlign = 'left';
   ctx.textBaseline = 'middle';
   ctx.fillText(elementNames[player.element] ?? String(player.element ?? '').toLocaleUpperCase('pl'), 502, 830, 96);
@@ -240,10 +245,10 @@ export async function renderEmblemCard(emblem) {
   ctx.fillStyle = emblem.color;
   ctx.fillRect(42, 622, 556, 7);
   ctx.fillStyle = '#cbd5e1';
-  ctx.font = 'bold 22px Arial';
+  ctx.font = 'bold 22px Roboto';
   ctx.fillText('HERB DRUŻYNY', 62, 675, 516);
   ctx.fillStyle = '#f4f6fb';
-  ctx.font = 'bold 40px Arial';
+  ctx.font = 'bold 40px Roboto';
   ctx.fillText(emblem.name, 62, 735, 516);
   return canvas.encode('png');
 }
@@ -257,7 +262,7 @@ export async function renderEmblemPackPreview(emblems) {
   ctx.fillStyle = background;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   ctx.fillStyle = '#f4f6fb';
-  ctx.font = 'bold 30px Arial';
+  ctx.font = 'bold 30px Roboto';
   ctx.fillText('HISSATSU PACK  •  HERBY SZKÓŁ', 42, 52);
   const cardWidth = 260;
   const cardHeight = 350;
@@ -276,7 +281,7 @@ export async function renderEmblemPackPreview(emblems) {
     ctx.fillRect(x + 18, 96, cardWidth - 36, 210);
     drawEmblem(ctx, image, emblem, x + 28, 106, cardWidth - 56, 190);
     ctx.fillStyle = '#f4f6fb';
-    ctx.font = 'bold 20px Arial';
+    ctx.font = 'bold 20px Roboto';
     ctx.textAlign = 'center';
     ctx.fillText(emblem.name.toUpperCase(), x + cardWidth / 2, 352, cardWidth - 28);
     ctx.textAlign = 'left';
@@ -291,10 +296,10 @@ export async function renderSquadPitch(lineup, formation, emblem = null) {
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   ctx.fillStyle = '#f4f6fb';
-  ctx.font = 'bold 28px Arial';
+  ctx.font = 'bold 28px Roboto';
   ctx.fillText(`TEAM SQUAD  •  ${formation}`, 36, 52);
   ctx.fillStyle = '#94a3b8';
-  ctx.font = '15px Arial';
+  ctx.font = '15px Roboto';
   ctx.fillText('SKŁAD ZAPISANY', 38, 79);
 
   // Team information panel, styled after the compact crest and OVR column
@@ -315,13 +320,13 @@ export async function renderSquadPitch(lineup, formation, emblem = null) {
     ctx.fillStyle = '#168cff';
     ctx.fill();
     ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 24px Arial';
+    ctx.font = 'bold 24px Roboto';
     ctx.textAlign = 'center';
     ctx.fillText('IE', 133, 221);
     ctx.textAlign = 'left';
   }
   ctx.fillStyle = '#cbd5e1';
-  ctx.font = 'bold 14px Arial';
+  ctx.font = 'bold 14px Roboto';
   ctx.textAlign = 'center';
   ctx.fillText(emblem?.name?.toUpperCase() ?? 'TWOJA DRUŻYNA', 133, 309, 170);
   const avgOverall = Math.round(lineup.reduce((sum, entry) => sum + entry.player.overall, 0) / lineup.length);
@@ -330,13 +335,13 @@ export async function renderSquadPitch(lineup, formation, emblem = null) {
   ctx.strokeStyle = '#475569';
   ctx.strokeRect(68, 360, 130, 104);
   ctx.fillStyle = '#94a3b8';
-  ctx.font = '12px Arial';
+  ctx.font = '12px Roboto';
   ctx.fillText('ŚREDNIE OVR', 133, 386);
   ctx.fillStyle = '#f4f6fb';
-  ctx.font = 'bold 34px Arial';
+  ctx.font = 'bold 34px Roboto';
   ctx.fillText(String(avgOverall), 133, 433);
   ctx.fillStyle = '#94a3b8';
-  ctx.font = '13px Arial';
+  ctx.font = '13px Roboto';
   ctx.fillText(`${lineup.length} ZAWODNIKÓW`, 133, 505);
   ctx.textAlign = 'left';
 
@@ -412,10 +417,10 @@ export async function renderSquadBuilderPreview(formation) {
   ctx.fillStyle = '#0b1220';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   ctx.fillStyle = '#f4f6fb';
-  ctx.font = 'bold 28px Arial';
+  ctx.font = 'bold 28px Roboto';
   ctx.fillText(`BUDOWANIE SKŁADU  •  ${formation}`, 36, 52);
   ctx.fillStyle = '#94a3b8';
-  ctx.font = '15px Arial';
+  ctx.font = '15px Roboto';
   ctx.fillText('WYBIERZ 11 KART Z KOLEKCJI', 38, 79);
   ctx.fillStyle = '#111c2e';
   ctx.fillRect(34, 108, 198, 810);
@@ -423,15 +428,15 @@ export async function renderSquadBuilderPreview(formation) {
   ctx.lineWidth = 2;
   ctx.strokeRect(35, 109, 196, 808);
   ctx.fillStyle = '#94a3b8';
-  ctx.font = 'bold 14px Arial';
+  ctx.font = 'bold 14px Roboto';
   ctx.textAlign = 'center';
   ctx.fillText('TRYB', 133, 170);
   ctx.fillText('BUDOWANIA', 133, 194);
   ctx.fillStyle = '#f4f6fb';
-  ctx.font = 'bold 38px Arial';
+  ctx.font = 'bold 38px Roboto';
   ctx.fillText('11', 133, 284);
   ctx.fillStyle = '#94a3b8';
-  ctx.font = '13px Arial';
+  ctx.font = '13px Roboto';
   ctx.fillText('MIEJSC W SKŁADZIE', 133, 312);
   ctx.fillText('Wybierz piłkarzy', 133, 365);
   ctx.fillText('z menu poniżej.', 133, 389);
@@ -491,10 +496,10 @@ export async function renderSquadBuilderPreview(formation) {
       ctx.fillStyle = '#263950';
       ctx.fill();
       ctx.fillStyle = '#e2e8f0';
-      ctx.font = 'bold 15px Arial';
+      ctx.font = 'bold 15px Roboto';
       ctx.fillText(group.label, cx, y + cardH - 22);
       ctx.fillStyle = '#94a3b8';
-      ctx.font = '11px Arial';
+      ctx.font = '11px Roboto';
       ctx.fillText('PUSTE MIEJSCE', cx, y + cardH - 7);
     }
   }
@@ -536,17 +541,17 @@ export async function renderProfileBanner(username, user, profileOptions) {
   ctx.lineWidth = 14;
   ctx.strokeRect(9, 9, canvas.width - 18, canvas.height - 18);
   ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 54px Arial';
+  ctx.font = 'bold 54px Roboto';
   ctx.fillText(username, 72, 150, 1050);
   ctx.fillStyle = frameColor;
-  ctx.font = 'bold 34px Arial';
+  ctx.font = 'bold 34px Roboto';
   ctx.fillText(title, 74, 216, 1000);
   ctx.fillStyle = '#f4f6fb';
-  ctx.font = '26px Arial';
+  ctx.font = '26px Roboto';
   const uniqueCardCount = new Set(user.cards.map((card) => card.name)).size;
   ctx.fillText(`${uniqueCardCount} kart  •  ${user.balance} monet`, 74, 300);
   ctx.fillStyle = 'rgba(255,255,255,0.8)';
-  ctx.font = '20px Arial';
+  ctx.font = '20px Roboto';
   ctx.fillText(`Tło: ${profileOptions.backgrounds[user.cosmetics.background]?.name ?? 'Klasyczne'}`, 74, 365);
   return canvas.encode('png');
 }
