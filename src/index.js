@@ -149,7 +149,23 @@ async function showShop(interaction, page = 0, edit = false) {
       .setDescription(`Jedna paczka zawiera **${PACK_SIZE} zawodników**.\nCena: **${PACK_PRICE} monet**\n\nDuplikaty zamieniają się na monety: brąz 10, srebro 20, złoto 30.`)
       .setImage(`attachment://${imageName}`)
       .setFooter({ text: 'Zarabiaj przez /work, /training lub /job albo odbierz jednorazowe /free.' });
-  if (emblemPage) embed.setThumbnail(`attachment://${avatarName}`);
+  if (emblemPage) {
+    embed.setThumbnail(`attachment://${avatarName}`);
+  } else {
+    const groups = [
+      { tier: 'BRĄZOWA', name: '🟤 Brąz — OVERALL 1–64' },
+      { tier: 'SREBRNA', name: '🥈 Srebro — OVERALL 65–74' },
+      { tier: 'ZŁOTA', name: '🥇 Złoto — OVERALL 75–99' },
+    ];
+    const oddsFields = groups.map(({ tier, name }) => {
+      const lines = catalog
+        .filter((player) => player.tier === tier)
+        .map((player) => `• ${player.name} (OVR ${player.overall}) — ${player.chance_percent.toLocaleString('pl-PL', { minimumFractionDigits: 4, maximumFractionDigits: 4 })}%`);
+      return { name, value: lines.join('\\n') || 'Brak kart' };
+    });
+    embed.addFields(...oddsFields);
+    embed.setFooter({ text: 'Szansa dotyczy jednego zawodnika; paczka zawiera 5 losowań.' });
+  }
 
   const previous = new ButtonBuilder().setCustomId('shop-prev').setLabel('◀').setStyle(ButtonStyle.Secondary).setDisabled(!emblemPage);
   const buy = new ButtonBuilder()
