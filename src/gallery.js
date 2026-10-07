@@ -148,39 +148,42 @@ export async function renderPlayerCard(player, { locked = false } = {}) {
   ctx.drawImage(image, 40, 94, 560, 700);
   ctx.restore();
 
-  // Name and domain strip with the overall badge on the left.
+  // Draw all card information last on a fully opaque footer. Explicitly reset
+  // the canvas state so portrait filters cannot hide the overall or the name.
+  ctx.globalAlpha = 1;
+  ctx.globalCompositeOperation = 'source-over';
+  ctx.filter = 'none';
   ctx.fillStyle = '#111c2e';
   ctx.fillRect(34, 794, 572, 72);
   ctx.fillStyle = accent;
   ctx.fillRect(34, 794, 572, 4);
 
   ctx.beginPath();
-  ctx.arc(86, 830, 40, 0, Math.PI * 2);
+  ctx.arc(86, 830, 38, 0, Math.PI * 2);
   ctx.fillStyle = '#0b1220';
   ctx.fill();
   ctx.lineWidth = 4;
   ctx.strokeStyle = accent;
   ctx.stroke();
-  ctx.fillStyle = '#f4f6fb';
-  ctx.textAlign = 'center';
-  ctx.font = 'bold 13px sans-serif';
-  ctx.strokeStyle = '#0b1220';
-  ctx.lineWidth = 3;
-  ctx.strokeText('OVR', 86, 814);
-  ctx.fillText('OVR', 86, 814);
-  ctx.font = 'bold 38px sans-serif';
-  ctx.strokeText(String(player.overall), 86, 843);
-  ctx.fillText(String(player.overall), 86, 843);
-  ctx.textAlign = 'left';
 
-  ctx.fillStyle = '#f4f6fb';
-  ctx.font = 'bold 34px sans-serif';
-  ctx.strokeText(player.name.toUpperCase(), 142, 827, 310);
-  ctx.fillText(player.name.toUpperCase(), 142, 827, 310);
-  ctx.fillStyle = '#cbd5e1';
-  ctx.font = 'bold 17px sans-serif';
-  ctx.strokeText(player.position?.toUpperCase() ?? '', 144, 852, 300);
-  ctx.fillText(player.position?.toUpperCase() ?? '', 144, 852, 300);
+  ctx.fillStyle = '#ffffff';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.font = 'bold 14px Arial';
+  ctx.fillText('OVR', 86, 808);
+  ctx.font = 'bold 34px Arial';
+  ctx.fillText(String(player.overall ?? '—'), 86, 840);
+
+  const cardName = String(player.name ?? 'ZAWODNIK').trim().toLocaleUpperCase('pl');
+  const nameFontSize = cardName.length > 16 ? 27 : 31;
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  ctx.fillStyle = '#ffffff';
+  ctx.font = `bold ${nameFontSize}px Arial`;
+  ctx.fillText(cardName, 140, 819, 306);
+  ctx.fillStyle = '#e2e8f0';
+  ctx.font = 'bold 17px Arial';
+  ctx.fillText(String(player.position ?? '').toLocaleUpperCase('pl'), 142, 848, 300);
 
   ctx.fillStyle = '#40516a';
   ctx.fillRect(464, 808, 2, 44);
@@ -190,8 +193,10 @@ export async function renderPlayerCard(player, { locked = false } = {}) {
   ctx.fillStyle = elementColor;
   ctx.fill();
   ctx.fillStyle = elementColor;
-  ctx.font = 'bold 13px Arial';
-  ctx.fillText(elementNames[player.element] ?? String(player.element ?? '').toUpperCase(), 502, 835, 96);
+  ctx.font = 'bold 14px Arial';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(elementNames[player.element] ?? String(player.element ?? '').toLocaleUpperCase('pl'), 502, 830, 96);
   return canvas.encode('png');
 }
 
