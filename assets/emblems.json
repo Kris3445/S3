@@ -29,5 +29,12 @@
     "image": "emblems/wild.png",
     "color": "#4b913c",
     "source_file": "Nose_emblem_29(1).webp"
+  },
+  {
+    "id": "otaku",
+    "name": "Otaku",
+    "image": "emblems/otaku.png",
+    "color": "#d73968",
+    "source_file": "Shuuyou_Meito_Gakuen_emblem_29(3).webp"
   }
 ]

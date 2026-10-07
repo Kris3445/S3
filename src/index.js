@@ -140,11 +140,13 @@ async function showPackOdds(interaction) {
     { label: 'OVERALL 85–89', min: 85, max: 89 },
     { label: 'OVERALL 90–99', min: 90, max: 99 },
   ];
+  const totalWeight = catalog.reduce((sum, player) => sum + player.chance_percent, 0);
+  const toPercent = (weight) => (weight / totalWeight) * 100;
   const fields = ranges.map(({ label, min, max }) => {
     const players = catalog.filter((player) => player.overall >= min && player.overall <= max);
-    const totalChance = players.reduce((sum, player) => sum + player.chance_percent, 0);
+    const totalChance = players.reduce((sum, player) => sum + toPercent(player.chance_percent), 0);
     const lines = players.map((player) =>
-      `• ${player.name} — ${player.chance_percent.toLocaleString('pl-PL', { minimumFractionDigits: 4, maximumFractionDigits: 4 })}%`);
+      `• ${player.name} — ${toPercent(player.chance_percent).toLocaleString('pl-PL', { minimumFractionDigits: 4, maximumFractionDigits: 4 })}%`);
     return {
       name: `${label} · razem ${totalChance.toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`,
       value: lines.join('\n') || 'Brak zawodników',

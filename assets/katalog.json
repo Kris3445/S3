@@ -731,5 +731,211 @@
     "source_file": "OIP (42).webp",
     "team": "Wild",
     "collection_page": 4
+  },
+  {
+    "name": "Sam Idol",
+    "position": "Bramkarz",
+    "element": "Mountain",
+    "hissatsu": [
+      {
+        "name": "Sliding Goal",
+        "element": "Mountain",
+        "type": "Obrona bramkarska"
+      }
+    ],
+    "overall": 43,
+    "chance_percent": 3.5385,
+    "tier": "BRĄZOWA",
+    "image": "cards/40_sam_idol.jpg",
+    "source_file": "Aidoru_Sou.webp",
+    "team": "Otaku",
+    "collection_page": 5
+  },
+  {
+    "name": "Marcus Train",
+    "position": "Obrońca",
+    "element": "Fire",
+    "hissatsu": [
+      {
+        "name": "Bewildered",
+        "element": "Mountain",
+        "type": "Odbierająca"
+      }
+    ],
+    "overall": 41,
+    "chance_percent": 3.5385,
+    "tier": "BRĄZOWA",
+    "image": "cards/41_marcus_train.jpg",
+    "source_file": "OIP (43)(1).webp",
+    "team": "Otaku",
+    "collection_page": 5
+  },
+  {
+    "name": "Spencer Gates",
+    "position": "Obrońca",
+    "element": "Mountain",
+    "hissatsu": [
+      {
+        "name": "Bewildered",
+        "element": "Mountain",
+        "type": "Odbierająca"
+      }
+    ],
+    "overall": 38,
+    "chance_percent": 3.5385,
+    "tier": "BRĄZOWA",
+    "image": "cards/42_spencer_gates.jpg",
+    "source_file": "OIP (44)(2).webp",
+    "team": "Otaku",
+    "collection_page": 5
+  },
+  {
+    "name": "A. Woodbridge",
+    "position": "Pomocnik",
+    "element": "Wind",
+    "hissatsu": [
+      {
+        "name": "Bewildered",
+        "element": "Mountain",
+        "type": "Odbierająca"
+      }
+    ],
+    "overall": 44,
+    "chance_percent": 3.5385,
+    "tier": "BRĄZOWA",
+    "image": "cards/43_a_woodbridge.jpg",
+    "source_file": "OIP (45)(3).webp",
+    "team": "Otaku",
+    "collection_page": 5
+  },
+  {
+    "name": "Walter Valiant",
+    "position": "Pomocnik",
+    "element": "Fire",
+    "hissatsu": [
+      {
+        "name": "Fake Ball",
+        "element": "Forest",
+        "type": "Odbierająca"
+      },
+      {
+        "name": "Bewildered",
+        "element": "Mountain",
+        "type": "Odbierająca"
+      }
+    ],
+    "overall": 46,
+    "chance_percent": 3.5385,
+    "tier": "BRĄZOWA",
+    "image": "cards/44_walter_valiant.jpg",
+    "source_file": "OIP (46)(3).webp",
+    "team": "Otaku",
+    "collection_page": 5
+  },
+  {
+    "name": "Light Nobel",
+    "position": "Pomocnik",
+    "element": "Forest",
+    "hissatsu": [],
+    "overall": 47,
+    "chance_percent": 3.5385,
+    "tier": "BRĄZOWA",
+    "image": "cards/45_light_nobel.jpg",
+    "source_file": "OIP (47)(3).webp",
+    "team": "Otaku",
+    "collection_page": 5
+  },
+  {
+    "name": "Theodore Master",
+    "position": "Napastnik",
+    "element": "Forest",
+    "hissatsu": [
+      {
+        "name": "Bewildered",
+        "element": "Mountain",
+        "type": "Odbierająca"
+      }
+    ],
+    "overall": 36,
+    "chance_percent": 3.5385,
+    "tier": "BRĄZOWA",
+    "image": "cards/46_theodore_master.jpg",
+    "source_file": "OIP (48)(2).webp",
+    "team": "Otaku",
+    "collection_page": 5
+  },
+  {
+    "name": "Gus Gamer",
+    "position": "Napastnik",
+    "element": "Fire",
+    "hissatsu": [
+      {
+        "name": "Utter Gutsiness Bat",
+        "element": "Fire",
+        "type": "Strzał"
+      },
+      {
+        "name": "Bewildered",
+        "element": "Mountain",
+        "type": "Odbierająca"
+      }
+    ],
+    "overall": 49,
+    "chance_percent": 3.5385,
+    "tier": "BRĄZOWA",
+    "image": "cards/47_gus_gamer.jpg",
+    "source_file": "OIP (49)(2).webp",
+    "team": "Otaku",
+    "collection_page": 5
+  },
+  {
+    "name": "Gaby Farmer",
+    "position": "Napastnik",
+    "element": "Wind",
+    "hissatsu": [],
+    "overall": 38,
+    "chance_percent": 3.5385,
+    "tier": "BRĄZOWA",
+    "image": "cards/48_gaby_farmer.jpg",
+    "source_file": "OIP (50)(2).webp",
+    "team": "Otaku",
+    "collection_page": 5
+  },
+  {
+    "name": "Mark Gambling",
+    "position": "Napastnik",
+    "element": "Wind",
+    "hissatsu": [
+      {
+        "name": "Utter Gutsiness Bat",
+        "element": "Fire",
+        "type": "Strzał"
+      },
+      {
+        "name": "Cross Drive",
+        "element": "Wind",
+        "type": "Strzał"
+      }
+    ],
+    "overall": 51,
+    "chance_percent": 3,
+    "tier": "BRĄZOWA",
+    "image": "cards/49_mark_gambling.jpg",
+    "source_file": "OIP (51)(2).webp",
+    "team": "Otaku",
+    "collection_page": 5
+  },
+  {
+    "name": "Online",
+    "position": "Napastnik",
+    "element": "Forest",
+    "hissatsu": [],
+    "overall": 40,
+    "chance_percent": 3.5385,
+    "tier": "BRĄZOWA",
+    "image": "cards/50_online.jpg",
+    "source_file": "Onra_Itsuki(2).webp",
+    "team": "Otaku",
+    "collection_page": 5
   }
 ]
