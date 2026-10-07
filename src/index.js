@@ -130,6 +130,34 @@ function cardEmbed(card, index, imageName, duplicateCoins = 0) {
   return embed;
 }
 
+async function showPackOdds(interaction) {
+  const ranges = [
+    { label: 'OVERALL 34–49', min: 34, max: 49 },
+    { label: 'OVERALL 50–64', min: 50, max: 64 },
+    { label: 'OVERALL 65–74', min: 65, max: 74 },
+    { label: 'OVERALL 75–84', min: 75, max: 84 },
+    { label: 'OVERALL 85–89', min: 85, max: 89 },
+    { label: 'OVERALL 90–99', min: 90, max: 99 },
+  ];
+  const fields = ranges.map(({ label, min, max }) => {
+    const players = catalog.filter((player) => player.overall >= min && player.overall <= max);
+    const totalChance = players.reduce((sum, player) => sum + player.chance_percent, 0);
+    const lines = players.map((player) =>
+      `• ${player.name} — ${player.chance_percent.toLocaleString('pl-PL', { minimumFractionDigits: 4, maximumFractionDigits: 4 })}%`);
+    return {
+      name: `${label} · razem ${totalChance.toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`,
+      value: lines.join('\n') || 'Brak zawodników',
+    };
+  });
+  const embed = new EmbedBuilder()
+    .setColor(0x37b77b)
+    .setTitle('📊 Szanse — paczka S2')
+    .setDescription('Szansa na wylosowanie **jednego zawodnika**. Paczka zawiera 5 niezależnych losowań.')
+    .addFields(...fields)
+    .setFooter({ text: 'Wszystkie szanse razem: 100%.' });
+  await interaction.reply({ embeds: [embed], ephemeral: true });
+}
+
 async function showShop(interaction, page = 0, edit = false) {
   const emblemPage = page === 1;
   const imageName = emblemPage ? 'hissatsu_pack.png' : 'paczka_s2.png';
@@ -152,25 +180,8 @@ async function showShop(interaction, page = 0, edit = false) {
   if (emblemPage) {
     embed.setThumbnail(`attachment://${avatarName}`);
   } else {
-    const groups = [
-      { tier: 'BRĄZOWA', name: '🟤 Brąz — OVERALL 1–64' },
-      { tier: 'SREBRNA', name: '🥈 Srebro — OVERALL 65–74' },
-      { tier: 'ZŁOTA', name: '🥇 Złoto — OVERALL 75–99' },
-    ];
-    const oddsFields = groups.map(({ tier, name }) => {
-      const players = catalog.filter((player) => player.tier === tier);
-      const totalChance = players.reduce((sum, player) => sum + player.chance_percent, 0);
-      const lines = players
-        .map((player) => `• ${player.name} (OVR ${player.overall}) — ${player.chance_percent.toLocaleString('pl-PL', { minimumFractionDigits: 4, maximumFractionDigits: 4 })}%`);
-      return {
-        name: `${name} · łącznie ${totalChance.toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`,
-        value: lines.join('\\n') || 'Brak kart',
-      };
-    });
-    embed.addFields(...oddsFields);
-    embed.setFooter({ text: 'Szansa dotyczy jednego zawodnika; paczka zawiera 5 losowań.' });
+    embed.setFooter({ text: 'Kliknij zielony przycisk 📊 Szanse, aby zobaczyć szansę każdego zawodnika.' });
   }
-
   const previous = new ButtonBuilder().setCustomId('shop-prev').setLabel('◀').setStyle(ButtonStyle.Secondary).setDisabled(!emblemPage);
   const buy = new ButtonBuilder()
     .setCustomId(emblemPage ? 'buy-hissatsu-pack' : 'buy-player-pack')
@@ -178,7 +189,13 @@ async function showShop(interaction, page = 0, edit = false) {
     .setEmoji('🎁')
     .setStyle(ButtonStyle.Primary);
   const next = new ButtonBuilder().setCustomId('shop-next').setLabel('▶').setStyle(ButtonStyle.Secondary).setDisabled(emblemPage);
-  const row = new ActionRowBuilder().addComponents(previous, buy, next);
+  const odds = new ButtonBuilder()
+    .setCustomId('shop-odds')
+    .setLabel('Szanse')
+    .setEmoji('📊')
+    .setStyle(ButtonStyle.Success)
+    .setDisabled(emblemPage);
+  const row = new ActionRowBuilder().addComponents(previous, odds, buy, next);
   const image = new AttachmentBuilder(path.join(ASSETS, imageName));
   const files = [image];
   if (emblemPage) files.push(new AttachmentBuilder(path.join(ASSETS, avatarName)));
@@ -919,6 +936,8 @@ client.on(Events.InteractionCreate, async (interaction) => {
         await showCollection(interaction, page, true);
       } else if (interaction.customId === 'collection-prev' || interaction.customId === 'collection-next') {
         await showCollection(interaction, interaction.customId === 'collection-next' ? 1 : 0, true);
+      } else if (interaction.customId === 'shop-odds') {
+        await showPackOdds(interaction);
       } else if (interaction.customId === 'buy-player-pack') {
         await openPack(interaction);
       } else if (interaction.customId === 'buy-hissatsu-pack') {
