@@ -140,7 +140,7 @@ async function showShop(interaction, page = 0, edit = false) {
     ? new EmbedBuilder()
       .setColor(0x9868e8)
       .setTitle('✨ Hissatsu Pack — herby szkół')
-      .setDescription(`Paczka daje **1 nowy herb** spośród ${emblemNames}.\nCena: **${EMBLEM_PACK_PRICE} monet**. Herbem możesz oznaczyć swój skład przez \`${herbCommand}\`.`)
+      .setDescription(`Paczka daje **1 herb** spośród ${emblemNames}; możliwa jest też powtórka (+10 monet).\nCena: **${EMBLEM_PACK_PRICE} monet**. Herbem możesz oznaczyć swój skład przez \`${herbCommand}\`.`)
       .setImage(`attachment://${imageName}`)
       .setFooter({ text: 'Przełącz paczki strzałkami poniżej.' })
     : new EmbedBuilder()
@@ -202,7 +202,6 @@ async function openPack(interaction) {
 
   const animationName = animationFor(cards);
   const animation = new AttachmentBuilder(path.join(ASSETS, animationName));
-  const duplicateQueue = [...result.duplicates];
   await interaction.reply({
     content: `🎁 ${interaction.user} otwiera paczkę S2!${result.duplicateCoins ? ` Duplikaty dały **${result.duplicateCoins} monet**.` : ''} Pozostało **${result.balance} monet**.`,
     files: [animation],
@@ -214,8 +213,8 @@ async function openPack(interaction) {
     await new Promise((resolve) => setTimeout(resolve, delay));
     const imageName = `zawodnik-${index + 1}.png`;
     const renderedCard = await renderPlayerCard(card);
-    const duplicateIndex = duplicateQueue.findIndex((duplicate) => duplicate.name === card.name);
-    const duplicate = duplicateIndex >= 0 ? duplicateQueue.splice(duplicateIndex, 1)[0] : null;
+    const pull = result.pulls[index];
+    const duplicate = pull?.isDuplicate ? pull : null;
     await interaction.followUp({
       content: index === 0 ? '⚡ Zawodnicy z paczki pojawiają się po kolei:' : undefined,
       embeds: [cardEmbed(card, index, imageName, duplicate?.coins ?? 0)],
@@ -468,9 +467,17 @@ function formationGroups(formation) {
   ];
 }
 
-function arrangeTeam(playerNames, formation) {
-  const unassigned = playerNames.map((name) => catalog.find((player) => player.name === name)).filter(Boolean);
+function arrangeTeam(playerNames, formation, savedPositions = null) {
+  const players = playerNames.map((name) => catalog.find((player) => player.name === name)).filter(Boolean);
   const slots = formationGroups(formation);
+  if (Array.isArray(savedPositions) && savedPositions.length === 11 && players.length === 11) {
+    return players.map((player, index) => ({
+      slot: index + 1,
+      position: savedPositions[index] ?? slots[index],
+      player,
+    }));
+  }
+  const unassigned = [...players];
   return slots.map((position, index) => {
     let playerIndex = unassigned.findIndex((player) => player.position === position);
     if (playerIndex < 0) {
@@ -496,7 +503,7 @@ function teamEmblemRow(user) {
 }
 
 async function teamMessage(user, username) {
-  const lineup = arrangeTeam(user.team.players, user.team.formation);
+  const lineup = arrangeTeam(user.team.players, user.team.formation, user.team.positions);
   const avgOverall = Math.round(lineup.reduce((sum, entry) => sum + entry.player.overall, 0) / lineup.length);
   const emblem = emblems.find((item) => item.id === user.team.emblem);
   const embed = new EmbedBuilder()
@@ -605,7 +612,11 @@ async function renderTeamBuilder(interaction, state) {
   const currentSlot = state.selected.length;
   const positions = state.positions;
   const targetPosition = currentSlot < 11 ? positions[currentSlot] : 'Gotowe';
-  const preview = await renderSquadBuilderPreview(state.formation);
+  const selectedPreview = state.selected.map((name, index) => {
+    const player = catalog.find((entry) => entry.name === name);
+    return player ? { ...player, squadPosition: state.positions[index] } : null;
+  }).filter(Boolean);
+  const preview = await renderSquadBuilderPreview(state.formation, selectedPreview);
   const embed = new EmbedBuilder()
     .setColor(0x168cff)
     .setTitle(`🧩 Budowanie składu — ${state.formation}`)
@@ -705,8 +716,8 @@ async function buyHissatsuPack(interaction) {
   const imageName = `herb-${result.emblem.id}.png`;
   const embed = new EmbedBuilder()
     .setColor(Number.parseInt(result.emblem.color.replace('#', ''), 16))
-    .setTitle(`✨ Zdobywasz herb ${result.emblem.name}!`)
-    .setDescription(`Pozostało **${result.balance} monet**. Załóż herb na skład komendą herb.`)
+    .setTitle(result.duplicate ? `↩️ Powtórka herbu ${result.emblem.name}` : `✨ Zdobywasz herb ${result.emblem.name}!`)
+    .setDescription(`${result.duplicate ? `Ten herb już masz — rekompensata: **+${result.duplicateCoins} monet**.\n` : ''}Pozostało **${result.balance} monet**. Załóż herb na skład komendą /herb.`)
     .setImage(`attachment://${imageName}`);
   await interaction.reply({ embeds: [embed], files: [new AttachmentBuilder(path.join(ASSETS, result.emblem.image), { name: imageName })], ephemeral: true });
 }
@@ -817,7 +828,7 @@ async function playRouletteRound(interaction) {
 }
 
 client.once(Events.ClientReady, (readyClient) => {
-  console.log(`Bot działa jako ${readyClient.user.tag} | TEAM-BUILDER-FILTERS-v7 | Hissatsu Pack 2026-10-07 | zawodnicy: ${catalog.length} | herby: ${emblems.length}`);
+  console.log(`Bot działa jako ${readyClient.user.tag} | TEAM-DUPLICATES-GK-PREVIEW-v8 | Hissatsu Pack 2026-10-07 | zawodnicy: ${catalog.length} | herby: ${emblems.length}`);
 });
 
 client.on(Events.InteractionCreate, async (interaction) => {
@@ -859,7 +870,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
           state.page = Math.max(0, state.page + (action === 'page-next' ? 1 : -1));
           await renderTeamBuilder(interaction, state);
         } else if (action === 'save') {
-          const result = saveTeam(interaction.guildId, interaction.user.id, state.formation, state.selected);
+          const result = saveTeam(interaction.guildId, interaction.user.id, state.formation, state.selected, state.positions);
           if (!result.ok) {
             await interaction.update({ content: 'Nie udało się zapisać składu. Sprawdź, czy wybrano 11 różnych posiadanych kart.', embeds: [], components: [] });
             return;
