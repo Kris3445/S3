@@ -158,10 +158,14 @@ async function showShop(interaction, page = 0, edit = false) {
       { tier: 'ZŁOTA', name: '🥇 Złoto — OVERALL 75–99' },
     ];
     const oddsFields = groups.map(({ tier, name }) => {
-      const lines = catalog
-        .filter((player) => player.tier === tier)
+      const players = catalog.filter((player) => player.tier === tier);
+      const totalChance = players.reduce((sum, player) => sum + player.chance_percent, 0);
+      const lines = players
         .map((player) => `• ${player.name} (OVR ${player.overall}) — ${player.chance_percent.toLocaleString('pl-PL', { minimumFractionDigits: 4, maximumFractionDigits: 4 })}%`);
-      return { name, value: lines.join('\\n') || 'Brak kart' };
+      return {
+        name: `${name} · łącznie ${totalChance.toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`,
+        value: lines.join('\\n') || 'Brak kart',
+      };
     });
     embed.addFields(...oddsFields);
     embed.setFooter({ text: 'Szansa dotyczy jednego zawodnika; paczka zawiera 5 losowań.' });
