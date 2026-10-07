@@ -92,8 +92,9 @@ export async function renderCollection(catalog, ownedCards, page = 0, teamEmblem
     ctx.fillText(`INAZUMA ELEVEN  •  ${page + 1}/${pageCount}`, MARGIN, 55);
   }
   ctx.fillStyle = '#94a3b8';
-  ctx.font = '15px Roboto';
-  ctx.fillText(`${owned.size} / ${catalog.length} ZAWODNIKÓW ODBLOKOWANYCH`, MARGIN, 110);
+  ctx.font = '13px Roboto';
+  const collectionCountX = teamEmblem ? 154 : MARGIN;
+  ctx.fillText(`${owned.size}/${catalog.length} ZAWODNIKÓW`, collectionCountX, 112);
 
   const legendY = 148;
   let legendX = MARGIN;
