@@ -412,7 +412,7 @@ export async function renderSquadPitch(lineup, formation, emblem = null) {
   return canvas.encode('png');
 }
 
-export async function renderSquadBuilderPreview(formation) {
+export async function renderSquadBuilderPreview(formation, selectedPlayers = []) {
   const canvas = createCanvas(1200, 980);
   const ctx = canvas.getContext('2d');
   ctx.fillStyle = '#0b1220';
@@ -472,36 +472,43 @@ export async function renderSquadBuilderPreview(formation) {
   }
   const [defenders, midfielders, forwards] = formation.split('-').map(Number);
   const groups = [
-    { label: 'FW', count: forwards, y: 0.19 },
-    { label: 'MF', count: midfielders, y: 0.40 },
-    { label: 'DF', count: defenders, y: 0.63 },
-    { label: 'GK', count: 1, y: 0.83 },
+    { label: 'FW', position: 'Napastnik', count: forwards, y: 0.19 },
+    { label: 'MF', position: 'Pomocnik', count: midfielders, y: 0.40 },
+    { label: 'DF', position: 'Obrońca', count: defenders, y: 0.63 },
+    { label: 'GK', position: 'Bramkarz', count: 1, y: 0.83 },
   ];
   const cardW = 118;
   const cardH = cardW * 900 / 640;
   const xsByCount = { 1: [0.5], 2: [0.35, 0.65], 3: [0.2, 0.5, 0.8], 4: [0.14, 0.38, 0.62, 0.86], 5: [0.1, 0.3, 0.5, 0.7, 0.9] };
   for (const group of groups) {
     const xs = xsByCount[group.count] ?? Array.from({ length: group.count }, (_, i) => (i + 1) / (group.count + 1));
-    for (const xRatio of xs) {
-      const cx = px + xRatio * pw;
+    const members = selectedPlayers.filter((player) => player.squadPosition === group.position);
+    for (let index = 0; index < xs.length; index += 1) {
+      const cx = px + xs[index] * pw;
       const cy = py + group.y * ph;
       const x = cx - cardW / 2;
       const y = cy - cardH / 2;
-      ctx.fillStyle = '#17263a';
-      ctx.fillRect(x, y, cardW, cardH);
-      ctx.strokeStyle = '#94a3b8';
-      ctx.lineWidth = 3;
-      ctx.strokeRect(x + 1.5, y + 1.5, cardW - 3, cardH - 3);
-      ctx.beginPath();
-      ctx.arc(cx, y + 55, 22, 0, Math.PI * 2);
-      ctx.fillStyle = '#263950';
-      ctx.fill();
-      ctx.fillStyle = '#e2e8f0';
-      ctx.font = 'bold 15px Roboto';
-      ctx.fillText(group.label, cx, y + cardH - 22);
-      ctx.fillStyle = '#94a3b8';
-      ctx.font = '11px Roboto';
-      ctx.fillText('PUSTE MIEJSCE', cx, y + cardH - 7);
+      const player = members[index];
+      if (player) {
+        const card = await loadImage(await renderPlayerCard(player));
+        ctx.drawImage(card, x, y, cardW, cardH);
+      } else {
+        ctx.fillStyle = '#17263a';
+        ctx.fillRect(x, y, cardW, cardH);
+        ctx.strokeStyle = '#94a3b8';
+        ctx.lineWidth = 3;
+        ctx.strokeRect(x + 1.5, y + 1.5, cardW - 3, cardH - 3);
+        ctx.beginPath();
+        ctx.arc(cx, y + 55, 22, 0, Math.PI * 2);
+        ctx.fillStyle = '#263950';
+        ctx.fill();
+        ctx.fillStyle = '#e2e8f0';
+        ctx.font = 'bold 15px Roboto';
+        ctx.fillText(group.label, cx, y + cardH - 22);
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '11px Roboto';
+        ctx.fillText('PUSTE MIEJSCE', cx, y + cardH - 7);
+      }
     }
   }
   ctx.textAlign = 'left';
