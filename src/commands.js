@@ -2,9 +2,9 @@ import { PermissionFlagsBits, SlashCommandBuilder } from 'discord.js';
 
 const commandBuilders = [
   new SlashCommandBuilder().setName('sklep').setDescription('Otwórz sklep i przełączaj paczki strzałkami.'),
-  new SlashCommandBuilder().setName('work').setDescription('Wykonaj pracę i zarób monety oraz postęp osiągnięć.'),
-  new SlashCommandBuilder().setName('training').setDescription('Trenuj i zarób monety.'),
-  new SlashCommandBuilder().setName('job').setDescription('Idź do pracy i zarób monety.'),
+  new SlashCommandBuilder().setName('work').setDescription('Zarabiaj 5–10 monet. Odnawia się co 30 sekund.'),
+  new SlashCommandBuilder().setName('training').setDescription('Zarabiaj 10–25 monet. Odnawia się co 2 minuty.'),
+  new SlashCommandBuilder().setName('job').setDescription('Co 5 minut: 50% na 25–30 monet lub stratę 5–10.'),
   new SlashCommandBuilder().setName('free').setDescription('Odbierz jednorazową nagrodę 8000 monet.'),
   new SlashCommandBuilder().setName('daily').setDescription('Odbierz dzienną nagrodę z kalendarza wydarzenia.'),
   new SlashCommandBuilder().setName('calendar').setDescription('Pokaż kalendarz wydarzeń i dzienne nagrody.'),

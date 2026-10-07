@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { DATA_FILE } from './config.js';
+import { DATA_FILE, EARN_VERIFY_EVERY, EARN_VERIFY_PENALTY_MS, EARN_VERIFY_TIMEOUT_MS } from './config.js';
 
 function ensureDataFile() {
   fs.mkdirSync(path.dirname(DATA_FILE), { recursive: true });
@@ -40,6 +40,10 @@ function getOrCreate(data, guildId, userId) {
   const user = data[key];
   user.balance ??= 0;
   user.nextEarnAt ??= 0;
+  if (!user.earnCooldowns || typeof user.earnCooldowns !== 'object' || Array.isArray(user.earnCooldowns)) user.earnCooldowns = {};
+  if (!Number.isInteger(user.earnActionCount) || user.earnActionCount < 0) user.earnActionCount = 0;
+  if (!Number.isFinite(user.earnVerificationUntil)) user.earnVerificationUntil = 0;
+  if (!Number.isFinite(user.earnBlockedUntil)) user.earnBlockedUntil = 0;
   if (!Array.isArray(user.cards)) user.cards = [];
   if (!Array.isArray(user.trophies)) user.trophies = [];
   user.profileImage ??= null;
@@ -148,11 +152,29 @@ export function claimReward(guildId, userId, reward, cooldownMs, activity) {
   const data = readAll();
   const user = getOrCreate(data, guildId, userId);
   const now = Date.now();
-  if (now < user.nextEarnAt) {
-    return { ok: false, balance: user.balance, nextEarnAt: user.nextEarnAt };
+
+  if (user.earnVerificationUntil > 0) {
+    if (now < user.earnVerificationUntil) {
+      return { ok: false, reason: 'verification-pending', nextEarnAt: user.earnVerificationUntil };
+    }
+    user.earnBlockedUntil = Math.max(user.earnBlockedUntil, user.earnVerificationUntil + EARN_VERIFY_PENALTY_MS);
+    user.earnVerificationUntil = 0;
   }
-  user.balance += reward;
-  user.nextEarnAt = now + cooldownMs;
+  if (user.earnBlockedUntil > now) {
+    writeAll(data);
+    return { ok: false, reason: 'verification-failed', nextEarnAt: user.earnBlockedUntil };
+  }
+  if (user.earnBlockedUntil > 0) user.earnBlockedUntil = 0;
+
+  const nextEarnAt = user.earnCooldowns[activity] ?? 0;
+  if (now < nextEarnAt) {
+    return { ok: false, reason: 'cooldown', nextEarnAt };
+  }
+
+  const actualReward = reward < 0 ? -Math.min(user.balance, Math.abs(reward)) : reward;
+  user.balance += actualReward;
+  user.earnCooldowns[activity] = now + cooldownMs;
+  user.nextEarnAt = Math.min(...Object.values(user.earnCooldowns).filter(Number.isFinite));
   const achievements = [];
   const trophies = [];
   if (activity === 'work') {
@@ -166,14 +188,43 @@ export function claimReward(guildId, userId, reward, cooldownMs, activity) {
           if (!user.unlockedCosmetics[listName].includes(id)) user.unlockedCosmetics[listName].push(id);
         }
         achievements.push({ count: milestone.count, reward: milestone.reward });
-        unlockTrophy(user, `work_${milestone.count}`, trophies);
+        unlockTrophy(user, 'work_' + milestone.count, trophies);
       }
     }
   }
+
+  user.earnActionCount += 1;
+  const verificationRequired = user.earnActionCount >= EARN_VERIFY_EVERY;
+  const verificationUntil = verificationRequired ? now + EARN_VERIFY_TIMEOUT_MS : 0;
+  if (verificationRequired) {
+    user.earnActionCount = 0;
+    user.earnVerificationUntil = verificationUntil;
+  }
+
   writeAll(data);
-  return { ok: true, balance: user.balance, nextEarnAt: user.nextEarnAt, workCount: user.workCount, achievements, trophies };
+  return {
+    ok: true, balance: user.balance, reward: actualReward, nextEarnAt: user.earnCooldowns[activity],
+    workCount: user.workCount, achievements, trophies, verificationRequired, verificationUntil,
+  };
 }
 
+export function verifyEarnAction(guildId, userId, challengeUntil) {
+  const data = readAll();
+  const user = getOrCreate(data, guildId, userId);
+  if (!Number.isFinite(challengeUntil) || user.earnVerificationUntil !== challengeUntil) {
+    return { ok: false, reason: 'stale-challenge' };
+  }
+  if (Date.now() >= challengeUntil) {
+    user.earnVerificationUntil = 0;
+    user.earnBlockedUntil = Math.max(user.earnBlockedUntil, challengeUntil + EARN_VERIFY_PENALTY_MS);
+    writeAll(data);
+    return { ok: false, reason: 'verification-failed', nextEarnAt: user.earnBlockedUntil };
+  }
+  user.earnVerificationUntil = 0;
+  user.earnActionCount = 0;
+  writeAll(data);
+  return { ok: true };
+}
 export function claimDailyReward(guildId, userId, dateKey, eventBackground) {
   const data = readAll();
   const user = getOrCreate(data, guildId, userId);

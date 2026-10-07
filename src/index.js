@@ -15,9 +15,18 @@ import {
 import {
   ASSETS,
   BETA_END_AT,
-  EARN_REWARD,
+  JOB_COOLDOWN_MS,
+  JOB_LOSS_MAX,
+  JOB_LOSS_MIN,
+  JOB_MAX_REWARD,
+  JOB_MIN_REWARD,
   EMBLEM_PACK_PRICE,
-  GLOBAL_COOLDOWN_MS,
+  TRAINING_COOLDOWN_MS,
+  TRAINING_MAX_REWARD,
+  TRAINING_MIN_REWARD,
+  WORK_COOLDOWN_MS,
+  WORK_MAX_REWARD,
+  WORK_MIN_REWARD,
   PACK_PRICE,
   PACK_SIZE,
   TOKEN,
@@ -36,6 +45,7 @@ import {
   setCosmetic,
   setProfileImage,
   setTeamEmblem,
+  verifyEarnAction,
 } from './economy.js';
 import { renderCollection, renderPlayerCard, renderProfileBanner, renderSquadBuilderPreview, renderSquadPitch } from './gallery.js';
 
@@ -164,7 +174,7 @@ async function showPackOdds(interaction) {
 
 async function showShop(interaction, page = 0, edit = false) {
   const emblemPage = page === 1;
-  const imageName = emblemPage ? 'hissatsu_pack.png' : 'paczka_s2.png';
+  const imageName = emblemPage ? 'hissatsu_pack.png' : 'paczka_s2_wide.jpg';
   const avatarName = 'hissatsu_pack_avatar.png';
   const emblemNames = emblems.map((entry) => entry.name).join(', ');
   const herbCommand = '/herb';
@@ -178,7 +188,7 @@ async function showShop(interaction, page = 0, edit = false) {
     : new EmbedBuilder()
       .setColor(0x168cff)
       .setTitle('⚡ Sklep Inazuma Eleven — paczka S2')
-      .setDescription(`Jedna paczka zawiera **${PACK_SIZE} zawodników**.\nCena: **${PACK_PRICE} monet**\n\nDuplikaty zamieniają się na monety: brąz 10, srebro 20, złoto 30.`)
+      .setDescription(`Jedna paczka zawiera **${PACK_SIZE} zawodników**.\nCena: **${PACK_PRICE} monet**\n\n/work: 5–10 monet co 30 s · /training: 10–25 co 2 min · /job: 25–30 co 5 min (50% ryzyka straty 5–10).\n\nDuplikaty zamieniają się na monety: brąz 10, srebro 20, złoto 30.`)
       .setImage(`attachment://${imageName}`)
       .setFooter({ text: 'Zarabiaj przez /work, /training lub /job albo odbierz jednorazowe /free.' });
   if (emblemPage) {
@@ -209,27 +219,61 @@ async function showShop(interaction, page = 0, edit = false) {
   else await interaction.reply(payload);
 }
 
+function randomInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
 async function earn(interaction, activity) {
   if (!requireGuild(interaction)) return;
-  const activityKey = activity === 'wykonuje pracę' ? 'work' : activity;
-  const result = claimReward(interaction.guildId, interaction.user.id, EARN_REWARD, GLOBAL_COOLDOWN_MS, activityKey);
+  const settings = {
+    work: { min: WORK_MIN_REWARD, max: WORK_MAX_REWARD, cooldown: WORK_COOLDOWN_MS, text: 'wykonujesz pracę' },
+    training: { min: TRAINING_MIN_REWARD, max: TRAINING_MAX_REWARD, cooldown: TRAINING_COOLDOWN_MS, text: 'kończysz trening' },
+    job: { min: JOB_MIN_REWARD, max: JOB_MAX_REWARD, cooldown: JOB_COOLDOWN_MS, text: 'wracasz z pracy' },
+  }[activity];
+  if (!settings) throw new Error('Nieznana komenda zarobkowa.');
+
+  const jobFailed = activity === 'job' && Math.random() < 0.5;
+  const amount = jobFailed
+    ? randomInt(JOB_LOSS_MIN, JOB_LOSS_MAX)
+    : randomInt(settings.min, settings.max);
+  const signedReward = jobFailed ? -amount : amount;
+  const result = claimReward(interaction.guildId, interaction.user.id, signedReward, settings.cooldown, activity);
   if (!result.ok) {
+    if (result.reason === 'verification-pending') {
+      await interaction.reply({ content: '🤖 Najpierw potwierdź zielonym przyciskiem w poprzedniej wiadomości.', ephemeral: true });
+      return;
+    }
     const timestamp = Math.ceil(result.nextEarnAt / 1000);
-    await interaction.reply({
-      content: `Masz wspólną przerwę na zarabianie. Spróbuj ponownie <t:${timestamp}:R>.`,
-      ephemeral: true,
-    });
+    const message = result.reason === 'verification-failed'
+      ? '⛔ Nie potwierdziłeś weryfikacji. Komendy zarobkowe są zablokowane do <t:' + timestamp + ':R>.'
+      : '⏱️ Tej komendy możesz użyć ponownie <t:' + timestamp + ':R>.';
+    await interaction.reply({ content: message, ephemeral: true });
     return;
   }
-  const achievementText = result.achievements.map((achievement) => `🏅 Osiągnięcie ${achievement.count} użyć /work: **+${achievement.reward} monet** i nowe ozdoby profilu!`).join('\n');
+
+  const achievementText = result.achievements.map((achievement) => '🏅 Osiągnięcie ' + achievement.count + ' użyć /work: **+' + achievement.reward + ' monet** i nowe ozdoby profilu!').join('\n');
   const trophyText = trophyNotice(result.trophies);
-  const progress = activityKey === 'work' ? ` Postęp /work: **${result.workCount}**.` : '';
+  const progress = activity === 'work' ? ' Postęp /work: **' + result.workCount + '**.' : '';
+  const rewardText = result.reward < 0
+    ? 'Nieudana praca — tracisz **' + Math.abs(result.reward) + ' monet**.'
+    : 'Dostajesz **' + result.reward + ' monet**.';
+  const nextText = activity === 'work' ? '30 sekund' : activity === 'training' ? '2 minuty' : '5 minut';
+  const verificationText = result.verificationRequired
+    ? '\n\n🤖 Potwierdź zielonym przyciskiem w ciągu minuty. Bez potwierdzenia komendy zarobkowe zostaną zablokowane na 3 minuty.'
+    : '';
+  const components = result.verificationRequired
+    ? [new ActionRowBuilder().addComponents(new ButtonBuilder()
+      .setCustomId('earn-verify:' + interaction.user.id + ':' + result.verificationUntil)
+      .setLabel('Potwierdzam')
+      .setEmoji('✅')
+      .setStyle(ButtonStyle.Success))]
+    : [];
   await interaction.reply({
-    content: `💰 ${interaction.user} ${activity}. Dostajesz **${EARN_REWARD} monet**.${progress}\n${achievementText}${trophyText}\nMasz teraz **${result.balance} monet**. Następna praca za minutę.`,
+    content: '💰 ' + interaction.user + ' ' + settings.text + '. ' + rewardText + progress + '\n' + achievementText + trophyText + '\nMasz teraz **' + result.balance + ' monet**. Następna ' + activity + ' za ' + nextText + '.' + verificationText,
+    components,
     ephemeral: true,
   });
 }
-
 async function openPack(interaction) {
   if (!requireGuild(interaction)) return;
   const cards = drawPack();
@@ -1092,7 +1136,21 @@ client.on(Events.InteractionCreate, async (interaction) => {
     }
     if (interaction.isButton()) {
       if (!requireGuild(interaction) || !(await requireAdmin(interaction)) || !(await requireGameAccess(interaction))) return;
-      if (interaction.customId.startsWith('team-build:')) {
+      if (interaction.customId.startsWith('earn-verify:')) {
+        const [, ownerId, deadlineText] = interaction.customId.split(':');
+        if (ownerId !== interaction.user.id) {
+          await interaction.reply({ content: 'Ta weryfikacja należy do innego gracza.', ephemeral: true });
+          return;
+        }
+        const verification = verifyEarnAction(interaction.guildId, interaction.user.id, Number(deadlineText));
+        if (verification.ok) {
+          await interaction.update({ content: '✅ Weryfikacja potwierdzona. Możesz dalej korzystać z komend zarobkowych.', components: [] });
+        } else if (verification.reason === 'verification-failed') {
+          await interaction.update({ content: '⛔ Czas na potwierdzenie minął. Komendy zarobkowe są zablokowane do <t:' + Math.ceil(verification.nextEarnAt / 1000) + ':R>.', components: [] });
+        } else {
+          await interaction.update({ content: 'Ta weryfikacja jest już nieaktualna. Użyj ponownie /work, /training lub /job.', components: [] });
+        }
+      } else if (interaction.customId.startsWith('team-build:')) {
         const state = teamBuildSessions.get(teamBuildKey(interaction));
         if (!state) {
           await interaction.update({ content: 'Sesja budowania składu wygasła. Uruchom ponownie `/team`.', embeds: [], components: [], attachments: [] });
@@ -1150,13 +1208,13 @@ client.on(Events.InteractionCreate, async (interaction) => {
         await showShop(interaction);
         break;
       case 'work':
-        await earn(interaction, 'wykonuje pracę');
+        await earn(interaction, 'work');
         break;
       case 'training':
-        await earn(interaction, 'kończy trening');
+        await earn(interaction, 'training');
         break;
       case 'job':
-        await earn(interaction, 'wraca z pracy');
+        await earn(interaction, 'job');
         break;
       case 'free':
         await claimFree(interaction);
