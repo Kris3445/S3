@@ -937,5 +937,216 @@
     "source_file": "Onra_Itsuki(2).webp",
     "team": "Otaku",
     "collection_page": 5
+  },
+  {
+    "name": "Thomas Feldt",
+    "position": "Bramkarz",
+    "element": "Forest",
+    "hissatsu": [
+      {
+        "name": "Rocket Kobushi",
+        "element": "Fire",
+        "type": "Obrona bramkarska"
+      },
+      {
+        "name": "Double Rocket",
+        "element": "Fire",
+        "type": "Obrona bramkarska"
+      }
+    ],
+    "overall": 80,
+    "chance_percent": 1.4,
+    "tier": "ZŁOTA",
+    "image": "cards/51_thomas_feldt.jpg",
+    "source_file": "OIP (52).webp",
+    "team": "Brainwashing",
+    "collection_page": 6
+  },
+  {
+    "name": "Terry Stronger",
+    "position": "Obrońca",
+    "element": "Fire",
+    "hissatsu": [
+      {
+        "name": "Defence Scan",
+        "element": "Forest",
+        "type": "Odbiór"
+      }
+    ],
+    "overall": 52,
+    "chance_percent": 3,
+    "tier": "BRĄZOWA",
+    "image": "cards/52_terry_stronger.jpg",
+    "source_file": "Hanaoka_Tsuyoshi.webp",
+    "team": "Brainwashing",
+    "collection_page": 6
+  },
+  {
+    "name": "Philip Marvel",
+    "position": "Obrońca",
+    "element": "Mountain",
+    "hissatsu": [],
+    "overall": 48,
+    "chance_percent": 3.5385,
+    "tier": "BRĄZOWA",
+    "image": "cards/53_philip_marvel.jpg",
+    "source_file": "Murobushi_Kyou_Ares.webp",
+    "team": "Brainwashing",
+    "collection_page": 6
+  },
+  {
+    "name": "Harry Leading",
+    "position": "Obrońca",
+    "element": "Wind",
+    "hissatsu": [],
+    "overall": 45,
+    "chance_percent": 3.5385,
+    "tier": "BRĄZOWA",
+    "image": "cards/54_harry_leading.jpg",
+    "source_file": "Hiroyama_Yuu.webp",
+    "team": "Brainwashing",
+    "collection_page": 6
+  },
+  {
+    "name": "Noel Good",
+    "position": "Obrońca",
+    "element": "Forest",
+    "hissatsu": [],
+    "overall": 43,
+    "chance_percent": 3.5385,
+    "tier": "BRĄZOWA",
+    "image": "cards/55_noel_good.jpg",
+    "source_file": "OIP (56).webp",
+    "team": "Brainwashing",
+    "collection_page": 6
+  },
+  {
+    "name": "Samuel Buster",
+    "position": "Pomocnik",
+    "element": "Fire",
+    "hissatsu": [
+      {
+        "name": "Attack Scan",
+        "element": "Forest",
+        "type": "Drybling"
+      }
+    ],
+    "overall": 49,
+    "chance_percent": 3.5385,
+    "tier": "BRĄZOWA",
+    "image": "cards/56_samuel_buster.jpg",
+    "source_file": "Sangou_Baku.webp",
+    "team": "Brainwashing",
+    "collection_page": 6
+  },
+  {
+    "name": "Victor Kind",
+    "position": "Pomocnik",
+    "element": "Forest",
+    "hissatsu": [
+      {
+        "name": "Attack Scan",
+        "element": "Forest",
+        "type": "Drybling"
+      }
+    ],
+    "overall": 44,
+    "chance_percent": 3.5385,
+    "tier": "BRĄZOWA",
+    "image": "cards/57_victor_kind.jpg",
+    "source_file": "OIP (55).webp",
+    "team": "Brainwashing",
+    "collection_page": 6
+  },
+  {
+    "name": "Tyron Rock",
+    "position": "Pomocnik",
+    "element": "Fire",
+    "hissatsu": [
+      {
+        "name": "Attack Scan",
+        "element": "Forest",
+        "type": "Drybling"
+      }
+    ],
+    "overall": 46,
+    "chance_percent": 3.5385,
+    "tier": "BRĄZOWA",
+    "image": "cards/58_tyron_rock.jpg",
+    "source_file": "OIP (54).webp",
+    "team": "Brainwashing",
+    "collection_page": 6
+  },
+  {
+    "name": "Francis Tell",
+    "position": "Pomocnik",
+    "element": "Forest",
+    "hissatsu": [
+      {
+        "name": "Attack Scan",
+        "element": "Forest",
+        "type": "Drybling"
+      },
+      {
+        "name": "Defence Scan",
+        "element": "Forest",
+        "type": "Odbiór"
+      }
+    ],
+    "overall": 49,
+    "chance_percent": 3.5385,
+    "tier": "BRĄZOWA",
+    "image": "cards/59_francis_tell.jpg",
+    "source_file": "Fujimaru_Kei.webp",
+    "team": "Brainwashing",
+    "collection_page": 6
+  },
+  {
+    "name": "Jonathan Seller",
+    "position": "Napastnik",
+    "element": "Wind",
+    "hissatsu": [
+      {
+        "name": "Psycho Shot",
+        "element": "Forest",
+        "type": "Strzał"
+      },
+      {
+        "name": "Attack Scan",
+        "element": "Forest",
+        "type": "Drybling"
+      }
+    ],
+    "overall": 54,
+    "chance_percent": 3,
+    "tier": "BRĄZOWA",
+    "image": "cards/60_jonathan_seller.jpg",
+    "source_file": "OIP (53).webp",
+    "team": "Brainwashing",
+    "collection_page": 6
+  },
+  {
+    "name": "Neil Turner",
+    "position": "Napastnik",
+    "element": "Fire",
+    "hissatsu": [
+      {
+        "name": "Fire Tornado",
+        "element": "Fire",
+        "type": "Strzał"
+      },
+      {
+        "name": "Gungnir (L)",
+        "element": "Wind",
+        "type": "Strzał"
+      }
+    ],
+    "overall": 82,
+    "chance_percent": 1.4,
+    "tier": "ZŁOTA",
+    "image": "cards/61_neil_turner.jpg",
+    "source_file": "39e76f69686c6e80f19a6ce9889f45f2.jpg",
+    "team": "Brainwashing",
+    "collection_page": 6
   }
 ]

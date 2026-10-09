@@ -36,5 +36,12 @@
     "image": "emblems/otaku.png",
     "color": "#d73968",
     "source_file": "Shuuyou_Meito_Gakuen_emblem_29(3).webp"
+  },
+  {
+    "id": "brainwashing",
+    "name": "Brainwashing",
+    "image": "emblems/brainwashing.webp",
+    "color": "#e0bd22",
+    "source_file": "Mikage_Sennou_emblem_29.webp"
   }
 ]
