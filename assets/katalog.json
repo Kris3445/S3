@@ -1766,5 +1766,210 @@
     "source_file": "OIP (67).webp",
     "team": "Farm",
     "collection_page": 9
+  },
+  {
+    "name": "John Neville",
+    "position": "Bramkarz",
+    "element": "Fire",
+    "overall": 48,
+    "hissatsu": [
+      {
+        "name": "Toughness Block",
+        "element": "Mountain",
+        "type": "Obrona bramkarska"
+      }
+    ],
+    "chance_percent": 3.5385,
+    "tier": "BRĄZOWA",
+    "image": "cards/95_john_neville.jpg",
+    "source_file": "OIP (85).webp",
+    "team": "Kirkwood",
+    "collection_page": 10
+  },
+  {
+    "name": "Malcolm Night",
+    "position": "Obrońca",
+    "element": "Fire",
+    "overall": 77,
+    "hissatsu": [
+      {
+        "name": "Spinning Cut (B)",
+        "element": "Wind",
+        "type": "Odbiór"
+      },
+      {
+        "name": "Dash Accelerator",
+        "element": "Mountain",
+        "type": "Drybling"
+      }
+    ],
+    "chance_percent": 1.4,
+    "tier": "ZŁOTA",
+    "image": "cards/96_malcolm_night.jpg",
+    "source_file": "OIP (84).webp",
+    "team": "Kirkwood",
+    "collection_page": 10
+  },
+  {
+    "name": "Alfred Meenan",
+    "position": "Obrońca",
+    "element": "Forest",
+    "overall": 60,
+    "hissatsu": [
+      {
+        "name": "Hurricane Arrows",
+        "element": "Wind",
+        "type": "Odbiór"
+      }
+    ],
+    "chance_percent": 3,
+    "tier": "BRĄZOWA",
+    "image": "cards/97_alfred_meenan.jpg",
+    "source_file": "OIP (83).webp",
+    "team": "Kirkwood",
+    "collection_page": 10
+  },
+  {
+    "name": "Dan Mirthful",
+    "position": "Obrońca",
+    "element": "Forest",
+    "overall": 53,
+    "hissatsu": [],
+    "chance_percent": 3,
+    "tier": "BRĄZOWA",
+    "image": "cards/98_dan_mirthful.jpg",
+    "source_file": "OIP (82).webp",
+    "team": "Kirkwood",
+    "collection_page": 10
+  },
+  {
+    "name": "Rick Clover",
+    "position": "Obrońca",
+    "element": "Mountain",
+    "overall": 59,
+    "hissatsu": [
+      {
+        "name": "Hurricane Arrows",
+        "element": "Wind",
+        "type": "Odbiór"
+      }
+    ],
+    "chance_percent": 3,
+    "tier": "BRĄZOWA",
+    "image": "cards/99_rick_clover.jpg",
+    "source_file": "OIP (81).webp",
+    "team": "Kirkwood",
+    "collection_page": 10
+  },
+  {
+    "name": "York Nashmith",
+    "position": "Pomocnik",
+    "element": "Forest",
+    "overall": 52,
+    "hissatsu": [],
+    "chance_percent": 3,
+    "tier": "BRĄZOWA",
+    "image": "cards/100_york_nashmith.jpg",
+    "source_file": "OIP (80).webp",
+    "team": "Kirkwood",
+    "collection_page": 10
+  },
+  {
+    "name": "Toby Damian",
+    "position": "Pomocnik",
+    "element": "Wind",
+    "overall": 48,
+    "hissatsu": [],
+    "chance_percent": 3.5385,
+    "tier": "BRĄZOWA",
+    "image": "cards/101_toby_damian.jpg",
+    "source_file": "OIP (79).webp",
+    "team": "Kirkwood",
+    "collection_page": 10
+  },
+  {
+    "name": "Zachary Moore",
+    "position": "Pomocnik",
+    "element": "Forest",
+    "overall": 51,
+    "hissatsu": [],
+    "chance_percent": 3,
+    "tier": "BRĄZOWA",
+    "image": "cards/102_zachary_moore.jpg",
+    "source_file": "OIP (78).webp",
+    "team": "Kirkwood",
+    "collection_page": 10
+  },
+  {
+    "name": "Thomas Murdock",
+    "position": "Napastnik",
+    "element": "Wind",
+    "overall": 63,
+    "hissatsu": [
+      {
+        "name": "Back Tornado",
+        "element": "Wind",
+        "type": "Strzał"
+      },
+      {
+        "name": "Triangle Z",
+        "element": "Fire",
+        "type": "Strzał"
+      }
+    ],
+    "chance_percent": 3,
+    "tier": "BRĄZOWA",
+    "image": "cards/103_thomas_murdock.jpg",
+    "source_file": "OIP (77).webp",
+    "team": "Kirkwood",
+    "collection_page": 10
+  },
+  {
+    "name": "Marvin Murdock",
+    "position": "Napastnik",
+    "element": "Fire",
+    "overall": 71,
+    "hissatsu": [
+      {
+        "name": "Back Tornado",
+        "element": "Wind",
+        "type": "Strzał"
+      },
+      {
+        "name": "Triangle Z",
+        "element": "Fire",
+        "type": "Strzał"
+      }
+    ],
+    "chance_percent": 2.5,
+    "tier": "SREBRNA",
+    "image": "cards/104_marvin_murdock.jpg",
+    "source_file": "OIP (76).webp",
+    "team": "Kirkwood",
+    "collection_page": 10
+  },
+  {
+    "name": "Tyler Murdock",
+    "position": "Napastnik",
+    "element": "Mountain",
+    "overall": 70,
+    "hissatsu": [
+      {
+        "name": "Back Tornado",
+        "element": "Wind",
+        "type": "Strzał"
+      },
+      {
+        "name": "Triangle Z",
+        "element": "Fire",
+        "type": "Strzał"
+      }
+    ],
+    "chance_percent": 2.5,
+    "tier": "SREBRNA",
+    "image": "cards/105_tyler_murdock.jpg",
+    "source_file": "OIP (75).webp",
+    "team": "Kirkwood",
+    "collection_page": 10
   }
 ]

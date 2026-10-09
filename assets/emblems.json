@@ -64,5 +64,12 @@
     "image": "emblems/farm.png",
     "color": "#d1a52a",
     "source_file": "Senbayama_emblem_29(1).webp"
+  },
+  {
+    "id": "kirkwood",
+    "name": "Kirkwood",
+    "image": "emblems/kirkwood.png",
+    "color": "#cf5348",
+    "source_file": "Kidokawa_Seishuu_emblem_29(1).webp"
   }
 ]
