@@ -43,5 +43,12 @@
     "image": "emblems/brainwashing.webp",
     "color": "#e0bd22",
     "source_file": "Mikage_Sennou_emblem_29.webp"
+  },
+  {
+    "id": "royal_academy",
+    "name": "Royal Academy",
+    "image": "emblems/royal_academy.webp",
+    "color": "#1b9c74",
+    "source_file": "Teikoku_Gakuen_emblem_29(2).webp"
   }
 ]

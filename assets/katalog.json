@@ -1151,5 +1151,234 @@
     "portrait_zoom": 1.04,
     "portrait_focus_x": 0.49,
     "portrait_focus_y": 0.5
+  },
+  {
+    "name": "Joseph King",
+    "position": "Bramkarz",
+    "element": "Fire",
+    "overall": 83,
+    "chance_percent": 1.4,
+    "tier": "ZŁOTA",
+    "hissatsu": [
+      {
+        "name": "Full Power Shield",
+        "element": "Fire",
+        "type": "Obrona bramkarska"
+      },
+      {
+        "name": "Beast Fang",
+        "element": "Fire",
+        "type": "Obrona bramkarska"
+      }
+    ],
+    "image": "cards/62_joseph_king.jpg",
+    "source_file": "OIP (66).webp",
+    "team": "Royal Academy",
+    "collection_page": 7
+  },
+  {
+    "name": "Peter Drent",
+    "position": "Obrońca",
+    "element": "Mountain",
+    "overall": 56,
+    "chance_percent": 3,
+    "tier": "BRĄZOWA",
+    "hissatsu": [
+      {
+        "name": "Earthquake",
+        "element": "Mountain",
+        "type": "Odbiór"
+      }
+    ],
+    "image": "cards/63_peter_drent.jpg",
+    "source_file": "OIP (65).webp",
+    "team": "Royal Academy",
+    "collection_page": 7
+  },
+  {
+    "name": "Ben Simmons",
+    "position": "Obrońca",
+    "element": "Forest",
+    "overall": 51,
+    "chance_percent": 3,
+    "tier": "BRĄZOWA",
+    "hissatsu": [
+      {
+        "name": "Cyclone",
+        "element": "Wind",
+        "type": "Odbiór"
+      }
+    ],
+    "image": "cards/64_ben_simmons.jpg",
+    "source_file": "OIP (64).webp",
+    "team": "Royal Academy",
+    "collection_page": 7
+  },
+  {
+    "name": "Gus Martin",
+    "position": "Obrońca",
+    "element": "Forest",
+    "overall": 49,
+    "chance_percent": 3.5385,
+    "tier": "BRĄZOWA",
+    "hissatsu": [
+      {
+        "name": "Killer Slide",
+        "element": "Forest",
+        "type": "Odbiór"
+      }
+    ],
+    "image": "cards/65_gus_martin.jpg",
+    "source_file": "OIP (63).webp",
+    "team": "Royal Academy",
+    "collection_page": 7
+  },
+  {
+    "name": "Alan Master",
+    "position": "Pomocnik",
+    "element": "Wind",
+    "overall": 65,
+    "chance_percent": 2.5,
+    "tier": "SREBRNA",
+    "hissatsu": [
+      {
+        "name": "Killer Slide",
+        "element": "Forest",
+        "type": "Odbiór"
+      }
+    ],
+    "image": "cards/66_alan_master.jpg",
+    "source_file": "OIP (62).webp",
+    "team": "Royal Academy",
+    "collection_page": 7
+  },
+  {
+    "name": "Herman Waldon",
+    "position": "Pomocnik",
+    "element": "Wind",
+    "overall": 59,
+    "chance_percent": 3,
+    "tier": "BRĄZOWA",
+    "hissatsu": [
+      {
+        "name": "Killer Slide",
+        "element": "Forest",
+        "type": "Odbiór"
+      }
+    ],
+    "image": "cards/67_herman_waldon.jpg",
+    "source_file": "OIP (61).webp",
+    "team": "Royal Academy",
+    "collection_page": 7
+  },
+  {
+    "name": "John Bloom",
+    "position": "Pomocnik",
+    "element": "Fire",
+    "overall": 57,
+    "chance_percent": 3,
+    "tier": "BRĄZOWA",
+    "hissatsu": [
+      {
+        "name": "Wrath Shot",
+        "element": "Forest",
+        "type": "Strzał"
+      }
+    ],
+    "image": "cards/68_john_bloom.jpg",
+    "source_file": "OIP (60).webp",
+    "team": "Royal Academy",
+    "collection_page": 7
+  },
+  {
+    "name": "Derek Swing",
+    "position": "Pomocnik",
+    "element": "Wind",
+    "overall": 53,
+    "chance_percent": 3,
+    "tier": "BRĄZOWA",
+    "hissatsu": [
+      {
+        "name": "Clone Faker",
+        "element": "Forest",
+        "type": "Drybling"
+      }
+    ],
+    "image": "cards/69_derek_swing.jpg",
+    "source_file": "OIP (59).webp",
+    "team": "Royal Academy",
+    "collection_page": 7
+  },
+  {
+    "name": "Jude Sharp",
+    "position": "Pomocnik",
+    "element": "Wind",
+    "overall": 91,
+    "chance_percent": 0.25,
+    "tier": "ZŁOTA",
+    "hissatsu": [
+      {
+        "name": "Illusion Ball",
+        "element": "Forest",
+        "type": "Drybling"
+      },
+      {
+        "name": "Emperor Penguin No. 3",
+        "element": "Forest",
+        "type": "Strzał"
+      }
+    ],
+    "image": "cards/70_jude_sharp.jpg",
+    "source_file": "OIP (58).webp",
+    "team": "Royal Academy",
+    "collection_page": 7
+  },
+  {
+    "name": "Daniel Hatch",
+    "position": "Napastnik",
+    "element": "Forest",
+    "overall": 72,
+    "chance_percent": 2.5,
+    "tier": "SREBRNA",
+    "hissatsu": [
+      {
+        "name": "Wrath Shot",
+        "element": "Forest",
+        "type": "Strzał"
+      },
+      {
+        "name": "Breakthrough",
+        "element": "Fire",
+        "type": "Drybling"
+      }
+    ],
+    "image": "cards/71_daniel_hatch.jpg",
+    "source_file": "OIP (57).webp",
+    "team": "Royal Academy",
+    "collection_page": 7
+  },
+  {
+    "name": "David Samford",
+    "position": "Napastnik",
+    "element": "Forest",
+    "overall": 80,
+    "chance_percent": 1.4,
+    "tier": "ZŁOTA",
+    "hissatsu": [
+      {
+        "name": "Clone Faker",
+        "element": "Forest",
+        "type": "Drybling"
+      },
+      {
+        "name": "Emperor Penguin No. 3",
+        "element": "Forest",
+        "type": "Strzał"
+      }
+    ],
+    "image": "cards/72_david_samford.jpg",
+    "source_file": "unnamed.jpg",
+    "team": "Royal Academy",
+    "collection_page": 7
   }
 ]
