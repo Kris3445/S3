@@ -1582,5 +1582,189 @@
     "source_file": "Kirigakure_Saiji.webp",
     "team": "Shuriken",
     "collection_page": 8
+  },
+  {
+    "name": "Albert Green",
+    "position": "Bramkarz",
+    "element": "Fire",
+    "overall": 57,
+    "hissatsu": [
+      {
+        "name": "Wood Chopper",
+        "element": "Mountain",
+        "type": "Obrona bramkarska"
+      },
+      {
+        "name": "Infinite Wall",
+        "element": "Mountain",
+        "type": "Obrona bramkarska"
+      }
+    ],
+    "chance_percent": 3,
+    "tier": "BRĄZOWA",
+    "image": "cards/84_albert_green.jpg",
+    "source_file": "OIP (74).webp",
+    "team": "Farm",
+    "collection_page": 9
+  },
+  {
+    "name": "Kent Work",
+    "position": "Obrońca",
+    "element": "Forest",
+    "overall": 47,
+    "hissatsu": [],
+    "chance_percent": 3.5385,
+    "tier": "BRĄZOWA",
+    "image": "cards/85_kent_work.jpg",
+    "source_file": "Serizawa_Kazunori.webp",
+    "team": "Farm",
+    "collection_page": 9
+  },
+  {
+    "name": "Mark Hillvalley",
+    "position": "Obrońca",
+    "element": "Mountain",
+    "overall": 75,
+    "hissatsu": [
+      {
+        "name": "Harvest",
+        "element": "Mountain",
+        "type": "Odbiór"
+      }
+    ],
+    "chance_percent": 1.4,
+    "tier": "ZŁOTA",
+    "image": "cards/86_mark_hillvalley.jpg",
+    "source_file": "OIP (73).webp",
+    "team": "Farm",
+    "collection_page": 9
+  },
+  {
+    "name": "Herb Sherman",
+    "position": "Obrońca",
+    "element": "Fire",
+    "overall": 51,
+    "hissatsu": [],
+    "chance_percent": 3,
+    "tier": "BRĄZOWA",
+    "image": "cards/87_herb_sherman.jpg",
+    "source_file": "OIP (72).webp",
+    "team": "Farm",
+    "collection_page": 9
+  },
+  {
+    "name": "Seward Hayseed",
+    "position": "Obrońca",
+    "element": "Mountain",
+    "overall": 58,
+    "hissatsu": [
+      {
+        "name": "Bamboo Pattern",
+        "element": "Mountain",
+        "type": "Odbiór"
+      }
+    ],
+    "chance_percent": 3,
+    "tier": "BRĄZOWA",
+    "image": "cards/88_seward_hayseed.jpg",
+    "source_file": "Sumino_Eisuke.webp",
+    "team": "Farm",
+    "collection_page": 9
+  },
+  {
+    "name": "Orville Newman",
+    "position": "Pomocnik",
+    "element": "Fire",
+    "overall": 47,
+    "hissatsu": [],
+    "chance_percent": 3.5385,
+    "tier": "BRĄZOWA",
+    "image": "cards/89_orville_newman.jpg",
+    "source_file": "Oogoi_Noboru.webp",
+    "team": "Farm",
+    "collection_page": 9
+  },
+  {
+    "name": "Joe Small",
+    "position": "Pomocnik",
+    "element": "Mountain",
+    "overall": 50,
+    "hissatsu": [],
+    "chance_percent": 3,
+    "tier": "BRĄZOWA",
+    "image": "cards/90_joe_small.jpg",
+    "source_file": "OIP (71).webp",
+    "team": "Farm",
+    "collection_page": 9
+  },
+  {
+    "name": "Ike Steiner",
+    "position": "Pomocnik",
+    "element": "Forest",
+    "overall": 55,
+    "hissatsu": [
+      {
+        "name": "Mole Fake",
+        "element": "Mountain",
+        "type": "Drybling"
+      }
+    ],
+    "chance_percent": 3,
+    "tier": "BRĄZOWA",
+    "image": "cards/91_ike_steiner.jpg",
+    "source_file": "OIP (70).webp",
+    "team": "Farm",
+    "collection_page": 9
+  },
+  {
+    "name": "Daniel Dawson",
+    "position": "Pomocnik",
+    "element": "Wind",
+    "overall": 47,
+    "hissatsu": [],
+    "chance_percent": 3.5385,
+    "tier": "BRĄZOWA",
+    "image": "cards/92_daniel_dawson.jpg",
+    "source_file": "OIP (69).webp",
+    "team": "Farm",
+    "collection_page": 9
+  },
+  {
+    "name": "Tom Walters",
+    "position": "Pomocnik",
+    "element": "Mountain",
+    "overall": 59,
+    "hissatsu": [
+      {
+        "name": "Run Ball Run",
+        "element": "Forest",
+        "type": "Strzał"
+      }
+    ],
+    "chance_percent": 3,
+    "tier": "BRĄZOWA",
+    "image": "cards/93_tom_walters.jpg",
+    "source_file": "OIP (68).webp",
+    "team": "Farm",
+    "collection_page": 9
+  },
+  {
+    "name": "Stuart Racoonfur",
+    "position": "Napastnik",
+    "element": "Forest",
+    "overall": 55,
+    "hissatsu": [
+      {
+        "name": "Shine Drive",
+        "element": "Fire",
+        "type": "Strzał"
+      }
+    ],
+    "chance_percent": 3,
+    "tier": "BRĄZOWA",
+    "image": "cards/94_stuart_racoonfur.jpg",
+    "source_file": "OIP (67).webp",
+    "team": "Farm",
+    "collection_page": 9
   }
 ]

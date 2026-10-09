@@ -57,5 +57,12 @@
     "image": "emblems/shuriken.png",
     "color": "#7b3f8c",
     "source_file": "Sengoku_Igajima_emblem_29.webp"
+  },
+  {
+    "id": "farm",
+    "name": "Farm",
+    "image": "emblems/farm.png",
+    "color": "#d1a52a",
+    "source_file": "Senbayama_emblem_29(1).webp"
   }
 ]
