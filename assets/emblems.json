@@ -50,5 +50,12 @@
     "image": "emblems/royal_academy.webp",
     "color": "#1b9c74",
     "source_file": "Teikoku_Gakuen_emblem_29(2).webp"
+  },
+  {
+    "id": "shuriken",
+    "name": "Shuriken",
+    "image": "emblems/shuriken.png",
+    "color": "#7b3f8c",
+    "source_file": "Sengoku_Igajima_emblem_29.webp"
   }
 ]

@@ -1380,5 +1380,207 @@
     "source_file": "unnamed.jpg",
     "team": "Royal Academy",
     "collection_page": 7
+  },
+  {
+    "name": "Morgan Sanders",
+    "position": "Bramkarz",
+    "element": "Forest",
+    "overall": 53,
+    "hissatsu": [
+      {
+        "name": "Whirlwind",
+        "element": "Wind",
+        "type": "Obrona bramkarska"
+      }
+    ],
+    "chance_percent": 3,
+    "tier": "BRĄZOWA",
+    "image": "cards/73_morgan_sanders.jpg",
+    "source_file": "2801629_Momochi_picking_the_ball_up.webp",
+    "team": "Shuriken",
+    "collection_page": 8
+  },
+  {
+    "name": "Newton Flust",
+    "position": "Obrońca",
+    "element": "Mountain",
+    "overall": 44,
+    "hissatsu": [],
+    "chance_percent": 3.5385,
+    "tier": "BRĄZOWA",
+    "image": "cards/74_newton_flust.jpg",
+    "source_file": "Fujibayashi_Nagato.webp",
+    "team": "Shuriken",
+    "collection_page": 8
+  },
+  {
+    "name": "Jim Hillfort",
+    "position": "Obrońca",
+    "element": "Wind",
+    "overall": 57,
+    "hissatsu": [
+      {
+        "name": "Shadow Stitch",
+        "element": "Forest",
+        "type": "Odbiór"
+      }
+    ],
+    "chance_percent": 3,
+    "tier": "BRĄZOWA",
+    "image": "cards/75_jim_hillfort.jpg",
+    "source_file": "Kousaka_Jin.webp",
+    "team": "Shuriken",
+    "collection_page": 8
+  },
+  {
+    "name": "Finn Stoned",
+    "position": "Obrońca",
+    "element": "Fire",
+    "overall": 51,
+    "hissatsu": [
+      {
+        "name": "Sumo Stomp",
+        "element": "Mountain",
+        "type": "Odbiór"
+      }
+    ],
+    "chance_percent": 3,
+    "tier": "BRĄZOWA",
+    "image": "cards/76_finn_stoned.jpg",
+    "source_file": "Ishikawa_Goeta.webp",
+    "team": "Shuriken",
+    "collection_page": 8
+  },
+  {
+    "name": "Galen Thunderbird",
+    "position": "Obrońca",
+    "element": "Mountain",
+    "overall": 52,
+    "hissatsu": [
+      {
+        "name": "Sumo Stomp",
+        "element": "Mountain",
+        "type": "Odbiór"
+      }
+    ],
+    "chance_percent": 3,
+    "tier": "BRĄZOWA",
+    "image": "cards/77_galen_thunderbird.jpg",
+    "source_file": "Jiraiya_Gamasuke.webp",
+    "team": "Shuriken",
+    "collection_page": 8
+  },
+  {
+    "name": "Hank Sullivan",
+    "position": "Pomocnik",
+    "element": "Forest",
+    "overall": 58,
+    "hissatsu": [
+      {
+        "name": "Afterimage",
+        "element": "Forest",
+        "type": "Drybling"
+      }
+    ],
+    "chance_percent": 3,
+    "tier": "BRĄZOWA",
+    "image": "cards/78_hank_sullivan.jpg",
+    "source_file": "Hatsutori_Hanzou.webp",
+    "team": "Shuriken",
+    "collection_page": 8
+  },
+  {
+    "name": "Phil Wingate",
+    "position": "Pomocnik",
+    "element": "Mountain",
+    "overall": 59,
+    "hissatsu": [
+      {
+        "name": "Spider Web",
+        "element": "Forest",
+        "type": "Odbiór"
+      }
+    ],
+    "chance_percent": 3,
+    "tier": "BRĄZOWA",
+    "image": "cards/79_phil_wingate.jpg",
+    "source_file": "Fuuma_Koheita.webp",
+    "team": "Shuriken",
+    "collection_page": 8
+  },
+  {
+    "name": "Jupiter Jumper",
+    "position": "Pomocnik",
+    "element": "Wind",
+    "overall": 49,
+    "hissatsu": [],
+    "chance_percent": 3.5385,
+    "tier": "BRĄZOWA",
+    "image": "cards/80_jupiter_jumper.jpg",
+    "source_file": "Sarutobi_Sanosuke.webp",
+    "team": "Shuriken",
+    "collection_page": 8
+  },
+  {
+    "name": "Jez Shell",
+    "position": "Pomocnik",
+    "element": "Wind",
+    "overall": 56,
+    "hissatsu": [
+      {
+        "name": "Clone Faker",
+        "element": "Forest",
+        "type": "Drybling"
+      }
+    ],
+    "chance_percent": 3,
+    "tier": "BRĄZOWA",
+    "image": "cards/81_jez_shell.jpg",
+    "source_file": "Kouga_Gen.webp",
+    "team": "Shuriken",
+    "collection_page": 8
+  },
+  {
+    "name": "Sam Samurai",
+    "position": "Napastnik",
+    "element": "Forest",
+    "overall": 61,
+    "hissatsu": [
+      {
+        "name": "Clone Shot",
+        "element": "Forest",
+        "type": "Strzał"
+      }
+    ],
+    "chance_percent": 3,
+    "tier": "BRĄZOWA",
+    "image": "cards/82_sam_samurai.jpg",
+    "source_file": "Yagyuu_Juurou.webp",
+    "team": "Shuriken",
+    "collection_page": 8
+  },
+  {
+    "name": "Sail Quicksilver",
+    "position": "Napastnik",
+    "element": "Fire",
+    "overall": 74,
+    "hissatsu": [
+      {
+        "name": "Afterimage",
+        "element": "Forest",
+        "type": "Drybling"
+      },
+      {
+        "name": "Dirt Ball",
+        "element": "Mountain",
+        "type": "Strzał"
+      }
+    ],
+    "chance_percent": 2.5,
+    "tier": "SREBRNA",
+    "image": "cards/83_sail_quicksilver.jpg",
+    "source_file": "Kirigakure_Saiji.webp",
+    "team": "Shuriken",
+    "collection_page": 8
   }
 ]
