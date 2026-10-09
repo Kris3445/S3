@@ -310,8 +310,6 @@ export async function renderSquadPitch(lineup, formation, emblem = null) {
   ctx.strokeStyle = '#334155';
   ctx.lineWidth = 2;
   ctx.strokeRect(35, 109, 196, 808);
-  ctx.fillStyle = '#f8fafc';
-  ctx.fillRect(62, 142, 142, 142);
   if (emblem) {
     const image = await loadImage(path.join(ASSETS, emblem.image));
     drawEmblem(ctx, image, emblem, 70, 150, 126, 126);
