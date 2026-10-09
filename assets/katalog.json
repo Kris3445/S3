@@ -960,10 +960,7 @@
     "image": "cards/51_thomas_feldt.jpg",
     "source_file": "OIP (52).webp",
     "team": "Brainwashing",
-    "collection_page": 6,
-    "portrait_zoom": 1.25,
-    "portrait_focus_x": 0.5,
-    "portrait_focus_y": 0.34
+    "collection_page": 6
   },
   {
     "name": "Terry Stronger",
@@ -982,10 +979,7 @@
     "image": "cards/52_terry_stronger.jpg",
     "source_file": "Hanaoka_Tsuyoshi.webp",
     "team": "Brainwashing",
-    "collection_page": 6,
-    "portrait_zoom": 1.3,
-    "portrait_focus_x": 0.5,
-    "portrait_focus_y": 0.31
+    "collection_page": 6
   },
   {
     "name": "Philip Marvel",
@@ -998,10 +992,7 @@
     "image": "cards/53_philip_marvel.jpg",
     "source_file": "Murobushi_Kyou_Ares.webp",
     "team": "Brainwashing",
-    "collection_page": 6,
-    "portrait_zoom": 1.3,
-    "portrait_focus_x": 0.5,
-    "portrait_focus_y": 0.37
+    "collection_page": 6
   },
   {
     "name": "Harry Leading",
@@ -1014,10 +1005,7 @@
     "image": "cards/54_harry_leading.jpg",
     "source_file": "Hiroyama_Yuu.webp",
     "team": "Brainwashing",
-    "collection_page": 6,
-    "portrait_zoom": 1.3,
-    "portrait_focus_x": 0.5,
-    "portrait_focus_y": 0.44
+    "collection_page": 6
   },
   {
     "name": "Noel Good",
@@ -1030,10 +1018,7 @@
     "image": "cards/55_noel_good.jpg",
     "source_file": "OIP (56).webp",
     "team": "Brainwashing",
-    "collection_page": 6,
-    "portrait_zoom": 1.85,
-    "portrait_focus_x": 0.5,
-    "portrait_focus_y": 0.2
+    "collection_page": 6
   },
   {
     "name": "Samuel Buster",
@@ -1052,10 +1037,7 @@
     "image": "cards/56_samuel_buster.jpg",
     "source_file": "Sangou_Baku.webp",
     "team": "Brainwashing",
-    "collection_page": 6,
-    "portrait_zoom": 1.3,
-    "portrait_focus_x": 0.5,
-    "portrait_focus_y": 0.34
+    "collection_page": 6
   },
   {
     "name": "Victor Kind",
@@ -1074,10 +1056,7 @@
     "image": "cards/57_victor_kind.jpg",
     "source_file": "OIP (55).webp",
     "team": "Brainwashing",
-    "collection_page": 6,
-    "portrait_zoom": 1.45,
-    "portrait_focus_x": 0.5,
-    "portrait_focus_y": 0.25
+    "collection_page": 6
   },
   {
     "name": "Tyron Rock",
@@ -1096,10 +1075,7 @@
     "image": "cards/58_tyron_rock.jpg",
     "source_file": "OIP (54).webp",
     "team": "Brainwashing",
-    "collection_page": 6,
-    "portrait_zoom": 1.45,
-    "portrait_focus_x": 0.5,
-    "portrait_focus_y": 0.25
+    "collection_page": 6
   },
   {
     "name": "Francis Tell",
@@ -1123,10 +1099,7 @@
     "image": "cards/59_francis_tell.jpg",
     "source_file": "Fujimaru_Kei.webp",
     "team": "Brainwashing",
-    "collection_page": 6,
-    "portrait_zoom": 1.3,
-    "portrait_focus_x": 0.5,
-    "portrait_focus_y": 0.36
+    "collection_page": 6
   },
   {
     "name": "Jonathan Seller",
@@ -1150,10 +1123,7 @@
     "image": "cards/60_jonathan_seller.jpg",
     "source_file": "OIP (53).webp",
     "team": "Brainwashing",
-    "collection_page": 6,
-    "portrait_zoom": 1.25,
-    "portrait_focus_x": 0.5,
-    "portrait_focus_y": 0.31
+    "collection_page": 6
   },
   {
     "name": "Neil Turner",
@@ -1177,9 +1147,6 @@
     "image": "cards/61_neil_turner.jpg",
     "source_file": "39e76f69686c6e80f19a6ce9889f45f2.jpg",
     "team": "Brainwashing",
-    "collection_page": 6,
-    "portrait_zoom": 1.25,
-    "portrait_focus_x": 0.5,
-    "portrait_focus_y": 0.36
+    "collection_page": 6
   }
 ]

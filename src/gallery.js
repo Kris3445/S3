@@ -151,16 +151,7 @@ export async function renderPlayerCard(player, { locked = false } = {}) {
   // All catalog portraits use the same 4:5 image ratio, avoiding stretching.
   ctx.save();
   if (locked) ctx.filter = 'grayscale(1) brightness(0.62)';
-  const portraitZoom = Math.max(1, Number(player.portrait_zoom) || 1);
-  const sourceWidth = image.width / portraitZoom;
-  const sourceHeight = image.height / portraitZoom;
-  const requestedFocusX = Number(player.portrait_focus_x);
-  const requestedFocusY = Number(player.portrait_focus_y);
-  const focusX = Number.isFinite(requestedFocusX) ? Math.min(1, Math.max(0, requestedFocusX)) : 0.5;
-  const focusY = Number.isFinite(requestedFocusY) ? Math.min(1, Math.max(0, requestedFocusY)) : 0.5;
-  const sourceX = Math.min(image.width - sourceWidth, Math.max(0, image.width * focusX - sourceWidth / 2));
-  const sourceY = Math.min(image.height - sourceHeight, Math.max(0, image.height * focusY - sourceHeight / 2));
-  ctx.drawImage(image, sourceX, sourceY, sourceWidth, sourceHeight, 40, 94, 560, 700);
+  ctx.drawImage(image, 40, 94, 560, 700);
   ctx.restore();
 
   // Draw all card information last on a fully opaque footer. Explicitly reset
