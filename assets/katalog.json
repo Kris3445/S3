@@ -1231,10 +1231,7 @@
     "image": "cards/65_gus_martin.jpg",
     "source_file": "OIP (63).webp",
     "team": "Royal Academy",
-    "collection_page": 7,
-    "portrait_zoom": 1.12,
-    "portrait_focus_x": 0.5,
-    "portrait_focus_y": 0.42
+    "collection_page": 7
   },
   {
     "name": "Alan Master",
