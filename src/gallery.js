@@ -1,6 +1,7 @@
 import path from 'node:path';
 import { createCanvas, loadImage, GlobalFonts } from '@napi-rs/canvas';
 import { ASSETS } from './config.js';
+import { hissatsuPower, hissatsuTpCost } from './match.js';
 
 const ROBOTO_FONT = path.join(ASSETS, 'fonts', 'Roboto-Variable.ttf');
 if (!GlobalFonts.registerFromPath(ROBOTO_FONT, 'Roboto')) {
@@ -355,7 +356,7 @@ export async function renderScoutStats(player) {
   }
 
   const moves = (player.hissatsu ?? []).slice(0, 3);
-  const moveTitleY = 660;
+  const moveTitleY = 640;
   ctx.fillStyle = '#8fa0b5';
   ctx.font = 'bold 15px Arial';
   ctx.fillText('HISSATSU', 482, moveTitleY);
@@ -368,7 +369,7 @@ export async function renderScoutStats(player) {
   }
   for (let index = 0; index < moves.length; index += 1) {
     const move = moves[index];
-    const y = 692 + index * 49;
+    const y = 672 + index * 49;
     const moveElement = elementColors[move.element] ?? '#8ba0b7';
     ctx.fillStyle = '#0b1726';
     ctx.beginPath();
@@ -378,12 +379,27 @@ export async function renderScoutStats(player) {
     ctx.fillRect(482, y, 4, 40);
     ctx.fillStyle = '#f0f4f9';
     ctx.font = 'bold 17px Arial';
-    ctx.fillText(move.name, 498, y + 25, 358);
+    ctx.fillText(move.name, 498, y + 17, 340);
     ctx.fillStyle = '#bac7d6';
-    ctx.font = '14px Arial';
+    ctx.font = '12px Arial';
     const moveKind = [move.type, move.element].filter(Boolean).join('  •  ');
-    ctx.textAlign = 'right';
-    ctx.fillText(moveKind || 'Technika', 1114, y + 24, 230);
+    ctx.fillText(moveKind || 'Technika', 498, y + 34, 340);
+
+    const power = hissatsuPower(player);
+    const tp = hissatsuTpCost(power);
+    ctx.fillStyle = '#172638';
+    ctx.beginPath();
+    ctx.roundRect(864, y + 3, 250, 34, 7);
+    ctx.fill();
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#91a5bc';
+    ctx.font = 'bold 11px Arial';
+    ctx.fillText('MOC', 930, y + 15);
+    ctx.fillText('TP', 1050, y + 15);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 15px Arial';
+    ctx.fillText(String(power), 930, y + 31);
+    ctx.fillText(String(tp), 1050, y + 31);
     ctx.textAlign = 'left';
   }
   ctx.fillStyle = '#75869b';
