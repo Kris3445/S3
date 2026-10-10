@@ -46,7 +46,7 @@ export function zoneLabel(zone) {
   return ['środek boiska', 'środek boiska', 'przedpole', 'pole karne'][Math.max(0, Math.min(3, zone))];
 }
 
-export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recordMatchResult, discord }) {
+export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recordMatchResult, renderMatchPitch, discord }) {
   const { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, StringSelectMenuBuilder } = discord;
   const sessions = new Map();
   const ownerSessions = new Map();
@@ -346,8 +346,25 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
       .setFooter({ text: footer ?? (state.phase === 'home' ? 'Wybierz akcję. Hissatsu zużywa TP zawodnika.' : 'Zatrzymaj atak Occult pressiem lub techniką obronną.') });
   }
 
-  function payload(state, menu = null, footer = null) {
-    return { embeds: [embed(state, footer)], components: components(state, menu), attachments: [] };
+  async function payload(state, menu = null, footer = null) {
+    const currentTeam = state.phase === 'home' ? state.home : state.away;
+    const carrier = bestCarrier(currentTeam, state, state.phase);
+    const pitch = await renderMatchPitch({
+      home: state.home,
+      away: state.away,
+      homeCarrier: state.phase === 'home' ? carrier.name : null,
+      awayCarrier: state.phase === 'away' ? carrier.name : null,
+      phase: state.phase,
+      zone: state.zone,
+    });
+    const imageName = 'mecz-boisko.png';
+    const matchEmbed = embed(state, footer).setImage(`attachment://${imageName}`);
+    return {
+      embeds: [matchEmbed],
+      components: components(state, menu),
+      files: [{ attachment: Buffer.from(pitch), name: imageName }],
+      attachments: [],
+    };
   }
 
   async function finish(interaction, state) {
@@ -356,11 +373,8 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
     sessions.delete(state.id);
     ownerSessions.delete(`${state.guildId}:${state.userId}`);
     const label = result === 'win' ? 'ZWYCIĘSTWO!' : result === 'loss' ? 'PORAŻKA' : 'REMIS';
-    await interaction.update({
-      embeds: [embed(state, `${label} · bilans meczów: ${record.played} rozegranych, ${record.wins} wygranych`) ],
-      components: [],
-      attachments: [],
-    });
+    const finalView = await payload(state, null, `${label} · bilans meczów: ${record.played} rozegranych, ${record.wins} wygranych`);
+    await interaction.update({ ...finalView, components: [] });
   }
 
   async function commitAction(interaction, state, action, option = null) {
@@ -419,7 +433,7 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
       await finish(interaction, state);
       return;
     }
-    await interaction.update(payload(state));
+    await interaction.update(await payload(state));
   }
 
   async function start(interaction) {
@@ -480,7 +494,7 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
     };
     sessions.set(id, state);
     ownerSessions.set(ownerKey, id);
-    await interaction.reply({ ...payload(state, null, `Mecz rusza! ${interaction.user.username} vs Occult · wybierz pierwszą akcję.`), ephemeral: true });
+    await interaction.reply({ ...(await payload(state, null, `Mecz rusza! ${interaction.user.username} vs Occult · wybierz pierwszą akcję.`)), ephemeral: true });
   }
 
   async function handleButton(interaction) {
@@ -496,7 +510,7 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
         await interaction.reply({ content: 'W tej sytuacji nie masz dostępnej techniki Hissatsu z wystarczającą liczbą TP.', ephemeral: true });
         return;
       }
-      await interaction.update(payload(state, options));
+      await interaction.update(await payload(state, options));
       return;
     }
     if (action === 'sub') {
@@ -517,13 +531,13 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
           value: player.name,
           description: `${player.position} · OVR ${player.overall}`.slice(0, 100),
         })));
+      const substitutionView = await payload(state, null, 'Wybierz zawodnika, którego chcesz zmienić.');
       await interaction.update({
-        embeds: [embed(state, 'Wybierz zawodnika, którego chcesz zmienić.')],
+        ...substitutionView,
         components: [
           new ActionRowBuilder().addComponents(select),
           new ActionRowBuilder().addComponents(actionButton(state, 'cancel-menu', 'Wróć do akcji', ButtonStyle.Secondary)),
         ],
-        attachments: [],
       });
       return;
     }
@@ -557,13 +571,13 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
           value: player.name,
           description: `${player.position} · OVR ${player.overall}`.slice(0, 100),
         })));
+      const substitutionView = await payload(current, null, `${outgoing.name} schodzi. Wybierz jego zmiennika.`);
       await interaction.update({
-        embeds: [embed(current, `${outgoing.name} schodzi. Wybierz jego zmiennika.`)],
+        ...substitutionView,
         components: [
           new ActionRowBuilder().addComponents(incomingMenu),
           new ActionRowBuilder().addComponents(actionButton(current, 'cancel-menu', 'Anuluj zmianę', ButtonStyle.Secondary)),
         ],
-        attachments: [],
       });
       return;
     }
@@ -594,7 +608,7 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
       await finish(interaction, current);
       return;
     }
-    await interaction.update(payload(current));
+    await interaction.update(await payload(current));
   }
 
   async function handleTechnique(interaction) {
