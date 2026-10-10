@@ -846,73 +846,52 @@ export async function renderProfileBanner(username, user, profileOptions) {
 }
 
 
-export async function renderMatchPitch({home,away,homeCarrier,awayCarrier,phase,zone=1,teamName='Twoja drużyna',awayName='Occult'}) {
-  const width=1120, height=760, canvas=createCanvas(width,height), ctx=canvas.getContext('2d');
-  ctx.fillStyle='#0b1118'; ctx.fillRect(0,0,width,height);
-  const head=ctx.createLinearGradient(0,0,width,0);
-  head.addColorStop(0,'#122334'); head.addColorStop(.5,'#172a34'); head.addColorStop(1,'#281d22');
-  ctx.fillStyle=head; ctx.fillRect(0,0,width,100);
-  ctx.fillStyle='#aab6bf'; ctx.font='bold 15px Roboto'; ctx.textAlign='center';
-  ctx.fillText('MECZ  •  NA ŻYWO',width/2,25);
-  ctx.fillStyle='#eef3f6'; ctx.font='bold 26px Roboto';
-  ctx.textAlign='left'; ctx.fillText(String(teamName).toUpperCase(),52,67,450);
-  ctx.textAlign='right'; ctx.fillText(String(awayName).toUpperCase(),width-52,67,450);
-  ctx.fillStyle='#283b4b'; ctx.beginPath(); ctx.roundRect(width/2-70,35,140,52,11); ctx.fill();
-  ctx.fillStyle='#fff'; ctx.font='bold 29px Roboto'; ctx.textAlign='center';
-  const score=arguments[0].score||{home:0,away:0};
-  ctx.fillText(String(score.home)+' : '+String(score.away),width/2,70);
-  ctx.fillStyle='#c4d0d7'; ctx.font='bold 14px Roboto';
-  ctx.fillText(String(arguments[0].minute||0)+'′',width/2,96);
-  const field={x:28,y:112,w:width-56,h:476};
-  ctx.fillStyle='#24633c'; ctx.fillRect(field.x,field.y,field.w,field.h);
-  for(let n=0;n<10;n++) if(n%2===0){ctx.fillStyle='rgba(205,255,218,.055)';ctx.fillRect(field.x+n*field.w/10,field.y,field.w/10,field.h);}
-  ctx.strokeStyle='rgba(239,249,239,.78)';ctx.lineWidth=2;
-  ctx.strokeRect(field.x+4,field.y+4,field.w-8,field.h-8);
-  ctx.beginPath();ctx.moveTo(width/2,field.y+4);ctx.lineTo(width/2,field.y+field.h-4);ctx.stroke();
-  ctx.beginPath();ctx.arc(width/2,field.y+field.h/2,64,0,Math.PI*2);ctx.stroke();
-  const centerY=field.y+field.h/2;
-  for(const left of [true,false]){
-    const edge=left?field.x+4:field.x+field.w-4;
-    ctx.strokeRect(left?edge:edge-116,centerY-84,116,168);
-    ctx.strokeRect(left?edge:edge-48,centerY-41,48,82);
-  }
-  const xPos={home:{Bramkarz:.055,Obrońca:.20,Pomocnik:.37,Napastnik:.48},away:{Bramkarz:.945,Obrońca:.80,Pomocnik:.63,Napastnik:.52}};
-  const colors={home:'#278cf0',away:'#e65350'};
+
+export async function renderMatchPitch({home,away,homeCarrier,awayCarrier,phase,zone=1,minute=0,score={home:0,away:0},possession='',teamName='Twoja drużyna',awayName='Occult',lastAction='',footer=null}){
+  const width=960,height=900,canvas=createCanvas(width,height),ctx=canvas.getContext('2d');
+  ctx.fillStyle='#167b37';ctx.fillRect(0,0,width,650);
+  for(let i=0;i<12;i++)if(i%2===0){ctx.fillStyle='rgba(255,255,255,.035)';ctx.fillRect(i*width/12,56,width/12,594);}
+  ctx.fillStyle='#eaf4e9';ctx.font='bold 17px Roboto';ctx.textAlign='left';ctx.textBaseline='middle';
+  ctx.fillText(String(teamName).toUpperCase(),25,29,350);
+  ctx.textAlign='right';ctx.fillText(String(awayName).toUpperCase(),width-25,29,350);
+  ctx.textAlign='center';ctx.font='bold 22px Roboto';ctx.fillText(String(score.home)+' : '+String(score.away),width/2,29);
+  ctx.font='bold 13px Roboto';ctx.fillText(String(minute)+'′',width/2,49);
+  const f={x:22,y:58,w:width-44,h:580},line='rgba(247,255,247,.88)';
+  ctx.strokeStyle=line;ctx.lineWidth=2;ctx.strokeRect(f.x,f.y,f.w,f.h);
+  ctx.beginPath();ctx.moveTo(width/2,f.y);ctx.lineTo(width/2,f.y+f.h);ctx.stroke();
+  ctx.beginPath();ctx.arc(width/2,f.y+f.h/2,72,0,Math.PI*2);ctx.stroke();
+  ctx.beginPath();ctx.arc(width/2,f.y+f.h/2,4,0,Math.PI*2);ctx.fillStyle=line;ctx.fill();
+  const boxH=194,sixH=98,boxW=125,sixW=55;
+  for(const left of [true,false]){const edge=left?f.x:f.x+f.w;ctx.strokeRect(left?edge:edge-boxW,f.y+f.h/2-boxH/2,boxW,boxH);ctx.strokeRect(left?edge:edge-sixW,f.y+f.h/2-sixH/2,sixW,sixH);}
+  const coords={home:{Bramkarz:.055,Obrońca:.20,Pomocnik:.37,Napastnik:.48},away:{Bramkarz:.945,Obrońca:.80,Pomocnik:.63,Napastnik:.52}};
+  const colors={home:'#1688ff',away:'#ef504d'};
   function drawTeam(team,side,carrierName){
     const groups=new Map();for(const p of team){const role=p.position||'Pomocnik';if(!groups.has(role))groups.set(role,[]);groups.get(role).push(p);}
     let number=1;
     for(const role of ['Bramkarz','Obrońca','Pomocnik','Napastnik']){
-      const players=groups.get(role)||[];
-      for(let idx=0;idx<players.length;idx++){
-        const p=players[idx];let x=field.x+field.w*xPos[side][role],y=field.y+field.h*(idx+1)/(players.length+1);
-        const hasBall=p.name===carrierName;
-        if(hasBall){
-          const push=Math.max(0,Math.min(2,zone-1))*.115;
-          x=field.x+field.w*(side==='home'?.49+push:.51-push);
-          y=centerY+(side==='home'?-18:18);
-          ctx.beginPath();ctx.arc(x,y,20,0,Math.PI*2);ctx.strokeStyle='#fff';ctx.lineWidth=3;ctx.stroke();
-        }
-        ctx.beginPath();ctx.arc(x,y,14,0,Math.PI*2);ctx.fillStyle=colors[side];ctx.fill();
-        ctx.strokeStyle='#f4f6f8';ctx.lineWidth=2;ctx.stroke();
-        ctx.fillStyle='#fff';ctx.font='bold 9px Roboto';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(String(number),x,y);
-        if(hasBall){ctx.beginPath();ctx.arc(x+(side==='home'?19:-19),y+14,7,0,Math.PI*2);ctx.fillStyle='#f6e6ad';ctx.fill();ctx.strokeStyle='#18222a';ctx.lineWidth=1.5;ctx.stroke();}
+      const members=groups.get(role)||[];
+      for(let i=0;i<members.length;i++){
+        const player=members[i];let x=f.x+f.w*coords[side][role],y=f.y+f.h*(i+1)/(members.length+1);
+        const hasBall=player.name===carrierName;
+        if(hasBall){const advance=Math.max(0,Math.min(2,zone-1))*.13;x=f.x+f.w*(side==='home'?.49+advance:.51-advance);y=f.y+f.h*.5;ctx.beginPath();ctx.arc(x,y,20,0,Math.PI*2);ctx.strokeStyle='#fff';ctx.lineWidth=3;ctx.stroke();}
+        ctx.beginPath();ctx.arc(x,y,13,0,Math.PI*2);ctx.fillStyle=colors[side];ctx.fill();ctx.strokeStyle='#f4fff6';ctx.lineWidth=2;ctx.stroke();
+        if(hasBall){ctx.beginPath();ctx.arc(x+(side==='home'?17:-17),y+12,6,0,Math.PI*2);ctx.fillStyle='#fff2b4';ctx.fill();ctx.strokeStyle='#18231b';ctx.lineWidth=1.5;ctx.stroke();}
         number++;
       }
     }
   }
   drawTeam(home,'home',homeCarrier);drawTeam(away,'away',awayCarrier);
-  ctx.fillStyle='#121a22';ctx.fillRect(28,600,width-56,132);
-  ctx.fillStyle=phase==='home'?'#64b8ff':'#ff8b82';ctx.beginPath();ctx.roundRect(46,616,5,100,2);ctx.fill();
-  ctx.textAlign='left';ctx.textBaseline='alphabetic';ctx.fillStyle='#eef3f6';ctx.font='bold 17px Roboto';
-  const zoneNames=['środek boiska','środek boiska','przedpole','pole karne'];
-  const minute=arguments[0].minute||0, poss=arguments[0].possession||'';
-  ctx.fillText(String(minute)+'′  ·  PIŁKA: '+poss+'  ·  '+zoneNames[Math.max(0,Math.min(3,zone))],65,642,width-130);
-  ctx.fillStyle='#cad3da';ctx.font='15px Roboto';
-  const action=arguments[0].footer||arguments[0].lastAction||'Mecz w toku.';
-  const words=String(action).replace(/[*]/g,'').split(/\s+/);let row='',y=672,lines=0;
-  for(const word of words){const trial=row?row+' '+word:word;if(ctx.measureText(trial).width>width-130&&row){ctx.fillText(row,65,y);row=word;y+=20;lines++;if(lines>=2)break;}else row=trial;}
-  if(row&&lines<3)ctx.fillText(row,65,y,width-130);
-  ctx.fillStyle='#81909c';ctx.font='12px Roboto';ctx.textAlign='right';
-  ctx.fillText(String(score.home)+' : '+String(score.away)+'  ·  '+(arguments[0].teamName||'Twoja drużyna')+' — '+(arguments[0].awayName||'Occult'),width-44,722,480);
-  ctx.textAlign='left';ctx.textBaseline='alphabetic';return canvas.encode('png');
+  ctx.fillStyle='#080b0e';ctx.fillRect(0,650,width,250);
+  ctx.textAlign='left';ctx.textBaseline='alphabetic';
+  ctx.fillStyle='#f0f3f4';ctx.font='bold 16px Roboto';
+  ctx.fillText('Piłka w strefie: '+zoneLabelForCanvas(zone)+' ('+possession+')',24,682,912);
+  ctx.fillStyle='#b5c4cb';ctx.font='14px Roboto';
+  const text=String(footer||lastAction||'Spotkanie trwa.').replace(/[*]/g,'');
+  const words=text.split(/\s+/);let row='',y=711,lines=0;
+  for(const word of words){const next=row?row+' '+word:word;if(ctx.measureText(next).width>910&&row){ctx.fillText(row,24,y);row=word;y+=21;lines++;if(lines>=5)break;}else row=next;}
+  if(row&&lines<6)ctx.fillText(row,24,y,912);
+  ctx.fillStyle='#81939d';ctx.font='12px Roboto';
+  ctx.fillText('Posiadanie: '+possession+'  ·  '+String(minute)+'′  ·  Wynik '+String(score.home)+' : '+String(score.away),24,866,912);
+  return canvas.encode('png');
 }
+function zoneLabelForCanvas(zone){return['Środek boiska','Środek boiska','Przedpole','Pole karne'][Math.max(0,Math.min(3,zone))];}
