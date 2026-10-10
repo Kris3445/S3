@@ -52,7 +52,12 @@ function getOrCreate(data, guildId, userId) {
   if (!Array.isArray(user.trophies)) user.trophies = [];
   user.profileImage ??= null;
   user.profileCardName ??= null;
-  user.matchStats ??= { played: 0, wins: 0, draws: 0, losses: 0 };
+  if (!user.matchStats || typeof user.matchStats !== 'object' || Array.isArray(user.matchStats)) {
+    user.matchStats = { played: 0, wins: 0, draws: 0, losses: 0 };
+  }
+  for (const key of ['played', 'wins', 'draws', 'losses']) {
+    if (!Number.isInteger(user.matchStats[key]) || user.matchStats[key] < 0) user.matchStats[key] = 0;
+  }
   if (typeof user.freeClaimed !== 'boolean') user.freeClaimed = false;
   user.workCount ??= 0;
   if (!Array.isArray(user.claimedWorkMilestones)) user.claimedWorkMilestones = [];
@@ -90,6 +95,18 @@ export function getUser(guildId, userId) {
   const user = getOrCreate(data, guildId, userId);
   writeAll(data);
   return structuredClone(user);
+}
+
+export function recordMatchResult(guildId, userId, result) {
+  if (!['win', 'draw', 'loss'].includes(result)) throw new Error('Nieprawidłowy wynik meczu.');
+  const data = readAll();
+  const user = getOrCreate(data, guildId, userId);
+  user.matchStats.played += 1;
+  if (result === 'win') user.matchStats.wins += 1;
+  else if (result === 'loss') user.matchStats.losses += 1;
+  else user.matchStats.draws += 1;
+  writeAll(data);
+  return structuredClone(user.matchStats);
 }
 
 export function getSaveBackup() {

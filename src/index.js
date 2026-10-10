@@ -49,8 +49,10 @@ import {
   recordHissatsuChallenge,
   startHissatsuChallenge,
   verifyEarnAction,
+  recordMatchResult,
 } from './economy.js';
 import { renderCollection, renderPlayerCard, renderProfileBanner, renderScoutStats, renderSquadBuilderPreview, renderSquadPitch } from './gallery.js';
+import { createMatchMode } from './match.js';
 
 if (!TOKEN) {
   console.error('Brakuje DISCORD_TOKEN. Skopiuj .env.example do .env i uzupełnij token.');
@@ -113,6 +115,15 @@ const tierColors = {
   'SREBRNA': 0xc3d8e8,
   'ZŁOTA': 0xffbe37,
 };
+
+const matchMode = createMatchMode({
+  catalog,
+  emblems,
+  getUser,
+  getSavedTeam,
+  recordMatchResult,
+  discord: { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, StringSelectMenuBuilder },
+});
 
 function requireGuild(interaction) {
   if (interaction.guildId) return true;
@@ -633,7 +644,7 @@ async function showPlayerStats(interaction, target) {
       { name: 'Mecze rozegrane', value: String(match.played ?? 0), inline: true },
       { name: 'Wygrane / remisy / porażki', value: `${match.wins ?? 0} / ${match.draws ?? 0} / ${match.losses ?? 0}`, inline: true },
     )
-    .setFooter({ text: 'Statystyki meczów zaczną rosnąć po uruchomieniu trybu meczów.' });
+    .setFooter({ text: 'Bilans aktualizuje się po zakończeniu meczu z komendy /mecz.' });
   await interaction.reply({ embeds: [embed], ephemeral: true });
 }
 
@@ -1244,7 +1255,9 @@ client.on(Events.InteractionCreate, async (interaction) => {
     }
     if (interaction.isButton()) {
       if (!requireGuild(interaction) || !(await requireAdmin(interaction)) || !(await requireGameAccess(interaction))) return;
-      if (interaction.customId.startsWith('earn-verify:')) {
+      if (interaction.customId.startsWith('mecz:')) {
+        await matchMode.handleButton(interaction);
+      } else if (interaction.customId.startsWith('earn-verify:')) {
         const [, ownerId, deadlineText] = interaction.customId.split(':');
         if (ownerId !== interaction.user.id) {
           await interaction.reply({ content: 'Ta weryfikacja należy do innego gracza.', ephemeral: true });
@@ -1306,7 +1319,8 @@ client.on(Events.InteractionCreate, async (interaction) => {
     }
     if (interaction.isStringSelectMenu()) {
       if (!requireGuild(interaction) || !(await requireAdmin(interaction)) || !(await requireGameAccess(interaction))) return;
-      await handleGameSelect(interaction);
+      if (interaction.customId.startsWith('mecz-tech:')) await matchMode.handleTechnique(interaction);
+      else await handleGameSelect(interaction);
       return;
     }
     if (!interaction.isChatInputCommand()) return;
@@ -1373,6 +1387,9 @@ client.on(Events.InteractionCreate, async (interaction) => {
         break;
       case 'team':
         await showTeam(interaction);
+        break;
+      case 'mecz':
+        await matchMode.start(interaction);
         break;
       case 'squad':
         await showSquad(interaction);

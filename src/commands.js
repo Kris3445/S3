@@ -44,6 +44,18 @@ const commandBuilders = [
         { name: '4-3-3', value: '4-3-3' },
         { name: '3-5-2', value: '3-5-2' },
       )),
+  new SlashCommandBuilder()
+    .setName('mecz')
+    .setDescription('Zagraj mecz swoją drużyną przeciwko Occult.')
+    .addIntegerOption((option) => option
+      .setName('slot')
+      .setDescription('Wybierz jeden z czterech zapisanych składów.')
+      .addChoices(
+        { name: 'Slot 1', value: 1 },
+        { name: 'Slot 2', value: 2 },
+        { name: 'Slot 3', value: 3 },
+        { name: 'Slot 4', value: 4 },
+      )),
   new SlashCommandBuilder().setName('squad').setDescription('Pokaż zbudowany skład na boisku.').addIntegerOption((option) => option
       .setName('slot')
       .setDescription('Wybierz jeden z czterech zapisanych składów.')
