@@ -699,7 +699,7 @@ async function showStats(interaction) {
   const hissatsu = (player.hissatsu ?? []).map((move) => {
     const details = [move.type, ELEMENT_NAMES[move.element] ?? move.element].filter(Boolean).join(' · ');
     return `• **${move.name}**${details ? ` — ${details}` : ''}`;
-  }).join('\\n') || 'Brak przypisanych technik.';
+  }).join('\n') || 'Brak przypisanych technik.';
   const imageName = 'karta-zawodnika.png';
   const cardImage = await renderPlayerCard(player);
   const embed = new EmbedBuilder()
