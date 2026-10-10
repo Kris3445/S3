@@ -50,7 +50,7 @@ import {
   startHissatsuChallenge,
   verifyEarnAction,
 } from './economy.js';
-import { renderCollection, renderPlayerCard, renderProfileBanner, renderSquadBuilderPreview, renderSquadPitch } from './gallery.js';
+import { renderCollection, renderPlayerCard, renderProfileBanner, renderScoutStats, renderSquadBuilderPreview, renderSquadPitch } from './gallery.js';
 
 if (!TOKEN) {
   console.error('Brakuje DISCORD_TOKEN. Skopiuj .env.example do .env i uzupełnij token.');
@@ -59,6 +59,17 @@ if (!TOKEN) {
 
 const catalog = JSON.parse(fs.readFileSync(path.join(ASSETS, 'katalog.json'), 'utf8'));
 const emblems = JSON.parse(fs.readFileSync(path.join(ASSETS, 'emblems.json'), 'utf8'));
+
+const statsFile = path.join(ASSETS, 'statystyki-zawodnikow.json');
+const playerStats = fs.existsSync(statsFile) ? JSON.parse(fs.readFileSync(statsFile, 'utf8')) : [];
+const statsByName = new Map(playerStats.map((entry) => [entry.name, entry]));
+for (const player of catalog) {
+  const researched = statsByName.get(player.name);
+  if (researched) {
+    player.stats = researched.stats;
+    player.stat_seasons = researched.seasons;
+  }
+}
 
 const ELEMENT_NAMES = { Fire: 'Ogień', Wind: 'Wiatr', Forest: 'Las', Mountain: 'Góra' };
 function normalizeHissatsuType(type) {
@@ -643,29 +654,19 @@ async function showStats(interaction) {
     await interaction.reply({ content: 'Nie znaleziono tego zawodnika.', ephemeral: true });
     return;
   }
-
   const user = getUser(interaction.guildId, interaction.user.id);
   const owned = user.cards.some((card) => card.name === player.name);
-  const hissatsu = (player.hissatsu ?? []).map((move) => {
-    const element = move.element ? ` · ${move.element}` : '';
-    return `• **${move.name}** — ${move.type}${element}`;
-  });
   const embed = new EmbedBuilder()
     .setColor(tierColors[player.tier] ?? 0x168cff)
-    .setTitle(`⚽ ${player.name} · OVERALL ${player.overall}`)
-    .setDescription(owned ? '✅ Masz tego zawodnika w kolekcji.' : '🔒 Nie masz jeszcze tej karty.')
-    .addFields(
-      { name: 'Pozycja', value: player.position ?? 'Niepodana', inline: true },
-      { name: 'Element', value: player.element ?? 'Niepodany', inline: true },
-      { name: 'Rzadkość', value: player.tier ?? 'Niepodana', inline: true },
-      { name: 'Hissatsu', value: hissatsu.length ? hissatsu.join('\n') : 'Nie podano technik.' },
-    );
-  const imageName = 'karta-zawodnika.png';
+    .setTitle(`⚽ Raport skautingowy: ${player.name}`)
+    .setDescription(`${player.team ? `**${player.team}** · ` : ''}${player.position ?? 'Zawodnik'} · OVERALL **${player.overall}**\n${owned ? '✅ Masz tego zawodnika w kolekcji.' : '🔒 Nie masz jeszcze tej karty.'}`)
+    .setFooter({ text: 'Statystyki uśredniono z sezonów Inazuma Eleven.' });
+  const imageName = 'raport-skautingowy.png';
   embed.setImage(`attachment://${imageName}`);
-  const cardImage = await renderPlayerCard(player, { locked: !owned });
+  const report = await renderScoutStats(player);
   await interaction.reply({
     embeds: [embed],
-    files: [new AttachmentBuilder(Buffer.from(cardImage), { name: imageName })],
+    files: [new AttachmentBuilder(Buffer.from(report), { name: imageName })],
     ephemeral: true,
   });
 }

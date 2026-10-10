@@ -1,0 +1,1934 @@
+[
+  {
+    "name": "William Glass",
+    "stats": {
+      "guard": 57,
+      "stamina": 53,
+      "body": 51,
+      "tp": 170,
+      "intelligence": 63,
+      "control": 68,
+      "kick": 56,
+      "speed": 56
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Jim Wright",
+    "stats": {
+      "guard": 59,
+      "stamina": 62,
+      "body": 53,
+      "tp": 155,
+      "intelligence": 66,
+      "control": 75,
+      "kick": 58,
+      "speed": 53
+    },
+    "seasons": "S2"
+  },
+  {
+    "name": "Tod Ironside",
+    "stats": {
+      "guard": 56,
+      "stamina": 56,
+      "body": 55,
+      "tp": 160,
+      "intelligence": 58,
+      "control": 53,
+      "kick": 54,
+      "speed": 61
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Timmy Saunders",
+    "stats": {
+      "guard": 60,
+      "stamina": 48,
+      "body": 76,
+      "tp": 160,
+      "intelligence": 59,
+      "control": 61,
+      "kick": 63,
+      "speed": 55
+    },
+    "seasons": "S2"
+  },
+  {
+    "name": "Steve Grim",
+    "stats": {
+      "guard": 63,
+      "stamina": 69,
+      "body": 65,
+      "tp": 155,
+      "intelligence": 68,
+      "control": 68,
+      "kick": 61,
+      "speed": 68
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Sam Kincaid",
+    "stats": {
+      "guard": 58,
+      "stamina": 52,
+      "body": 67,
+      "tp": 145,
+      "intelligence": 60,
+      "control": 59,
+      "kick": 67,
+      "speed": 54
+    },
+    "seasons": "S2, S3"
+  },
+  {
+    "name": "Maxwell Carson",
+    "stats": {
+      "guard": 64,
+      "stamina": 56,
+      "body": 56,
+      "tp": 160,
+      "intelligence": 68,
+      "control": 76,
+      "kick": 57,
+      "speed": 60
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Bobby Shearer",
+    "stats": {
+      "guard": 76,
+      "stamina": 72,
+      "body": 61,
+      "tp": 170,
+      "intelligence": 68,
+      "control": 69,
+      "kick": 69,
+      "speed": 60
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Kevin Dragonfly",
+    "stats": {
+      "guard": 58,
+      "stamina": 64,
+      "body": 60,
+      "tp": 155,
+      "intelligence": 60,
+      "control": 56,
+      "kick": 74,
+      "speed": 57
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Jack Wallside",
+    "stats": {
+      "guard": 66,
+      "stamina": 58,
+      "body": 63,
+      "tp": 160,
+      "intelligence": 57,
+      "control": 62,
+      "kick": 55,
+      "speed": 49
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Erik Eagle",
+    "stats": {
+      "guard": 64,
+      "stamina": 53,
+      "body": 60,
+      "tp": 180,
+      "intelligence": 71,
+      "control": 75,
+      "kick": 79,
+      "speed": 63
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Nathan Swift",
+    "stats": {
+      "guard": 55,
+      "stamina": 58,
+      "body": 58,
+      "tp": 160,
+      "intelligence": 66,
+      "control": 68,
+      "kick": 64,
+      "speed": 76
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Mark Evans",
+    "stats": {
+      "guard": 78,
+      "stamina": 69,
+      "body": 66,
+      "tp": 175,
+      "intelligence": 67,
+      "control": 63,
+      "kick": 66,
+      "speed": 63
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Axel Blaze",
+    "stats": {
+      "guard": 62,
+      "stamina": 65,
+      "body": 66,
+      "tp": 170,
+      "intelligence": 68,
+      "control": 71,
+      "kick": 79,
+      "speed": 70
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Gazelle",
+    "stats": {
+      "guard": 74,
+      "stamina": 67,
+      "body": 65,
+      "tp": 125,
+      "intelligence": 72,
+      "control": 76,
+      "kick": 78,
+      "speed": 66
+    },
+    "seasons": "S2"
+  },
+  {
+    "name": "Torch",
+    "stats": {
+      "guard": 63,
+      "stamina": 60,
+      "body": 60,
+      "tp": 120,
+      "intelligence": 66,
+      "control": 57,
+      "kick": 77,
+      "speed": 78
+    },
+    "seasons": "S2"
+  },
+  {
+    "name": "Dvalin",
+    "stats": {
+      "guard": 60,
+      "stamina": 69,
+      "body": 70,
+      "tp": 110,
+      "intelligence": 57,
+      "control": 57,
+      "kick": 80,
+      "speed": 60
+    },
+    "seasons": "S2"
+  },
+  {
+    "name": "Nathan Jones",
+    "stats": {
+      "guard": 70,
+      "stamina": 58,
+      "body": 56,
+      "tp": 160,
+      "intelligence": 63,
+      "control": 67,
+      "kick": 56,
+      "speed": 56
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Ken Furan",
+    "stats": {
+      "guard": 70,
+      "stamina": 61,
+      "body": 63,
+      "tp": 155,
+      "intelligence": 49,
+      "control": 47,
+      "kick": 55,
+      "speed": 52
+    },
+    "seasons": "S2, S3"
+  },
+  {
+    "name": "Russell Walk",
+    "stats": {
+      "guard": 52,
+      "stamina": 63,
+      "body": 51,
+      "tp": 150,
+      "intelligence": 61,
+      "control": 63,
+      "kick": 59,
+      "speed": 63
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Jason Jones",
+    "stats": {
+      "guard": 57,
+      "stamina": 54,
+      "body": 54,
+      "tp": 150,
+      "intelligence": 59,
+      "control": 57,
+      "kick": 52,
+      "speed": 60
+    },
+    "seasons": "S2, S3"
+  },
+  {
+    "name": "Jerry Fulton",
+    "stats": {
+      "guard": 61,
+      "stamina": 79,
+      "body": 58,
+      "tp": 140,
+      "intelligence": 55,
+      "control": 56,
+      "kick": 52,
+      "speed": 56
+    },
+    "seasons": "S2, S3"
+  },
+  {
+    "name": "Alexander Brave",
+    "stats": {
+      "guard": 52,
+      "stamina": 56,
+      "body": 67,
+      "tp": 155,
+      "intelligence": 61,
+      "control": 60,
+      "kick": 57,
+      "speed": 67
+    },
+    "seasons": "S2, S3"
+  },
+  {
+    "name": "Ray Mannings",
+    "stats": {
+      "guard": 52,
+      "stamina": 62,
+      "body": 62,
+      "tp": 145,
+      "intelligence": 58,
+      "control": 57,
+      "kick": 55,
+      "speed": 56
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Robert Mayer",
+    "stats": {
+      "guard": 52,
+      "stamina": 68,
+      "body": 51,
+      "tp": 155,
+      "intelligence": 62,
+      "control": 60,
+      "kick": 54,
+      "speed": 66
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Burt Wolf",
+    "stats": {
+      "guard": 51,
+      "stamina": 57,
+      "body": 52,
+      "tp": 160,
+      "intelligence": 55,
+      "control": 52,
+      "kick": 69,
+      "speed": 56
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Troy Moon",
+    "stats": {
+      "guard": 52,
+      "stamina": 64,
+      "body": 70,
+      "tp": 155,
+      "intelligence": 69,
+      "control": 66,
+      "kick": 61,
+      "speed": 77
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Johan Tassman",
+    "stats": {
+      "guard": 48,
+      "stamina": 62,
+      "body": 64,
+      "tp": 165,
+      "intelligence": 59,
+      "control": 56,
+      "kick": 62,
+      "speed": 60
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Charlie Boardfield",
+    "stats": {
+      "guard": 69,
+      "stamina": 59,
+      "body": 51,
+      "tp": 135,
+      "intelligence": 55,
+      "control": 46,
+      "kick": 61,
+      "speed": 60
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Wilson Fishman",
+    "stats": {
+      "guard": 51,
+      "stamina": 62,
+      "body": 64,
+      "tp": 135,
+      "intelligence": 51,
+      "control": 51,
+      "kick": 52,
+      "speed": 51
+    },
+    "seasons": "S2, S3"
+  },
+  {
+    "name": "Peter Johnson",
+    "stats": {
+      "guard": 51,
+      "stamina": 57,
+      "body": 52,
+      "tp": 130,
+      "intelligence": 51,
+      "control": 49,
+      "kick": 52,
+      "speed": 54
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Leonard O'Shea",
+    "stats": {
+      "guard": 67,
+      "stamina": 58,
+      "body": 48,
+      "tp": 130,
+      "intelligence": 52,
+      "control": 43,
+      "kick": 73,
+      "speed": 56
+    },
+    "seasons": "S2, S3"
+  },
+  {
+    "name": "Cham Lion",
+    "stats": {
+      "guard": 58,
+      "stamina": 60,
+      "body": 46,
+      "tp": 130,
+      "intelligence": 49,
+      "control": 47,
+      "kick": 45,
+      "speed": 55
+    },
+    "seasons": "S2, S3"
+  },
+  {
+    "name": "Bruce Monkey",
+    "stats": {
+      "guard": 51,
+      "stamina": 56,
+      "body": 64,
+      "tp": 125,
+      "intelligence": 55,
+      "control": 57,
+      "kick": 54,
+      "speed": 53
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Hugo Tallgeese",
+    "stats": {
+      "guard": 46,
+      "stamina": 67,
+      "body": 48,
+      "tp": 130,
+      "intelligence": 58,
+      "control": 56,
+      "kick": 48,
+      "speed": 64
+    },
+    "seasons": "S2, S3"
+  },
+  {
+    "name": "Steve Eagle",
+    "stats": {
+      "guard": 51,
+      "stamina": 65,
+      "body": 68,
+      "tp": 155,
+      "intelligence": 66,
+      "control": 64,
+      "kick": 59,
+      "speed": 68
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Adrian Speed",
+    "stats": {
+      "guard": 55,
+      "stamina": 42,
+      "body": 52,
+      "tp": 145,
+      "intelligence": 67,
+      "control": 69,
+      "kick": 62,
+      "speed": 81
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Gary Lancaster",
+    "stats": {
+      "guard": 64,
+      "stamina": 52,
+      "body": 66,
+      "tp": 130,
+      "intelligence": 52,
+      "control": 45,
+      "kick": 78,
+      "speed": 51
+    },
+    "seasons": "S2, S3"
+  },
+  {
+    "name": "Harry Snake",
+    "stats": {
+      "guard": 57,
+      "stamina": 60,
+      "body": 58,
+      "tp": 140,
+      "intelligence": 52,
+      "control": 52,
+      "kick": 67,
+      "speed": 53
+    },
+    "seasons": "S2, S3"
+  },
+  {
+    "name": "Sam Idol",
+    "stats": {
+      "guard": 55,
+      "stamina": 52,
+      "body": 58,
+      "tp": 165,
+      "intelligence": 57,
+      "control": 54,
+      "kick": 60,
+      "speed": 58
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Marcus Train",
+    "stats": {
+      "guard": 56,
+      "stamina": 51,
+      "body": 60,
+      "tp": 155,
+      "intelligence": 53,
+      "control": 53,
+      "kick": 61,
+      "speed": 52
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Spencer Gates",
+    "stats": {
+      "guard": 58,
+      "stamina": 40,
+      "body": 52,
+      "tp": 160,
+      "intelligence": 58,
+      "control": 56,
+      "kick": 59,
+      "speed": 56
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "A. Woodbridge",
+    "stats": {
+      "guard": 58,
+      "stamina": 41,
+      "body": 60,
+      "tp": 155,
+      "intelligence": 56,
+      "control": 52,
+      "kick": 60,
+      "speed": 54
+    },
+    "seasons": "S2"
+  },
+  {
+    "name": "Walter Valiant",
+    "stats": {
+      "guard": 55,
+      "stamina": 50,
+      "body": 62,
+      "tp": 140,
+      "intelligence": 62,
+      "control": 61,
+      "kick": 62,
+      "speed": 56
+    },
+    "seasons": "S2, S3"
+  },
+  {
+    "name": "Light Nobel",
+    "stats": {
+      "guard": 58,
+      "stamina": 51,
+      "body": 55,
+      "tp": 160,
+      "intelligence": 57,
+      "control": 56,
+      "kick": 60,
+      "speed": 61
+    },
+    "seasons": "S2, S3"
+  },
+  {
+    "name": "Theodore Master",
+    "stats": {
+      "guard": 56,
+      "stamina": 47,
+      "body": 57,
+      "tp": 155,
+      "intelligence": 55,
+      "control": 55,
+      "kick": 57,
+      "speed": 52
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Gus Gamer",
+    "stats": {
+      "guard": 52,
+      "stamina": 45,
+      "body": 60,
+      "tp": 145,
+      "intelligence": 60,
+      "control": 59,
+      "kick": 58,
+      "speed": 55
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Gaby Farmer",
+    "stats": {
+      "guard": 61,
+      "stamina": 47,
+      "body": 62,
+      "tp": 155,
+      "intelligence": 54,
+      "control": 52,
+      "kick": 58,
+      "speed": 54
+    },
+    "seasons": "S2, S3"
+  },
+  {
+    "name": "Mark Gambling",
+    "stats": {
+      "guard": 63,
+      "stamina": 51,
+      "body": 56,
+      "tp": 155,
+      "intelligence": 58,
+      "control": 58,
+      "kick": 52,
+      "speed": 53
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Online",
+    "stats": {
+      "guard": 62,
+      "stamina": 44,
+      "body": 56,
+      "tp": 150,
+      "intelligence": 57,
+      "control": 56,
+      "kick": 54,
+      "speed": 55
+    },
+    "seasons": "S2"
+  },
+  {
+    "name": "Thomas Feldt",
+    "stats": {
+      "guard": 76,
+      "stamina": 69,
+      "body": 69,
+      "tp": 170,
+      "intelligence": 68,
+      "control": 65,
+      "kick": 69,
+      "speed": 73
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Terry Stronger",
+    "stats": {
+      "guard": 54,
+      "stamina": 53,
+      "body": 46,
+      "tp": 140,
+      "intelligence": 50,
+      "control": 47,
+      "kick": 45,
+      "speed": 47
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Philip Marvel",
+    "stats": {
+      "guard": 48,
+      "stamina": 54,
+      "body": 58,
+      "tp": 130,
+      "intelligence": 52,
+      "control": 52,
+      "kick": 47,
+      "speed": 51
+    },
+    "seasons": "S2, S3"
+  },
+  {
+    "name": "Harry Leading",
+    "stats": {
+      "guard": 47,
+      "stamina": 55,
+      "body": 56,
+      "tp": 135,
+      "intelligence": 49,
+      "control": 46,
+      "kick": 52,
+      "speed": 56
+    },
+    "seasons": "S2, S3"
+  },
+  {
+    "name": "Noel Good",
+    "stats": {
+      "guard": 58,
+      "stamina": 60,
+      "body": 46,
+      "tp": 140,
+      "intelligence": 48,
+      "control": 48,
+      "kick": 46,
+      "speed": 46
+    },
+    "seasons": "S2, S3"
+  },
+  {
+    "name": "Samuel Buster",
+    "stats": {
+      "guard": 49,
+      "stamina": 50,
+      "body": 57,
+      "tp": 130,
+      "intelligence": 50,
+      "control": 52,
+      "kick": 55,
+      "speed": 48
+    },
+    "seasons": "S2, S3"
+  },
+  {
+    "name": "Victor Kind",
+    "stats": {
+      "guard": 51,
+      "stamina": 53,
+      "body": 53,
+      "tp": 135,
+      "intelligence": 52,
+      "control": 56,
+      "kick": 49,
+      "speed": 49
+    },
+    "seasons": "S2, S3"
+  },
+  {
+    "name": "Tyron Rock",
+    "stats": {
+      "guard": 48,
+      "stamina": 49,
+      "body": 46,
+      "tp": 135,
+      "intelligence": 51,
+      "control": 52,
+      "kick": 53,
+      "speed": 48
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Francis Tell",
+    "stats": {
+      "guard": 51,
+      "stamina": 45,
+      "body": 53,
+      "tp": 135,
+      "intelligence": 50,
+      "control": 50,
+      "kick": 45,
+      "speed": 51
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Jonathan Seller",
+    "stats": {
+      "guard": 49,
+      "stamina": 52,
+      "body": 52,
+      "tp": 135,
+      "intelligence": 50,
+      "control": 50,
+      "kick": 55,
+      "speed": 55
+    },
+    "seasons": "S2, S3"
+  },
+  {
+    "name": "Neil Turner",
+    "stats": {
+      "guard": 52,
+      "stamina": 53,
+      "body": 51,
+      "tp": 140,
+      "intelligence": 54,
+      "control": 58,
+      "kick": 51,
+      "speed": 50
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Joseph King",
+    "stats": {
+      "guard": 72,
+      "stamina": 66,
+      "body": 62,
+      "tp": 150,
+      "intelligence": 60,
+      "control": 64,
+      "kick": 63,
+      "speed": 56
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Peter Drent",
+    "stats": {
+      "guard": 66,
+      "stamina": 60,
+      "body": 57,
+      "tp": 150,
+      "intelligence": 59,
+      "control": 64,
+      "kick": 65,
+      "speed": 44
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Ben Simmons",
+    "stats": {
+      "guard": 60,
+      "stamina": 65,
+      "body": 63,
+      "tp": 165,
+      "intelligence": 68,
+      "control": 69,
+      "kick": 65,
+      "speed": 66
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Gus Martin",
+    "stats": {
+      "guard": 65,
+      "stamina": 64,
+      "body": 62,
+      "tp": 155,
+      "intelligence": 67,
+      "control": 72,
+      "kick": 71,
+      "speed": 63
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Alan Master",
+    "stats": {
+      "guard": 69,
+      "stamina": 62,
+      "body": 64,
+      "tp": 165,
+      "intelligence": 66,
+      "control": 67,
+      "kick": 63,
+      "speed": 62
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Herman Waldon",
+    "stats": {
+      "guard": 72,
+      "stamina": 57,
+      "body": 63,
+      "tp": 175,
+      "intelligence": 69,
+      "control": 72,
+      "kick": 71,
+      "speed": 68
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "John Bloom",
+    "stats": {
+      "guard": 64,
+      "stamina": 54,
+      "body": 71,
+      "tp": 160,
+      "intelligence": 67,
+      "control": 67,
+      "kick": 21,
+      "speed": 70
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Derek Swing",
+    "stats": {
+      "guard": 59,
+      "stamina": 60,
+      "body": 56,
+      "tp": 175,
+      "intelligence": 71,
+      "control": 76,
+      "kick": 62,
+      "speed": 69
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Jude Sharp",
+    "stats": {
+      "guard": 70,
+      "stamina": 69,
+      "body": 72,
+      "tp": 170,
+      "intelligence": 75,
+      "control": 79,
+      "kick": 63,
+      "speed": 73
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Daniel Hatch",
+    "stats": {
+      "guard": 68,
+      "stamina": 60,
+      "body": 69,
+      "tp": 150,
+      "intelligence": 70,
+      "control": 68,
+      "kick": 75,
+      "speed": 78
+    },
+    "seasons": "S2"
+  },
+  {
+    "name": "David Samford",
+    "stats": {
+      "guard": 62,
+      "stamina": 68,
+      "body": 60,
+      "tp": 180,
+      "intelligence": 69,
+      "control": 72,
+      "kick": 70,
+      "speed": 63
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Morgan Sanders",
+    "stats": {
+      "guard": 67,
+      "stamina": 55,
+      "body": 59,
+      "tp": 165,
+      "intelligence": 51,
+      "control": 45,
+      "kick": 53,
+      "speed": 52
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Newton Flust",
+    "stats": {
+      "guard": 60,
+      "stamina": 60,
+      "body": 61,
+      "tp": 150,
+      "intelligence": 58,
+      "control": 56,
+      "kick": 62,
+      "speed": 55
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Jim Hillfort",
+    "stats": {
+      "guard": 53,
+      "stamina": 63,
+      "body": 62,
+      "tp": 155,
+      "intelligence": 59,
+      "control": 60,
+      "kick": 55,
+      "speed": 54
+    },
+    "seasons": "S2"
+  },
+  {
+    "name": "Finn Stoned",
+    "stats": {
+      "guard": 56,
+      "stamina": 58,
+      "body": 53,
+      "tp": 145,
+      "intelligence": 58,
+      "control": 57,
+      "kick": 54,
+      "speed": 55
+    },
+    "seasons": "S2, S3"
+  },
+  {
+    "name": "Galen Thunderbird",
+    "stats": {
+      "guard": 62,
+      "stamina": 57,
+      "body": 60,
+      "tp": 150,
+      "intelligence": 60,
+      "control": 63,
+      "kick": 63,
+      "speed": 54
+    },
+    "seasons": "S2, S3"
+  },
+  {
+    "name": "Hank Sullivan",
+    "stats": {
+      "guard": 44,
+      "stamina": 60,
+      "body": 55,
+      "tp": 145,
+      "intelligence": 59,
+      "control": 59,
+      "kick": 60,
+      "speed": 60
+    },
+    "seasons": "S2, S3"
+  },
+  {
+    "name": "Phil Wingate",
+    "stats": {
+      "guard": 57,
+      "stamina": 68,
+      "body": 56,
+      "tp": 160,
+      "intelligence": 59,
+      "control": 60,
+      "kick": 60,
+      "speed": 54
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Jupiter Jumper",
+    "stats": {
+      "guard": 56,
+      "stamina": 68,
+      "body": 60,
+      "tp": 145,
+      "intelligence": 59,
+      "control": 53,
+      "kick": 56,
+      "speed": 69
+    },
+    "seasons": "S2, S3"
+  },
+  {
+    "name": "Jez Shell",
+    "stats": {
+      "guard": 56,
+      "stamina": 65,
+      "body": 63,
+      "tp": 140,
+      "intelligence": 56,
+      "control": 59,
+      "kick": 53,
+      "speed": 47
+    },
+    "seasons": "S2, S3"
+  },
+  {
+    "name": "Sam Samurai",
+    "stats": {
+      "guard": 60,
+      "stamina": 60,
+      "body": 60,
+      "tp": 170,
+      "intelligence": 57,
+      "control": 60,
+      "kick": 61,
+      "speed": 56
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Sail Quicksilver",
+    "stats": {
+      "guard": 54,
+      "stamina": 68,
+      "body": 61,
+      "tp": 165,
+      "intelligence": 59,
+      "control": 61,
+      "kick": 52,
+      "speed": 60
+    },
+    "seasons": "S2, S3"
+  },
+  {
+    "name": "Albert Green",
+    "stats": {
+      "guard": 73,
+      "stamina": 64,
+      "body": 53,
+      "tp": 135,
+      "intelligence": 63,
+      "control": 60,
+      "kick": 50,
+      "speed": 53
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Kent Work",
+    "stats": {
+      "guard": 70,
+      "stamina": 65,
+      "body": 57,
+      "tp": 135,
+      "intelligence": 56,
+      "control": 54,
+      "kick": 44,
+      "speed": 54
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Mark Hillvalley",
+    "stats": {
+      "guard": 79,
+      "stamina": 66,
+      "body": 56,
+      "tp": 135,
+      "intelligence": 55,
+      "control": 52,
+      "kick": 40,
+      "speed": 63
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Herb Sherman",
+    "stats": {
+      "guard": 79,
+      "stamina": 70,
+      "body": 60,
+      "tp": 135,
+      "intelligence": 58,
+      "control": 62,
+      "kick": 49,
+      "speed": 52
+    },
+    "seasons": "S2, S3"
+  },
+  {
+    "name": "Seward Hayseed",
+    "stats": {
+      "guard": 77,
+      "stamina": 68,
+      "body": 56,
+      "tp": 140,
+      "intelligence": 56,
+      "control": 52,
+      "kick": 42,
+      "speed": 58
+    },
+    "seasons": "S2, S3"
+  },
+  {
+    "name": "Orville Newman",
+    "stats": {
+      "guard": 72,
+      "stamina": 66,
+      "body": 60,
+      "tp": 140,
+      "intelligence": 56,
+      "control": 46,
+      "kick": 71,
+      "speed": 62
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Joe Small",
+    "stats": {
+      "guard": 68,
+      "stamina": 63,
+      "body": 54,
+      "tp": 130,
+      "intelligence": 55,
+      "control": 54,
+      "kick": 40,
+      "speed": 56
+    },
+    "seasons": "S2, S3"
+  },
+  {
+    "name": "Ike Steiner",
+    "stats": {
+      "guard": 76,
+      "stamina": 60,
+      "body": 55,
+      "tp": 135,
+      "intelligence": 59,
+      "control": 63,
+      "kick": 42,
+      "speed": 53
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Daniel Dawson",
+    "stats": {
+      "guard": 74,
+      "stamina": 65,
+      "body": 54,
+      "tp": 135,
+      "intelligence": 62,
+      "control": 55,
+      "kick": 56,
+      "speed": 63
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Tom Walters",
+    "stats": {
+      "guard": 70,
+      "stamina": 61,
+      "body": 58,
+      "tp": 130,
+      "intelligence": 60,
+      "control": 52,
+      "kick": 61,
+      "speed": 66
+    },
+    "seasons": "S2, S3"
+  },
+  {
+    "name": "Stuart Racoonfur",
+    "stats": {
+      "guard": 72,
+      "stamina": 61,
+      "body": 57,
+      "tp": 130,
+      "intelligence": 64,
+      "control": 60,
+      "kick": 53,
+      "speed": 64
+    },
+    "seasons": "S2, S3"
+  },
+  {
+    "name": "John Neville",
+    "stats": {
+      "guard": 79,
+      "stamina": 51,
+      "body": 62,
+      "tp": 155,
+      "intelligence": 50,
+      "control": 54,
+      "kick": 78,
+      "speed": 48
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Malcolm Night",
+    "stats": {
+      "guard": 73,
+      "stamina": 60,
+      "body": 74,
+      "tp": 170,
+      "intelligence": 64,
+      "control": 63,
+      "kick": 63,
+      "speed": 67
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Alfred Meenan",
+    "stats": {
+      "guard": 60,
+      "stamina": 53,
+      "body": 55,
+      "tp": 155,
+      "intelligence": 54,
+      "control": 55,
+      "kick": 61,
+      "speed": 55
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Dan Mirthful",
+    "stats": {
+      "guard": 65,
+      "stamina": 51,
+      "body": 70,
+      "tp": 140,
+      "intelligence": 49,
+      "control": 49,
+      "kick": 59,
+      "speed": 46
+    },
+    "seasons": "S2, S3"
+  },
+  {
+    "name": "Rick Clover",
+    "stats": {
+      "guard": 52,
+      "stamina": 45,
+      "body": 52,
+      "tp": 145,
+      "intelligence": 58,
+      "control": 56,
+      "kick": 53,
+      "speed": 67
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "York Nashmith",
+    "stats": {
+      "guard": 61,
+      "stamina": 52,
+      "body": 62,
+      "tp": 145,
+      "intelligence": 56,
+      "control": 57,
+      "kick": 52,
+      "speed": 54
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Toby Damian",
+    "stats": {
+      "guard": 56,
+      "stamina": 56,
+      "body": 56,
+      "tp": 145,
+      "intelligence": 55,
+      "control": 55,
+      "kick": 54,
+      "speed": 57
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Zachary Moore",
+    "stats": {
+      "guard": 52,
+      "stamina": 53,
+      "body": 60,
+      "tp": 150,
+      "intelligence": 60,
+      "control": 60,
+      "kick": 52,
+      "speed": 63
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Thomas Murdock",
+    "stats": {
+      "guard": 59,
+      "stamina": 61,
+      "body": 69,
+      "tp": 160,
+      "intelligence": 63,
+      "control": 64,
+      "kick": 67,
+      "speed": 63
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Marvin Murdock",
+    "stats": {
+      "guard": 61,
+      "stamina": 60,
+      "body": 61,
+      "tp": 165,
+      "intelligence": 62,
+      "control": 61,
+      "kick": 64,
+      "speed": 60
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Tyler Murdock",
+    "stats": {
+      "guard": 56,
+      "stamina": 59,
+      "body": 63,
+      "tp": 160,
+      "intelligence": 63,
+      "control": 68,
+      "kick": 77,
+      "speed": 60
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Paul Siddon",
+    "stats": {
+      "guard": 80,
+      "stamina": 68,
+      "body": 72,
+      "tp": 145,
+      "intelligence": 62,
+      "control": 64,
+      "kick": 73,
+      "speed": 44
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Lane War",
+    "stats": {
+      "guard": 71,
+      "stamina": 57,
+      "body": 77,
+      "tp": 160,
+      "intelligence": 63,
+      "control": 68,
+      "kick": 68,
+      "speed": 56
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Danny Wood",
+    "stats": {
+      "guard": 80,
+      "stamina": 62,
+      "body": 75,
+      "tp": 170,
+      "intelligence": 69,
+      "control": 75,
+      "kick": 68,
+      "speed": 60
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Apollo Light",
+    "stats": {
+      "guard": 73,
+      "stamina": 48,
+      "body": 76,
+      "tp": 155,
+      "intelligence": 58,
+      "control": 62,
+      "kick": 76,
+      "speed": 53
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Jeff Iron",
+    "stats": {
+      "guard": 69,
+      "stamina": 62,
+      "body": 63,
+      "tp": 160,
+      "intelligence": 69,
+      "control": 74,
+      "kick": 60,
+      "speed": 67
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Arion Matlock",
+    "stats": {
+      "guard": 66,
+      "stamina": 60,
+      "body": 65,
+      "tp": 170,
+      "intelligence": 64,
+      "control": 69,
+      "kick": 56,
+      "speed": 57
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Artie Mishman",
+    "stats": {
+      "guard": 65,
+      "stamina": 45,
+      "body": 63,
+      "tp": 170,
+      "intelligence": 64,
+      "control": 76,
+      "kick": 62,
+      "speed": 44
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Wesley Knox",
+    "stats": {
+      "guard": 63,
+      "stamina": 60,
+      "body": 70,
+      "tp": 150,
+      "intelligence": 66,
+      "control": 63,
+      "kick": 60,
+      "speed": 71
+    },
+    "seasons": "S2, S3"
+  },
+  {
+    "name": "Henry House",
+    "stats": {
+      "guard": 67,
+      "stamina": 70,
+      "body": 68,
+      "tp": 165,
+      "intelligence": 61,
+      "control": 60,
+      "kick": 48,
+      "speed": 64
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Byron Love",
+    "stats": {
+      "guard": 66,
+      "stamina": 65,
+      "body": 66,
+      "tp": 175,
+      "intelligence": 72,
+      "control": 77,
+      "kick": 74,
+      "speed": 68
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Jonas Demetrius",
+    "stats": {
+      "guard": 56,
+      "stamina": 63,
+      "body": 62,
+      "tp": 160,
+      "intelligence": 69,
+      "control": 72,
+      "kick": 75,
+      "speed": 65
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Seymour Hillman",
+    "stats": {
+      "guard": 72,
+      "stamina": 68,
+      "body": 68,
+      "tp": 175,
+      "intelligence": 65,
+      "control": 64,
+      "kick": 64,
+      "speed": 61
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Charles Island",
+    "stats": {
+      "guard": 68,
+      "stamina": 63,
+      "body": 79,
+      "tp": 180,
+      "intelligence": 69,
+      "control": 71,
+      "kick": 71,
+      "speed": 69
+    },
+    "seasons": "S1, S2"
+  },
+  {
+    "name": "Garret Hairtown",
+    "stats": {
+      "guard": 63,
+      "stamina": 60,
+      "body": 62,
+      "tp": 165,
+      "intelligence": 66,
+      "control": 65,
+      "kick": 63,
+      "speed": 70
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Arthur Sweet",
+    "stats": {
+      "guard": 67,
+      "stamina": 64,
+      "body": 72,
+      "tp": 165,
+      "intelligence": 70,
+      "control": 74,
+      "kick": 61,
+      "speed": 64
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Peter Mildred",
+    "stats": {
+      "guard": 69,
+      "stamina": 69,
+      "body": 66,
+      "tp": 170,
+      "intelligence": 70,
+      "control": 69,
+      "kick": 67,
+      "speed": 69
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Josh Nathaniel",
+    "stats": {
+      "guard": 64,
+      "stamina": 68,
+      "body": 69,
+      "tp": 160,
+      "intelligence": 69,
+      "control": 68,
+      "kick": 64,
+      "speed": 70
+    },
+    "seasons": "S2, S3"
+  },
+  {
+    "name": "Ian Suffolk",
+    "stats": {
+      "guard": 61,
+      "stamina": 68,
+      "body": 69,
+      "tp": 160,
+      "intelligence": 62,
+      "control": 60,
+      "kick": 65,
+      "speed": 59
+    },
+    "seasons": "S2, S3"
+  },
+  {
+    "name": "Edward Gladstone",
+    "stats": {
+      "guard": 60,
+      "stamina": 60,
+      "body": 65,
+      "tp": 165,
+      "intelligence": 68,
+      "control": 67,
+      "kick": 65,
+      "speed": 68
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Tyler Thomas",
+    "stats": {
+      "guard": 71,
+      "stamina": 65,
+      "body": 70,
+      "tp": 175,
+      "intelligence": 72,
+      "control": 74,
+      "kick": 70,
+      "speed": 75
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Joseph Yosemite",
+    "stats": {
+      "guard": 72,
+      "stamina": 62,
+      "body": 65,
+      "tp": 175,
+      "intelligence": 68,
+      "control": 71,
+      "kick": 58,
+      "speed": 65
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Constant Builder",
+    "stats": {
+      "guard": 53,
+      "stamina": 75,
+      "body": 66,
+      "tp": 165,
+      "intelligence": 64,
+      "control": 64,
+      "kick": 69,
+      "speed": 62
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Suzanne Yuma",
+    "stats": {
+      "guard": 56,
+      "stamina": 46,
+      "body": 44,
+      "tp": 115,
+      "intelligence": 45,
+      "control": 43,
+      "kick": 44,
+      "speed": 49
+    },
+    "seasons": "S1"
+  },
+  {
+    "name": "Fielding",
+    "stats": {
+      "guard": 52,
+      "stamina": 53,
+      "body": 55,
+      "tp": 135,
+      "intelligence": 58,
+      "control": 59,
+      "kick": 55,
+      "speed": 62
+    },
+    "seasons": "S1, S2, S3"
+  },
+  {
+    "name": "Alex Lovely",
+    "stats": {
+      "guard": 44,
+      "stamina": 51,
+      "body": 44,
+      "tp": 115,
+      "intelligence": 44,
+      "control": 44,
+      "kick": 49,
+      "speed": 44
+    },
+    "seasons": "S1"
+  },
+  {
+    "name": "Louis Hillside",
+    "stats": {
+      "guard": 45,
+      "stamina": 48,
+      "body": 62,
+      "tp": 130,
+      "intelligence": 51,
+      "control": 51,
+      "kick": 60,
+      "speed": 43
+    },
+    "seasons": "S1, S3"
+  },
+  {
+    "name": "Ness Sheldon",
+    "stats": {
+      "guard": 53,
+      "stamina": 40,
+      "body": 48,
+      "tp": 115,
+      "intelligence": 44,
+      "control": 45,
+      "kick": 42,
+      "speed": 42
+    },
+    "seasons": "S1"
+  },
+  {
+    "name": "Lizzy Squirrel",
+    "stats": {
+      "guard": 45,
+      "stamina": 45,
+      "body": 55,
+      "tp": 155,
+      "intelligence": 51,
+      "control": 50,
+      "kick": 52,
+      "speed": 60
+    },
+    "seasons": "S1, S3"
+  },
+  {
+    "name": "Mitch Sandstone",
+    "stats": {
+      "guard": 48,
+      "stamina": 46,
+      "body": 58,
+      "tp": 100,
+      "intelligence": 45,
+      "control": 41,
+      "kick": 54,
+      "speed": 45
+    },
+    "seasons": "S1"
+  },
+  {
+    "name": "Kippy Jones",
+    "stats": {
+      "guard": 51,
+      "stamina": 42,
+      "body": 51,
+      "tp": 155,
+      "intelligence": 56,
+      "control": 64,
+      "kick": 53,
+      "speed": 43
+    },
+    "seasons": "S1, S3"
+  },
+  {
+    "name": "Fayette Riversong",
+    "stats": {
+      "guard": 48,
+      "stamina": 42,
+      "body": 50,
+      "tp": 100,
+      "intelligence": 47,
+      "control": 50,
+      "kick": 40,
+      "speed": 40
+    },
+    "seasons": "S1"
+  },
+  {
+    "name": "Eddie Prentice",
+    "stats": {
+      "guard": 51,
+      "stamina": 48,
+      "body": 58,
+      "tp": 130,
+      "intelligence": 54,
+      "control": 56,
+      "kick": 54,
+      "speed": 54
+    },
+    "seasons": "S1, S3"
+  },
+  {
+    "name": "Samantha Moonlight",
+    "stats": {
+      "guard": 50,
+      "stamina": 47,
+      "body": 50,
+      "tp": 120,
+      "intelligence": 49,
+      "control": 50,
+      "kick": 54,
+      "speed": 44
+    },
+    "seasons": "S1, S2, S3"
+  }
+]
