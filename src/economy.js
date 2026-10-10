@@ -346,7 +346,7 @@ export function buyPack(guildId, userId, price, cards) {
 
 const FORMATIONS = new Set(['4-4-2', '4-3-3', '3-5-2']);
 
-export function saveTeam(guildId, userId, formation, playerNames, slotPositions = null, teamSlot = 1) {
+export function saveTeam(guildId, userId, formation, playerNames, slotPositions = null, teamSlot = 1, substituteNames = []) {
   if (!Number.isInteger(teamSlot) || teamSlot < 1 || teamSlot > 4) return { ok: false, reason: 'invalid-slot' };
   if (!FORMATIONS.has(formation) || !Array.isArray(playerNames) || playerNames.length !== 11 || new Set(playerNames).size !== 11) {
     return { ok: false, reason: 'invalid-team' };
@@ -354,14 +354,17 @@ export function saveTeam(guildId, userId, formation, playerNames, slotPositions 
   if (slotPositions !== null && (!Array.isArray(slotPositions) || slotPositions.length !== 11)) {
     return { ok: false, reason: 'invalid-team' };
   }
+  if (!Array.isArray(substituteNames) || substituteNames.length > 5 || new Set(substituteNames).size !== substituteNames.length || substituteNames.some((name) => playerNames.includes(name))) {
+    return { ok: false, reason: 'invalid-substitutes' };
+  }
   const data = readAll();
   const user = getOrCreate(data, guildId, userId);
   const owned = new Set(user.cards.map((card) => card.name));
-  if (playerNames.some((name) => !owned.has(name))) return { ok: false, reason: 'not-owned' };
+  if (playerNames.some((name) => !owned.has(name)) || substituteNames.some((name) => !owned.has(name))) return { ok: false, reason: 'not-owned' };
   const trophies = [];
   if (!user.teams.some(Boolean)) unlockTrophy(user, 'first_team', trophies);
   const previous = user.teams[teamSlot - 1] ?? {};
-  const savedTeam = { ...previous, formation, players: [...playerNames], ...(slotPositions ? { positions: [...slotPositions] } : {}) };
+  const savedTeam = { ...previous, formation, players: [...playerNames], substitutes: [...substituteNames], ...(slotPositions ? { positions: [...slotPositions] } : {}) };
   user.teams[teamSlot - 1] = savedTeam;
   if (teamSlot === 1) user.team = savedTeam;
   writeAll(data);
