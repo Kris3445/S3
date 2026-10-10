@@ -2200,5 +2200,160 @@
     "source_file": "D3Fter_Zeus.webp",
     "team": "Zeus",
     "collection_page": 11
+  },
+  {
+    "name": "Seymour Hillman",
+    "position": "Bramkarz",
+    "element": "Mountain",
+    "hissatsu": [
+      {
+        "name": "God Hand",
+        "element": "Mountain",
+        "type": "Obrona bramkarska"
+      }
+    ],
+    "overall": 50,
+    "chance_percent": 3,
+    "tier": "BRĄZOWA",
+    "image": "cards/117_seymour_hillman.jpg",
+    "source_file": "hibiki-seigou-foto.jpg",
+    "team": "Inazuma Eleven OB",
+    "collection_page": 12
+  },
+  {
+    "name": "Charles Island",
+    "position": "Obrońca",
+    "element": "Forest",
+    "hissatsu": [],
+    "overall": 49,
+    "chance_percent": 3,
+    "tier": "BRĄZOWA",
+    "image": "cards/118_charles_island.jpg",
+    "source_file": "Ukishima_Kazuto.webp",
+    "team": "Inazuma Eleven OB",
+    "collection_page": 12
+  },
+  {
+    "name": "Garret Hairtown",
+    "position": "Obrońca",
+    "element": "Wind",
+    "hissatsu": [],
+    "overall": 45,
+    "chance_percent": 3,
+    "tier": "BRĄZOWA",
+    "image": "cards/119_garret_hairtown.jpg",
+    "source_file": "Kamimura_Kirito.webp",
+    "team": "Inazuma Eleven OB",
+    "collection_page": 12
+  },
+  {
+    "name": "Arthur Sweet",
+    "position": "Obrońca",
+    "element": "Mountain",
+    "hissatsu": [],
+    "overall": 42,
+    "chance_percent": 3,
+    "tier": "BRĄZOWA",
+    "image": "cards/120_arthur_sweet.jpg",
+    "source_file": "Aida_Chikara.webp",
+    "team": "Inazuma Eleven OB",
+    "collection_page": 12
+  },
+  {
+    "name": "Peter Mildred",
+    "position": "Pomocnik",
+    "element": "Forest",
+    "hissatsu": [],
+    "overall": 40,
+    "chance_percent": 3,
+    "tier": "BRĄZOWA",
+    "image": "cards/121_peter_mildred.jpg",
+    "source_file": "Batora_Manabu.webp",
+    "team": "Inazuma Eleven OB",
+    "collection_page": 12
+  },
+  {
+    "name": "Josh Nathaniel",
+    "position": "Pomocnik",
+    "element": "Forest",
+    "hissatsu": [],
+    "overall": 44,
+    "chance_percent": 3,
+    "tier": "BRĄZOWA",
+    "image": "cards/122_josh_nathaniel.jpg",
+    "source_file": "Nakama_You.webp",
+    "team": "Inazuma Eleven OB",
+    "collection_page": 12
+  },
+  {
+    "name": "Ian Suffolk",
+    "position": "Pomocnik",
+    "element": "Fire",
+    "hissatsu": [],
+    "overall": 42,
+    "chance_percent": 3,
+    "tier": "BRĄZOWA",
+    "image": "cards/123_ian_suffolk.jpg",
+    "source_file": "Sugata_Iwao.webp",
+    "team": "Inazuma Eleven OB",
+    "collection_page": 12
+  },
+  {
+    "name": "Edward Gladstone",
+    "position": "Pomocnik",
+    "element": "Fire",
+    "hissatsu": [],
+    "overall": 42,
+    "chance_percent": 3,
+    "tier": "BRĄZOWA",
+    "image": "cards/124_edward_gladstone.jpg",
+    "source_file": "Ikari_Gengorou(1).webp",
+    "team": "Inazuma Eleven OB",
+    "collection_page": 12
+  },
+  {
+    "name": "Tyler Thomas",
+    "position": "Pomocnik",
+    "element": "Mountain",
+    "hissatsu": [],
+    "overall": 40,
+    "chance_percent": 3,
+    "tier": "BRĄZOWA",
+    "image": "cards/125_tyler_thomas.jpg",
+    "source_file": "Teira_Tamotsu(1).webp",
+    "team": "Inazuma Eleven OB",
+    "collection_page": 12
+  },
+  {
+    "name": "Joseph Yosemite",
+    "position": "Napastnik",
+    "element": "Wind",
+    "hissatsu": [
+      {
+        "name": "Cross Drive",
+        "element": "Wind",
+        "type": "Strzał"
+      }
+    ],
+    "overall": 47,
+    "chance_percent": 3,
+    "tier": "BRĄZOWA",
+    "image": "cards/126_joseph_yosemite.jpg",
+    "source_file": "Tamiyama_You(1).webp",
+    "team": "Inazuma Eleven OB",
+    "collection_page": 12
+  },
+  {
+    "name": "Constant Builder",
+    "position": "Napastnik",
+    "element": "Fire",
+    "hissatsu": [],
+    "overall": 52,
+    "chance_percent": 3,
+    "tier": "BRĄZOWA",
+    "image": "cards/127_constant_builder.jpg",
+    "source_file": "Biruda_Kouichi(1).webp",
+    "team": "Inazuma Eleven OB",
+    "collection_page": 12
   }
 ]

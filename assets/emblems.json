@@ -71,5 +71,12 @@
     "image": "emblems/kirkwood.png",
     "color": "#cf5348",
     "source_file": "Kidokawa_Seishuu_emblem_29(1).webp"
+  },
+  {
+    "id": "inazuma_ob",
+    "name": "Inazuma Eleven OB",
+    "image": "emblems/inazuma_ob.png",
+    "color": "#f2a51a",
+    "source_file": "Raimon_OB_emblem_29.webp"
   }
 ]
