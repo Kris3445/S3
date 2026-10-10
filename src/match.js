@@ -149,8 +149,7 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
         const type = move.type;
         if (side === 'home') {
           const usableShot = type === 'Strzał' && (state.zone >= 3 || isLongShot(move));
-          const usableDribble = type === 'Drybling';
-          if (!usableShot && !usableDribble) continue;
+          if (!usableShot) continue;
         } else {
           const defensive = isTackle(move) || (state.zone >= 3 && isShotBlock(move));
           const keeper = state.zone >= 3 && player.position === 'Bramkarz' && type === 'Obrona bramkarska';
@@ -160,6 +159,28 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
       }
     }
     return options.slice(0, 25);
+  }
+
+  function dribbleOptions(state) {
+    const carrier = bestCarrier(state.home, state, 'home');
+    const techniques = (carrier?.hissatsu ?? [])
+      .filter((move) => move.type === 'Drybling')
+      .map((move) => {
+        const power = hissatsuPower(carrier);
+        const cost = hissatsuTpCost(power);
+        return { player: carrier, move, power, cost };
+      })
+      .filter((option) => tpLeft(state, 'home', carrier) >= option.cost);
+    return [
+      ...techniques,
+      {
+        player: carrier,
+        move: { name: 'Zwykły drybling bez Hissatsu', type: 'Drybling' },
+        power: 0,
+        cost: 0,
+        normalDribble: true,
+      },
+    ];
   }
 
   function addLog(state, message) {
@@ -341,11 +362,15 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
     if (menu) {
       const select = new StringSelectMenuBuilder()
         .setCustomId(`mecz-tech:${state.id}`)
-        .setPlaceholder(state.phase === 'home' ? 'Wybierz technikę Hissatsu' : 'Wybierz technikę obronną')
+        .setPlaceholder(state.pendingAction === 'dribble'
+          ? 'Wybierz Hissatsu do dryblingu lub zwykły drybling'
+          : state.phase === 'home' ? 'Wybierz technikę Hissatsu' : 'Wybierz technikę obronną')
         .addOptions(menu.map((option, index) => ({
-          label: `${option.move.name} · ${option.player.name}`.slice(0, 100),
+          label: option.normalDribble ? option.move.name : `${option.move.name} · ${option.player.name}`.slice(0, 100),
           value: String(index),
-          description: `${option.move.type} · moc ${option.power} · ${option.cost} TP`.slice(0, 100),
+          description: option.normalDribble
+            ? 'Zwykły drybling · bez kosztu TP'
+            : `${option.move.type} · moc ${option.power} · ${option.cost} TP`.slice(0, 100),
         })));
       return [new ActionRowBuilder().addComponents(select), new ActionRowBuilder().addComponents(actionButton(state, 'cancel-menu', 'Wróć do akcji', ButtonStyle.Secondary))];
     }
@@ -447,7 +472,19 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
     state.minute = Math.min(90, state.minute + 6);
     if (state.phase === 'home') {
       if (['pass-forward', 'pass-left', 'pass-right', 'long-ball'].includes(action)) attackContest(state, action, option);
-      else if (action === 'dribble') attackContest(state, action, option);
+      else if (action === 'dribble' && option) {
+        if (option.normalDribble) {
+          attackContest(state, 'dribble', { player: option.player });
+        } else if (option.move?.type === 'Drybling') {
+          if (!spendTp(state, 'home', option.player, option.cost)) {
+            await interaction.reply({ content: `${option.player.name} nie ma już wystarczająco TP.`, ephemeral: true });
+            state.minute = Math.max(0, state.minute - 6);
+            return;
+          }
+          addLog(state, `${option.player.name} używa **${option.move.name}** do dryblingu!`);
+          attackContest(state, 'dribble', option);
+        }
+      }
       else if (action === 'shot') {
         if (state.zone < 3) {
           await interaction.reply({ content: 'Zwykły strzał możesz oddać z pola karnego. Spróbuj podania, dryblingu albo Hissatsu z oznaczeniem (L).', ephemeral: true });
@@ -458,30 +495,22 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
           (player) => stat(player, 'kick', state, 'home'));
         tire(state, 'home', attacker);
         resolveShot(state, 'home', attacker);
-      } else if ((action === 'tech' || action === 'dribble') && option) {
-        if (option.normalDribble) {
-          attackContest(state, 'dribble', { player: option.player });
-        } else {
-          if (!spendTp(state, 'home', option.player, option.cost)) {
-            await interaction.reply({ content: `${option.player.name} nie ma już wystarczająco TP.`, ephemeral: true });
+      } else if (action === 'tech' && option) {
+        if (!spendTp(state, 'home', option.player, option.cost)) {
+          await interaction.reply({ content: `${option.player.name} nie ma już wystarczająco TP.`, ephemeral: true });
+          state.minute = Math.max(0, state.minute - 6);
+          return;
+        }
+        if (option.move.type === 'Strzał') {
+          if (state.zone < 3 && !isLongShot(option.move)) {
+            await interaction.reply({ content: 'Ta technika nie ma oznaczenia (L), więc można jej użyć tylko z pola karnego.', ephemeral: true });
             state.minute = Math.max(0, state.minute - 6);
             return;
           }
-          if (option.move.type === 'Strzał') {
-            if (state.zone < 3 && !isLongShot(option.move)) {
-              await interaction.reply({ content: 'Ta technika nie ma oznaczenia (L), więc można jej użyć tylko z pola karnego.', ephemeral: true });
-              state.minute = Math.max(0, state.minute - 6);
-              return;
-            }
-            tire(state, 'home', option.player);
-            addLog(state, `${option.player.name} używa **${option.move.name}**!`);
-            resolveShot(state, 'home', option.player, option);
-          } else if (option.move.type === 'Drybling') {
-            addLog(state, `${option.player.name} używa **${option.move.name}** do dryblingu!`);
-            attackContest(state, 'dribble', option);
-          }
+          tire(state, 'home', option.player);
+          addLog(state, `${option.player.name} używa **${option.move.name}**!`);
+          resolveShot(state, 'home', option.player, option);
         }
-
       }
     } else if (action === 'press' && option?.player) {
       defend(state, option.player);
@@ -568,6 +597,7 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
       awayTp: Object.fromEntries(away.map((player) => [player.name, player.stats?.tp ?? 100])),
       homeStamina: Object.fromEntries(home.map((player) => [player.name, player.stats?.stamina ?? 50])),
       awayStamina: Object.fromEntries(away.map((player) => [player.name, player.stats?.stamina ?? 50])),
+      pendingAction: null,
       finished: false,
     };
     state.carrierName = bestCarrier(home, state, 'home')?.name ?? null;
@@ -592,6 +622,14 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
         return;
       }
       state.pendingMenu = options;
+      state.pendingAction = 'tech';
+      await interaction.update(promptPayload(state, options));
+      return;
+    }
+    if (action === 'dribble') {
+      const options = dribbleOptions(state);
+      state.pendingMenu = options;
+      state.pendingAction = 'dribble';
       await interaction.update(promptPayload(state, options));
       return;
     }
@@ -668,6 +706,7 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
     if (action === 'cancel-menu') {
       state.pendingSubOut = null;
       state.pendingMenu = null;
+      state.pendingAction = null;
       state.pendingPass = null;
       await interaction.update(promptPayload(state));
       return;
@@ -751,8 +790,10 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
       await interaction.reply({ content: 'Ta technika nie jest już dostępna w tej sytuacji.', ephemeral: true });
       return;
     }
+    const action = state.pendingAction ?? 'tech';
     state.pendingMenu = null;
-    await commitAction(interaction, state, 'tech', option);
+    state.pendingAction = null;
+    await commitAction(interaction, state, action, option);
   }
 
   return { start, handleButton, handleTechnique, handleSubstitution };
