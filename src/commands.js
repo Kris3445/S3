@@ -25,6 +25,19 @@ const commandBuilders = [
     .setDescription('Pokaż trofea serwera lub trofea wybranego gracza.')
     .addUserOption((option) => option.setName('gracz').setDescription('Gracz, którego trofea chcesz zobaczyć.')),
   new SlashCommandBuilder()
+    .setName('porownaj')
+    .setDescription('Porównaj OVERALL i statystyki dwóch zawodników.')
+    .addStringOption((option) => option
+      .setName('zawodnik1')
+      .setDescription('Pierwszy zawodnik.')
+      .setAutocomplete(true)
+      .setRequired(true))
+    .addStringOption((option) => option
+      .setName('zawodnik2')
+      .setDescription('Drugi zawodnik.')
+      .setAutocomplete(true)
+      .setRequired(true)),
+  new SlashCommandBuilder()
     .setName('team')
     .setDescription('Zbuduj skład: wybierz formację i 11 zawodników.')
     .addIntegerOption((option) => option
