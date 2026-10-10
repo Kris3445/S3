@@ -1425,6 +1425,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
     if (interaction.isStringSelectMenu()) {
       if (!requireGuild(interaction) || !(await requireAdmin(interaction)) || !(await requireGameAccess(interaction))) return;
       if (interaction.customId.startsWith('mecz-tech:')) await matchMode.handleTechnique(interaction);
+      else if (interaction.customId.startsWith('mecz-pass-receiver:') || interaction.customId.startsWith('mecz-pass-defender:')) await matchMode.handlePassSelection(interaction);
       else if (interaction.customId.startsWith('mecz-sub-out:') || interaction.customId.startsWith('mecz-sub-in:')) await matchMode.handleSubstitution(interaction);
       else await handleGameSelect(interaction);
       return;
