@@ -346,6 +346,17 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
       .setFooter({ text: footer ?? (state.phase === 'home' ? 'Wybierz akcję. Hissatsu zużywa TP zawodnika.' : 'Zatrzymaj atak Occult pressiem lub techniką obronną.') });
   }
 
+  function promptPayload(state, menu = null, footer = null) {
+    const currentTeam = state.phase === 'home' ? state.home : state.away;
+    const carrier = bestCarrier(currentTeam, state, state.phase);
+    const prompt = new EmbedBuilder()
+      .setColor(state.phase === 'home' ? 0x2388d1 : 0xd7534f)
+      .setTitle((state.phase === 'home' ? '⚡ Akcja!' : '🛡️ Obrona!') + ' — ' + state.minute + '′')
+      .setDescription(carrier.name + ' ma piłkę dla ' + (state.phase === 'home' ? (state.teamName || state.username) : 'Occult') + '.\nStrefa: ' + zoneLabel(state.zone) + ' · TP ' + tpLeft(state, state.phase, carrier) + '\n\n' + (state.phase === 'home' ? 'Wybierz następny ruch:' : 'Zatrzymaj atak przeciwnika:'))
+      .setFooter({ text: footer || ('Wynik ' + state.score.home + ' : ' + state.score.away + ' · ' + state.formation + ' · slot ' + state.slot + '/4') });
+    return { embeds: [prompt], components: components(state, menu), attachments: [] };
+  }
+
   async function payload(state, menu = null, footer = null) {
     const currentTeam = state.phase === 'home' ? state.home : state.away;
     const carrier = bestCarrier(currentTeam, state, state.phase);
@@ -368,7 +379,7 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
     const matchEmbed = embed(state, footer).setImage(`attachment://${imageName}`);
     return {
       embeds: [matchEmbed],
-      components: components(state, menu),
+      components: [],
       files: [{ attachment: Buffer.from(pitch), name: imageName }],
       attachments: [],
     };
@@ -441,6 +452,7 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
       return;
     }
     await interaction.update(await payload(state));
+    await interaction.followUp(promptPayload(state));
   }
 
   async function start(interaction) {
@@ -501,7 +513,8 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
     };
     sessions.set(id, state);
     ownerSessions.set(ownerKey, id);
-    await interaction.reply({ ...(await payload(state, null, `Mecz rusza! ${interaction.user.username} vs Occult · wybierz pierwszą akcję.`)), ephemeral: true });
+    await interaction.reply({ ...(await payload(state, null, 'Mecz rozpoczyna się')), fetchReply: true });
+    await interaction.followUp({ ...promptPayload(state, null, 'Rozpoczęcie · wybierz pierwszą akcję.'), fetchReply: true });
   }
 
   async function handleButton(interaction) {
@@ -517,7 +530,7 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
         await interaction.reply({ content: 'W tej sytuacji nie masz dostępnej techniki Hissatsu z wystarczającą liczbą TP.', ephemeral: true });
         return;
       }
-      await interaction.update(await payload(state, options));
+      await interaction.update(promptPayload(state, options));
       return;
     }
     if (action === 'sub') {
@@ -538,7 +551,7 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
           value: player.name,
           description: `${player.position} · OVR ${player.overall}`.slice(0, 100),
         })));
-      const substitutionView = await payload(state, null, 'Wybierz zawodnika, którego chcesz zmienić.');
+      const substitutionView = promptPayload(state, null, 'Wybierz zawodnika, którego chcesz zmienić.');
       await interaction.update({
         ...substitutionView,
         components: [
@@ -550,7 +563,7 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
     }
     if (action === 'cancel-menu') {
       state.pendingSubOut = null;
-      await interaction.update(payload(state));
+      await interaction.update(promptPayload(state));
       return;
     }
     await commitAction(interaction, state, action);
@@ -578,7 +591,7 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
           value: player.name,
           description: `${player.position} · OVR ${player.overall}`.slice(0, 100),
         })));
-      const substitutionView = await payload(current, null, `${outgoing.name} schodzi. Wybierz jego zmiennika.`);
+      const substitutionView = promptPayload(current, null, outgoing.name + ' schodzi. Wybierz jego zmiennika.');
       await interaction.update({
         ...substitutionView,
         components: [
@@ -616,6 +629,7 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
       return;
     }
     await interaction.update(await payload(current));
+    await interaction.followUp(promptPayload(current));
   }
 
   async function handleTechnique(interaction) {
