@@ -1971,5 +1971,234 @@
     "source_file": "OIP (75).webp",
     "team": "Kirkwood",
     "collection_page": 10
+  },
+  {
+    "name": "Paul Siddon",
+    "position": "Bramkarz",
+    "element": "Mountain",
+    "hissatsu": [
+      {
+        "name": "Tsunami Wall",
+        "element": "Wind",
+        "type": "Obrona bramkarska"
+      },
+      {
+        "name": "Gigant Wall",
+        "element": "Mountain",
+        "type": "Obrona bramkarska"
+      }
+    ],
+    "overall": 63,
+    "chance_percent": 3,
+    "tier": "BRĄZOWA",
+    "image": "cards/106_paul_siddon.jpg",
+    "source_file": "2802529_Poseidon_successfully_stopping.webp",
+    "team": "Zeus",
+    "collection_page": 11
+  },
+  {
+    "name": "Lane War",
+    "position": "Obrońca",
+    "element": "Mountain",
+    "hissatsu": [
+      {
+        "name": "Power Charge",
+        "element": "Mountain",
+        "type": "Odbiór"
+      }
+    ],
+    "overall": 61,
+    "chance_percent": 3,
+    "tier": "BRĄZOWA",
+    "image": "cards/107_lane_war.jpg",
+    "source_file": "Aresu_Ran.webp",
+    "team": "Zeus",
+    "collection_page": 11
+  },
+  {
+    "name": "Danny Wood",
+    "position": "Obrońca",
+    "element": "Wind",
+    "hissatsu": [
+      {
+        "name": "Mega Quake",
+        "element": "Mountain",
+        "type": "Odbiór"
+      }
+    ],
+    "overall": 58,
+    "chance_percent": 3,
+    "tier": "BRĄZOWA",
+    "image": "cards/108_danny_wood.jpg",
+    "source_file": "OIP (92).webp",
+    "team": "Zeus",
+    "collection_page": 11
+  },
+  {
+    "name": "Apollo Light",
+    "position": "Obrońca",
+    "element": "Forest",
+    "hissatsu": [
+      {
+        "name": "Divine Stamp (B)",
+        "element": "Fire",
+        "type": "Odbiór"
+      }
+    ],
+    "overall": 67,
+    "chance_percent": 2.5,
+    "tier": "SREBRNA",
+    "image": "cards/109_apollo_light.jpg",
+    "source_file": "OIP (91).webp",
+    "team": "Zeus",
+    "collection_page": 11
+  },
+  {
+    "name": "Jeff Iron",
+    "position": "Obrońca",
+    "element": "Fire",
+    "hissatsu": [
+      {
+        "name": "Divine Stamp (B)",
+        "element": "Fire",
+        "type": "Odbiór"
+      }
+    ],
+    "overall": 65,
+    "chance_percent": 2.5,
+    "tier": "SREBRNA",
+    "image": "cards/110_jeff_iron.jpg",
+    "source_file": "OIP (90).webp",
+    "team": "Zeus",
+    "collection_page": 11
+  },
+  {
+    "name": "Arion Matlock",
+    "position": "Pomocnik",
+    "element": "Forest",
+    "hissatsu": [
+      {
+        "name": "Heaven's Time",
+        "element": "Wind",
+        "type": "Drybling"
+      }
+    ],
+    "overall": 66,
+    "chance_percent": 2.5,
+    "tier": "SREBRNA",
+    "image": "cards/111_arion_matlock.jpg",
+    "source_file": "OIP (89).webp",
+    "team": "Zeus",
+    "collection_page": 11
+  },
+  {
+    "name": "Artie Mishman",
+    "position": "Pomocnik",
+    "element": "Wind",
+    "hissatsu": [
+      {
+        "name": "Heaven's Time",
+        "element": "Wind",
+        "type": "Drybling"
+      },
+      {
+        "name": "Divine Arrows",
+        "element": "Wind",
+        "type": "Strzał"
+      }
+    ],
+    "overall": 68,
+    "chance_percent": 2.5,
+    "tier": "SREBRNA",
+    "image": "cards/112_artie_mishman.jpg",
+    "source_file": "b8f2445845d57eec98016688c3461333.jpg",
+    "team": "Zeus",
+    "collection_page": 11
+  },
+  {
+    "name": "Wesley Knox",
+    "position": "Pomocnik",
+    "element": "Forest",
+    "hissatsu": [
+      {
+        "name": "Dash Storm",
+        "element": "Wind",
+        "type": "Drybling"
+      }
+    ],
+    "overall": 60,
+    "chance_percent": 3,
+    "tier": "BRĄZOWA",
+    "image": "cards/113_wesley_knox.jpg",
+    "source_file": "OIP (88).webp",
+    "team": "Zeus",
+    "collection_page": 11
+  },
+  {
+    "name": "Henry House",
+    "position": "Pomocnik",
+    "element": "Fire",
+    "hissatsu": [
+      {
+        "name": "Divine Arrows",
+        "element": "Wind",
+        "type": "Strzał"
+      }
+    ],
+    "overall": 73,
+    "chance_percent": 2.5,
+    "tier": "SREBRNA",
+    "image": "cards/114_henry_house.jpg",
+    "source_file": "OIP (87).webp",
+    "team": "Zeus",
+    "collection_page": 11
+  },
+  {
+    "name": "Byron Love",
+    "position": "Pomocnik",
+    "element": "Forest",
+    "hissatsu": [
+      {
+        "name": "Heaven's Time",
+        "element": "Wind",
+        "type": "Drybling"
+      },
+      {
+        "name": "God Knows",
+        "element": "Wind",
+        "type": "Strzał"
+      }
+    ],
+    "overall": 89,
+    "chance_percent": 0.5,
+    "tier": "ZŁOTA",
+    "image": "cards/115_byron_love.jpg",
+    "source_file": "OIP (86).webp",
+    "team": "Zeus",
+    "collection_page": 11
+  },
+  {
+    "name": "Jonas Demetrius",
+    "position": "Napastnik",
+    "element": "Fire",
+    "hissatsu": [
+      {
+        "name": "Dash Storm",
+        "element": "Wind",
+        "type": "Drybling"
+      },
+      {
+        "name": "Reflect Buster",
+        "element": "Mountain",
+        "type": "Strzał"
+      }
+    ],
+    "overall": 75,
+    "chance_percent": 1.4,
+    "tier": "ZŁOTA",
+    "image": "cards/116_jonas_demetrius.jpg",
+    "source_file": "D3Fter_Zeus.webp",
+    "team": "Zeus",
+    "collection_page": 11
   }
 ]
