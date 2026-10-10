@@ -78,5 +78,12 @@
     "image": "emblems/inazuma_ob.png",
     "color": "#f2a51a",
     "source_file": "Raimon_OB_emblem_29.webp"
+  },
+  {
+    "id": "street_sallys",
+    "name": "Street Sally's",
+    "image": "emblems/street_sallys.png",
+    "color": "#f2b522",
+    "source_file": "Ichibangai_Sally28VR%29.webp"
   }
 ]
