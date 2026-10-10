@@ -370,7 +370,7 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
     const imageName = 'mecz-boisko.png';
     const matchEmbed = new EmbedBuilder().setColor(0x167b37).setImage(`attachment://${imageName}`);
     return {
-      content: '⚽ ' + (state.teamName || state.username) + ' ' + state.score.home + ' : ' + state.score.away + ' Occult · ' + state.minute + '′',
+      content: '',
       embeds: [matchEmbed],
       components: [],
       files: [{ attachment: Buffer.from(pitch), name: imageName }],
@@ -506,7 +506,8 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
     };
     sessions.set(id, state);
     ownerSessions.set(ownerKey, id);
-    await interaction.reply({ ...(await payload(state, null, 'Mecz rozpoczyna się')), fetchReply: true });
+    await interaction.reply({ embeds: [new EmbedBuilder().setColor(0x25864a).setTitle('⚙️ PIERWSZY GWIZDEK!').setDescription('Mecz został rozpoczęty. Niech wygra lepszy!')] });
+    await interaction.followUp(await payload(state, null, 'Mecz rozpoczyna się'));
     await interaction.followUp({ ...promptPayload(state, null, 'Rozpoczęcie · wybierz pierwszą akcję.'), fetchReply: true });
   }
 
