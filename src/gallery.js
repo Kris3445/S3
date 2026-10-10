@@ -844,3 +844,132 @@ export async function renderProfileBanner(username, user, profileOptions) {
   ctx.fillText(`Tło: ${profileOptions.backgrounds[user.cosmetics.background]?.name ?? 'Klasyczne'}`, 74, 365);
   return canvas.encode('png');
 }
+
+export async function renderMatchPitch({ home, away, homeCarrier, awayCarrier, phase, zone = 1 }) {
+  const width = 1160;
+  const height = 620;
+  const canvas = createCanvas(width, height);
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#0b1220';
+  ctx.fillRect(0, 0, width, height);
+
+  const field = { x: 28, y: 30, w: width - 56, h: height - 60 };
+  ctx.fillStyle = '#10512b';
+  ctx.fillRect(field.x, field.y, field.w, field.h);
+  const stripeCount = 12;
+  for (let index = 0; index < stripeCount; index += 1) {
+    if (index % 2 === 0) {
+      ctx.fillStyle = 'rgba(210,255,220,0.055)';
+      ctx.fillRect(field.x + index * field.w / stripeCount, field.y, field.w / stripeCount, field.h);
+    }
+  }
+
+  const line = 'rgba(235,255,241,0.82)';
+  ctx.strokeStyle = line;
+  ctx.fillStyle = line;
+  ctx.lineWidth = 3;
+  ctx.strokeRect(field.x + 8, field.y + 8, field.w - 16, field.h - 16);
+  ctx.beginPath();
+  ctx.moveTo(width / 2, field.y + 8);
+  ctx.lineTo(width / 2, field.y + field.h - 8);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(width / 2, height / 2, 82, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(width / 2, height / 2, 5, 0, Math.PI * 2);
+  ctx.fill();
+
+  const boxHeight = 228;
+  const smallHeight = 112;
+  for (const left of [true, false]) {
+    const goalX = left ? field.x + 8 : field.x + field.w - 8;
+    const penaltyX = left ? goalX : goalX - 142;
+    const smallX = left ? goalX : goalX - 58;
+    ctx.strokeRect(penaltyX, height / 2 - boxHeight / 2, 142, boxHeight);
+    ctx.strokeRect(smallX, height / 2 - smallHeight / 2, 58, smallHeight);
+    ctx.fillRect(left ? field.x - 5 : field.x + field.w - 3, height / 2 - 40, 8, 80);
+    ctx.beginPath();
+    ctx.arc(left ? field.x + 8 + 98 : field.x + field.w - 8 - 98, height / 2, 3, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  const roleXHome = { Bramkarz: 0.075, Obrońca: 0.22, Pomocnik: 0.36, Napastnik: 0.47 };
+  const roleXAway = { Bramkarz: 0.925, Obrońca: 0.78, Pomocnik: 0.64, Napastnik: 0.53 };
+  const roleLabels = { Bramkarz: 'GK', Obrońca: 'DF', Pomocnik: 'MF', Napastnik: 'FW' };
+  const colors = { home: '#35a6ff', away: '#ff665f' };
+
+  function drawTeam(team, side, carrierName) {
+    const byRole = new Map();
+    for (const player of team) {
+      const role = player.position ?? 'Pomocnik';
+      if (!byRole.has(role)) byRole.set(role, []);
+      byRole.get(role).push(player);
+    }
+    for (const [role, players] of byRole) {
+      const baseX = side === 'home' ? roleXHome[role] : roleXAway[role];
+      const xRatio = baseX ?? (side === 'home' ? 0.36 : 0.64);
+      const spacing = Math.min(0.12, 0.72 / Math.max(1, players.length));
+      for (let index = 0; index < players.length; index += 1) {
+        const player = players[index];
+        let x = field.x + xRatio * field.w;
+        let y = field.y + field.h * (0.5 + (index - (players.length - 1) / 2) * spacing);
+        const hasBall = player.name === carrierName;
+        if (hasBall) {
+          const progress = Math.max(0, Math.min(2, zone - 1)) * 0.13;
+          x = field.x + field.w * (side === 'home' ? 0.5 + progress : 0.5 - progress);
+          y = height / 2 + (side === 'home' ? -18 : 18);
+        }
+
+        if (hasBall) {
+          ctx.beginPath();
+          ctx.arc(x, y, 31, 0, Math.PI * 2);
+          ctx.strokeStyle = 'rgba(255,255,255,0.75)';
+          ctx.lineWidth = 3;
+          ctx.stroke();
+        }
+        ctx.save();
+        ctx.shadowColor = 'rgba(0,0,0,0.5)';
+        ctx.shadowBlur = 8;
+        ctx.shadowOffsetY = 3;
+        ctx.beginPath();
+        ctx.arc(x, y, 23, 0, Math.PI * 2);
+        ctx.fillStyle = colors[side];
+        ctx.fill();
+        ctx.restore();
+        ctx.beginPath();
+        ctx.arc(x, y, 23, 0, Math.PI * 2);
+        ctx.strokeStyle = '#f4f8fc';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 13px Roboto';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(roleLabels[role] ?? 'MF', x, y + 1);
+
+        if (hasBall) {
+          const ballX = x + (side === 'home' ? 28 : -28);
+          const ballY = y + 20;
+          ctx.beginPath();
+          ctx.arc(ballX, ballY, 10, 0, Math.PI * 2);
+          ctx.fillStyle = '#fff4c7';
+          ctx.fill();
+          ctx.strokeStyle = '#18202a';
+          ctx.lineWidth = 2;
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.arc(ballX, ballY, 3, 0, Math.PI * 2);
+          ctx.fillStyle = '#18202a';
+          ctx.fill();
+        }
+      }
+    }
+  }
+
+  ctx.textBaseline = 'alphabetic';
+  drawTeam(home, 'home', homeCarrier);
+  drawTeam(away, 'away', awayCarrier);
+  ctx.textAlign = 'left';
+  return canvas.encode('png');
+}
