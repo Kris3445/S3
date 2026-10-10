@@ -660,7 +660,7 @@ async function showStats(interaction) {
     .setColor(tierColors[player.tier] ?? 0x168cff)
     .setTitle(`⚽ Raport skautingowy: ${player.name}`)
     .setDescription(`${player.team ? `**${player.team}** · ` : ''}${player.position ?? 'Zawodnik'} · OVERALL **${player.overall}**\n${owned ? '✅ Masz tego zawodnika w kolekcji.' : '🔒 Nie masz jeszcze tej karty.'}`)
-    .setFooter({ text: 'Statystyki uśredniono z sezonów Inazuma Eleven.' });
+    .setFooter({ text: 'Pokazano najwyższe wartości statystyk z dostępnych sezonów Inazuma Eleven.' });
   const imageName = 'raport-skautingowy.png';
   embed.setImage(`attachment://${imageName}`);
   const report = await renderScoutStats(player);
