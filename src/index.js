@@ -706,7 +706,7 @@ async function showStats(interaction) {
     `🔋 **STAMINA** ${stats.stamina ?? '—'}  ·  💪 **BODY** ${stats.body ?? '—'}`,
     `✨ **TP** ${stats.tp ?? '—'}  ·  🧠 **INTELLIGENCE** ${stats.intelligence ?? '—'}`,
     `🎯 **CONTROL** ${stats.control ?? '—'}  ·  💨 **SPEED** ${stats.speed ?? '—'}`,
-  ].join('\\n');
+  ].join('\n');
   const imageName = 'karta-zawodnika.png';
   const cardImage = await renderPlayerCard(player);
   const embed = new EmbedBuilder()
