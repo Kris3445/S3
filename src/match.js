@@ -195,28 +195,30 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
   }
 
   function attackContest(state, action, moveData = null) {
-    const actor = moveData?.player ?? (action === 'pass'
+    const passing = action === 'pass' || action === 'center' || action === 'long-ball';
+    const actor = moveData?.player ?? (passing
       ? pick(state.home, (player) => player.position === 'Pomocnik', (player) => stat(player, 'intelligence', state, 'home'))
       : pick(state.home, (player) => player.position === 'Napastnik' || player.position === 'Pomocnik',
         (player) => stat(player, 'control', state, 'home') + stat(player, 'speed', state, 'home')));
     const defenders = fieldPlayers(state.away);
-    const defender = pick(defenders, () => true, (player) => action === 'pass'
+    const defender = pick(defenders, () => true, (player) => passing
       ? stat(player, 'intelligence', state, 'away') + stat(player, 'speed', state, 'away') * 0.2
       : stat(player, 'body', state, 'away') + stat(player, 'speed', state, 'away') * 0.3);
-    const attackerScore = action === 'pass'
+    const attackerScore = passing
       ? stat(actor, 'intelligence', state, 'home') + stat(actor, 'control', state, 'home') * 0.2
       : stat(actor, 'control', state, 'home') + stat(actor, 'speed', state, 'home') * 0.4;
-    const defenderScore = action === 'pass'
+    const defenderScore = passing
       ? stat(defender, 'intelligence', state, 'away') + stat(defender, 'speed', state, 'away') * 0.2
       : stat(defender, 'body', state, 'away') + stat(defender, 'speed', state, 'away') * 0.3;
     const bonus = moveData ? Math.min(18, moveData.power * 0.12) : 0;
     const chance = contestChance(attackerScore, defenderScore, bonus);
     tire(state, 'home', actor);
     if (Math.random() * 100 < chance) {
-      state.zone = Math.min(3, state.zone + 1);
-      addLog(state, `${actor.name} ${action === 'pass' ? 'wymienia podanie' : 'mija rywala dryblingiem'} i przesuwa atak na: **${zoneLabel(state.zone)}**.`);
+      state.zone = Math.min(3, state.zone + (action === 'long-ball' ? 2 : 1));
+      const moveText = action === 'center' ? 'zagrywa do środka' : action === 'long-ball' ? 'posyła długą piłkę' : action === 'pass' ? 'wymienia podanie' : 'mija rywala dryblingiem';
+      addLog(state, actor.name + ' ' + moveText + ' i przesuwa atak na: **' + zoneLabel(state.zone) + '**.');
     } else {
-      addLog(state, `${defender.name} przechwytuje piłkę! Occult rusza z kontrą.`);
+      addLog(state, defender.name + ' przechwytuje piłkę! Occult rusza z kontrą.');
       flipTo(state, 'away');
     }
   }
@@ -293,68 +295,58 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
     if (menu) {
       const select = new StringSelectMenuBuilder()
         .setCustomId(`mecz-tech:${state.id}`)
-        .setPlaceholder(state.phase === 'home' ? 'Wybierz technikę do ataku' : 'Wybierz odbiór albo obronę bramkarza')
+        .setPlaceholder(state.phase === 'home' ? 'Wybierz Hissatsu' : 'Wybierz technikę obronną')
         .addOptions(menu.map((option, index) => ({
           label: `${option.move.name} · ${option.player.name}`.slice(0, 100),
           value: String(index),
           description: `${option.move.type} · moc ${option.power} · ${option.cost} TP`.slice(0, 100),
         })));
-      return [
-        new ActionRowBuilder().addComponents(select),
-        new ActionRowBuilder().addComponents(actionButton(state, 'cancel-menu', 'Wróć do akcji', ButtonStyle.Secondary)),
-      ];
+      return [new ActionRowBuilder().addComponents(select), new ActionRowBuilder().addComponents(actionButton(state, 'cancel-menu', 'Wróć do akcji', ButtonStyle.Secondary))];
     }
     if (state.phase === 'home') {
       const moves = eligibleTechniques(state, 'home');
-      const actions = [
-        actionButton(state, 'pass', 'Podanie', ButtonStyle.Primary),
-        actionButton(state, 'dribble', 'Drybling', ButtonStyle.Primary),
-        actionButton(state, 'shot', 'Strzał', ButtonStyle.Danger, state.zone < 3),
-        actionButton(state, 'tech', 'Hissatsu', ButtonStyle.Success, moves.length === 0),
+      const movement = [
+        actionButton(state, 'pass', '➤ Podaj do przodu', ButtonStyle.Primary),
+        actionButton(state, 'center', '➤ Zagraj do środka', ButtonStyle.Primary),
+        actionButton(state, 'dribble', '⚒ Drybling', ButtonStyle.Secondary),
+        actionButton(state, 'long-ball', '➤ Długa piłka', ButtonStyle.Primary),
+        actionButton(state, 'tech', 'Taktyka · Hissatsu', ButtonStyle.Success, moves.length === 0),
       ];
-      const canSubstitute = state.homeBench?.some((reserve) => state.home.some((starter) => starter.position === reserve.position));
-      if (canSubstitute && state.homeSubstitutions < 5) {
-        actions.push(actionButton(state, 'sub', `Zmiana ${state.homeSubstitutions}/5`, ButtonStyle.Secondary));
-      }
-      return [new ActionRowBuilder().addComponents(...actions)];
+      const rows = [new ActionRowBuilder().addComponents(...movement)];
+      const extra = [actionButton(state, 'shot', 'Strzał', ButtonStyle.Danger, state.zone < 3)];
+      const canSub = state.homeBench?.some((reserve) => state.home.some((starter) => starter.position === reserve.position));
+      if (canSub && state.homeSubstitutions < 5) extra.push(actionButton(state, 'sub', 'Zmiana ' + state.homeSubstitutions + '/5', ButtonStyle.Secondary));
+      rows.push(new ActionRowBuilder().addComponents(...extra));
+      return rows;
     }
     const moves = eligibleTechniques(state, 'away');
-    const row = [
-      actionButton(state, 'press', 'Pressing', ButtonStyle.Primary),
+    const actions = [
+      actionButton(state, 'press', 'Odbiór', ButtonStyle.Primary),
       actionButton(state, 'tech', 'Hissatsu obronne', ButtonStyle.Success, moves.length === 0),
     ];
-    if (state.zone >= 3) row.push(actionButton(state, 'keeper', 'Obrona bramkarza', ButtonStyle.Danger));
-    return [new ActionRowBuilder().addComponents(...row)];
+    if (state.zone >= 3) actions.push(actionButton(state, 'keeper', 'Obrona bramkarza', ButtonStyle.Danger));
+    return [new ActionRowBuilder().addComponents(...actions)];
   }
 
   function embed(state, footer = null) {
-    const userTeamName = state.teamName || 'Twoja drużyna';
-    const currentPlayers = state.phase === 'home' ? state.home : state.away;
-    const currentSide = state.phase;
-    const carrier = bestCarrier(currentPlayers, state, currentSide);
-    const tp = tpLeft(state, currentSide, carrier);
+    const currentTeam = state.phase === 'home' ? state.home : state.away;
+    const carrier = bestCarrier(currentTeam, state, state.phase);
+    const tp = tpLeft(state, state.phase, carrier);
+    const tpMax = carrier.stats?.tp ?? 100;
+    const staminaMap = state.phase === 'home' ? state.homeStamina : state.awayStamina;
+    const stamina = staminaMap[carrier.name] ?? carrier.stats?.stamina ?? 100;
+    const staminaMax = carrier.stats?.stamina ?? 100;
+    const sideName = state.phase === 'home' ? (state.teamName || state.username) : 'Occult';
+    const opponent = state.phase === 'home' ? 'Occult' : (state.teamName || state.username);
     return new EmbedBuilder()
-      .setColor(0x2684d8)
-      .setTitle(`⚽ ${userTeamName} vs Occult`)
-      .setDescription(describe(state))
-      .addFields(
-        { name: 'Aktywny zawodnik', value: `${carrier.name} · ${carrier.position}`, inline: true },
-        { name: 'TP zawodnika', value: String(tp), inline: true },
-        { name: 'Formacja', value: `${state.formation} · slot ${state.slot}/4`, inline: true },
-        { name: 'Zmiany', value: `${state.homeSubstitutions ?? 0}/5`, inline: true },
-      )
-      .setFooter({ text: footer ?? (state.phase === 'home' ? 'Wybierz akcję. Hissatsu zużywa TP zawodnika.' : 'Zatrzymaj atak Occult pressiem lub techniką obronną.') });
+      .setColor(state.phase === 'home' ? 0x2388d1 : 0xd7534f)
+      .setTitle('⚡ Akcja! — ' + state.minute + '′')
+      .setDescription(carrier.name + ' ma piłkę w strefie: ' + zoneLabel(state.zone) + ' (' + sideName + ').\nStamina: ' + stamina + '/' + staminaMax + '  ·  TP: ' + tp + '/' + tpMax + '\n\n' + opponent + ', wybierz następny ruch.')
+      .setFooter({ text: footer || ('Wynik ' + state.score.home + ' : ' + state.score.away + ' · ' + state.minute + '′') });
   }
 
   function promptPayload(state, menu = null, footer = null) {
-    const currentTeam = state.phase === 'home' ? state.home : state.away;
-    const carrier = bestCarrier(currentTeam, state, state.phase);
-    const prompt = new EmbedBuilder()
-      .setColor(state.phase === 'home' ? 0x2388d1 : 0xd7534f)
-      .setTitle((state.phase === 'home' ? '⚡ Akcja!' : '🛡️ Obrona!') + ' — ' + state.minute + '′')
-      .setDescription(carrier.name + ' ma piłkę dla ' + (state.phase === 'home' ? (state.teamName || state.username) : 'Occult') + '.\nStrefa: ' + zoneLabel(state.zone) + ' · TP ' + tpLeft(state, state.phase, carrier) + '\n\n' + (state.phase === 'home' ? 'Wybierz następny ruch:' : 'Zatrzymaj atak przeciwnika:'))
-      .setFooter({ text: footer || ('Wynik ' + state.score.home + ' : ' + state.score.away + ' · ' + state.formation + ' · slot ' + state.slot + '/4') });
-    return { embeds: [prompt], components: components(state, menu), attachments: [] };
+    return { embeds: [embed(state, footer)], components: components(state, menu), attachments: [] };
   }
 
   async function payload(state, menu = null, footer = null) {
@@ -376,8 +368,9 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
       footer,
     });
     const imageName = 'mecz-boisko.png';
-    const matchEmbed = embed(state, footer).setImage(`attachment://${imageName}`);
+    const matchEmbed = new EmbedBuilder().setColor(0x167b37).setImage(`attachment://${imageName}`);
     return {
+      content: '⚽ ' + (state.teamName || state.username) + ' ' + state.score.home + ' : ' + state.score.away + ' Occult · ' + state.minute + '′',
       embeds: [matchEmbed],
       components: [],
       files: [{ attachment: Buffer.from(pitch), name: imageName }],
@@ -402,7 +395,7 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
     }
     state.minute = Math.min(90, state.minute + 6);
     if (state.phase === 'home') {
-      if (action === 'pass' || action === 'dribble') attackContest(state, action);
+      if (action === 'pass' || action === 'center' || action === 'long-ball' || action === 'dribble') attackContest(state, action);
       else if (action === 'shot') {
         if (state.zone < 3) {
           await interaction.reply({ content: 'Zwykły strzał możesz oddać z pola karnego. Spróbuj podania, dryblingu albo Hissatsu z oznaczeniem (L).', ephemeral: true });
