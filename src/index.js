@@ -51,7 +51,7 @@ import {
   verifyEarnAction,
   recordMatchResult,
 } from './economy.js';
-import { renderCollection, renderPlayerCard, renderPlayerComparison, renderProfileBanner, renderScoutStats, renderSquadBuilderPreview, renderSquadPitch } from './gallery.js';
+import { renderCollection, renderPlayerCard, renderPlayerComparison, renderProfileBanner, renderSquadBuilderPreview, renderSquadPitch } from './gallery.js';
 import { createMatchMode } from './match.js';
 
 if (!TOKEN) {
@@ -695,17 +695,27 @@ async function showStats(interaction) {
   }
   const user = getUser(interaction.guildId, interaction.user.id);
   const owned = user.cards.some((card) => card.name === player.name);
+  const element = ELEMENT_NAMES[player.element] ?? player.element ?? 'Nieznany';
+  const hissatsu = (player.hissatsu ?? []).map((move) => {
+    const details = [move.type, ELEMENT_NAMES[move.element] ?? move.element].filter(Boolean).join(' · ');
+    return `• **${move.name}**${details ? ` — ${details}` : ''}`;
+  }).join('\\n') || 'Brak przypisanych technik.';
+  const imageName = 'karta-zawodnika.png';
+  const cardImage = await renderPlayerCard(player);
   const embed = new EmbedBuilder()
     .setColor(tierColors[player.tier] ?? 0x168cff)
-    .setTitle(`⚽ Raport skautingowy: ${player.name}`)
-    .setDescription(`${player.team ? `**${player.team}** · ` : ''}${player.position ?? 'Zawodnik'} · OVERALL **${player.overall}**\n${owned ? '✅ Masz tego zawodnika w kolekcji.' : '🔒 Nie masz jeszcze tej karty.'}`)
-    .setFooter({ text: 'Pokazano najwyższe wartości statystyk z dostępnych sezonów Inazuma Eleven.' });
-  const imageName = 'raport-skautingowy.png';
-  embed.setImage(`attachment://${imageName}`);
-  const report = await renderScoutStats(player);
+    .setTitle(`${player.name} — OVERALL ${player.overall}`)
+    .setDescription(owned ? 'Masz tę kartę w swojej kolekcji.' : 'Nie masz jeszcze tej karty.')
+    .addFields(
+      { name: 'Pozycja', value: player.position ?? 'Nieznana', inline: true },
+      { name: 'Element', value: element, inline: true },
+      { name: 'Rzadkość', value: player.tier ?? 'Nieznana', inline: true },
+      { name: 'Hissatsu', value: hissatsu, inline: false },
+    )
+    .setImage(`attachment://${imageName}`);
   await interaction.reply({
     embeds: [embed],
-    files: [new AttachmentBuilder(Buffer.from(report), { name: imageName })],
+    files: [new AttachmentBuilder(Buffer.from(cardImage), { name: imageName })],
     ephemeral: true,
   });
 }
