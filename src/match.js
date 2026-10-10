@@ -306,12 +306,17 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
     }
     if (state.phase === 'home') {
       const moves = eligibleTechniques(state, 'home');
-      return [new ActionRowBuilder().addComponents(
+      const actions = [
         actionButton(state, 'pass', 'Podanie', ButtonStyle.Primary),
         actionButton(state, 'dribble', 'Drybling', ButtonStyle.Primary),
         actionButton(state, 'shot', 'Strzał', ButtonStyle.Danger, state.zone < 3),
         actionButton(state, 'tech', 'Hissatsu', ButtonStyle.Success, moves.length === 0),
-      )];
+      ];
+      const canSubstitute = state.homeBench?.some((reserve) => state.home.some((starter) => starter.position === reserve.position));
+      if (canSubstitute && state.homeSubstitutions < 5) {
+        actions.push(actionButton(state, 'sub', `Zmiana ${state.homeSubstitutions}/5`, ButtonStyle.Secondary));
+      }
+      return [new ActionRowBuilder().addComponents(...actions)];
     }
     const moves = eligibleTechniques(state, 'away');
     const row = [
@@ -336,6 +341,7 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
         { name: 'Aktywny zawodnik', value: `${carrier.name} · ${carrier.position}`, inline: true },
         { name: 'TP zawodnika', value: String(tp), inline: true },
         { name: 'Formacja', value: `${state.formation} · slot ${state.slot}/4`, inline: true },
+        { name: 'Zmiany', value: `${state.homeSubstitutions ?? 0}/5`, inline: true },
       )
       .setFooter({ text: footer ?? (state.phase === 'home' ? 'Wybierz akcję. Hissatsu zużywa TP zawodnika.' : 'Zatrzymaj atak Occult pressiem lub techniką obronną.') });
   }
@@ -457,6 +463,9 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
       formation: saved.formation ?? '4-4-2',
       slot,
       home,
+      homeBench: (saved.substitutes ?? []).map((name) => catalog.find((player) => player.name === name)).filter((player) => player && !home.some((starter) => starter.name === player.name)).slice(0, 5),
+      homeSubstitutions: 0,
+      pendingSubOut: null,
       away,
       phase: 'home',
       zone: 1,
@@ -490,11 +499,102 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
       await interaction.update(payload(state, options));
       return;
     }
+    if (action === 'sub') {
+      if (!state.homeBench?.length || state.homeSubstitutions >= 5) {
+        await interaction.reply({ content: 'Nie masz dostępnych rezerwowych albo wykorzystałeś już pięć zmian.', ephemeral: true });
+        return;
+      }
+      const eligibleOutgoing = state.home.filter((starter) => state.homeBench.some((reserve) => reserve.position === starter.position));
+      if (!eligibleOutgoing.length) {
+        await interaction.reply({ content: 'Na ławce nie ma zmiennika na żadną pozycję podstawowego składu.', ephemeral: true });
+        return;
+      }
+      const select = new StringSelectMenuBuilder()
+        .setCustomId(`mecz-sub-out:${state.id}`)
+        .setPlaceholder('Wybierz zawodnika schodzącego z boiska')
+        .addOptions(eligibleOutgoing.map((player) => ({
+          label: player.name.slice(0, 100),
+          value: player.name,
+          description: `${player.position} · OVR ${player.overall}`.slice(0, 100),
+        })));
+      await interaction.update({
+        embeds: [embed(state, 'Wybierz zawodnika, którego chcesz zmienić.')],
+        components: [
+          new ActionRowBuilder().addComponents(select),
+          new ActionRowBuilder().addComponents(actionButton(state, 'cancel-menu', 'Wróć do akcji', ButtonStyle.Secondary)),
+        ],
+        attachments: [],
+      });
+      return;
+    }
     if (action === 'cancel-menu') {
+      state.pendingSubOut = null;
       await interaction.update(payload(state));
       return;
     }
     await commitAction(interaction, state, action);
+  }
+
+  async function handleSubstitution(interaction) {
+    const [prefix, actualId] = interaction.customId.split(':');
+    const current = sessions.get(actualId);
+    if (!current || current.userId !== interaction.user.id || current.finished) {
+      await interaction.reply({ content: 'Ta zmiana wygasła albo należy do innego gracza.', ephemeral: true });
+      return;
+    }
+    if (interaction.customId.startsWith('mecz-sub-out:')) {
+      const outgoing = current.home.find((player) => player.name === interaction.values[0]);
+      if (!outgoing || !current.homeBench?.some((player) => player.position === outgoing.position) || current.homeSubstitutions >= 5) {
+        await interaction.reply({ content: 'Ta zmiana nie jest już dostępna.', ephemeral: true });
+        return;
+      }
+      current.pendingSubOut = outgoing.name;
+      const incomingMenu = new StringSelectMenuBuilder()
+        .setCustomId(`mecz-sub-in:${actualId}`)
+        .setPlaceholder('Wybierz rezerwowego wchodzącego do gry')
+        .addOptions(current.homeBench.filter((player) => player.position === outgoing.position).map((player) => ({
+          label: player.name.slice(0, 100),
+          value: player.name,
+          description: `${player.position} · OVR ${player.overall}`.slice(0, 100),
+        })));
+      await interaction.update({
+        embeds: [embed(current, `${outgoing.name} schodzi. Wybierz jego zmiennika.`)],
+        components: [
+          new ActionRowBuilder().addComponents(incomingMenu),
+          new ActionRowBuilder().addComponents(actionButton(current, 'cancel-menu', 'Anuluj zmianę', ButtonStyle.Secondary)),
+        ],
+        attachments: [],
+      });
+      return;
+    }
+
+    const outgoingName = current.pendingSubOut;
+    const outgoingIndex = current.home.findIndex((player) => player.name === outgoingName);
+    const incomingIndex = current.homeBench.findIndex((player) => player.name === interaction.values[0]);
+    if (outgoingIndex < 0 || incomingIndex < 0 || current.homeSubstitutions >= 5) {
+      current.pendingSubOut = null;
+      await interaction.reply({ content: 'Nie udało się wykonać zmiany. Spróbuj ponownie.', ephemeral: true });
+      return;
+    }
+
+    const outgoing = current.home[outgoingIndex];
+    const incoming = current.homeBench[incomingIndex];
+    current.home[outgoingIndex] = incoming;
+    current.homeBench.splice(incomingIndex, 1);
+    current.homeBench.push(outgoing);
+    current.homeTp[incoming.name] ??= incoming.stats?.tp ?? 100;
+    current.homeStamina[incoming.name] ??= incoming.stats?.stamina ?? 50;
+    current.pendingSubOut = null;
+    current.homeSubstitutions += 1;
+    current.minute = Math.min(90, current.minute + 6);
+    addLog(current, `Zmiana: **${incoming.name}** wchodzi za **${outgoing.name}**.`);
+    flipTo(current, 'away');
+    if (current.minute >= 90) {
+      current.finished = true;
+      await finish(interaction, current);
+      return;
+    }
+    await interaction.update(payload(current));
   }
 
   async function handleTechnique(interaction) {
@@ -513,5 +613,5 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
     await commitAction(interaction, state, 'tech', option);
   }
 
-  return { start, handleButton, handleTechnique };
+  return { start, handleButton, handleTechnique, handleSubstitution };
 }
