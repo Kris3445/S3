@@ -51,7 +51,7 @@ import {
   verifyEarnAction,
   recordMatchResult,
 } from './economy.js';
-import { renderCollection, renderPlayerCard, renderProfileBanner, renderScoutStats, renderSquadBuilderPreview, renderSquadPitch } from './gallery.js';
+import { renderCollection, renderPlayerCard, renderPlayerComparison, renderProfileBanner, renderScoutStats, renderSquadBuilderPreview, renderSquadPitch } from './gallery.js';
 import { createMatchMode } from './match.js';
 
 if (!TOKEN) {
@@ -649,6 +649,33 @@ async function showPlayerStats(interaction, target) {
   await interaction.reply({ embeds: [embed], ephemeral: true });
 }
 
+async function comparePlayers(interaction) {
+  const firstName = interaction.options.getString('zawodnik1');
+  const secondName = interaction.options.getString('zawodnik2');
+  const first = catalog.find((player) => player.name === firstName);
+  const second = catalog.find((player) => player.name === secondName);
+  if (!first || !second) {
+    await interaction.reply({ content: 'Nie udało się znaleźć obu zawodników w katalogu.', ephemeral: true });
+    return;
+  }
+  if (first.name === second.name) {
+    await interaction.reply({ content: 'Wybierz dwóch różnych zawodników do porównania.', ephemeral: true });
+    return;
+  }
+  const imageName = 'porownanie-zawodnikow.png';
+  const image = await renderPlayerComparison(first, second);
+  const embed = new EmbedBuilder()
+    .setColor(0x168cff)
+    .setTitle(`⚖️ ${first.name} vs ${second.name}`)
+    .setDescription('Porównanie OVERALL i statystyk meczowych.')
+    .setImage(`attachment://${imageName}`);
+  await interaction.reply({
+    embeds: [embed],
+    files: [new AttachmentBuilder(Buffer.from(image), { name: imageName })],
+    ephemeral: true,
+  });
+}
+
 async function showStats(interaction) {
   if (!requireGuild(interaction)) return;
   const target = interaction.options.getUser('gracz');
@@ -905,10 +932,14 @@ async function teamMessage(user, username, slot = 1) {
   if (lineup.length !== 11) throw new Error(`Skład w slocie ${slot}/4 nie zawiera 11 poprawnych zawodników.`);
   const avgOverall = Math.round(lineup.reduce((sum, entry) => sum + entry.player.overall, 0) / lineup.length);
   const emblem = emblems.find((item) => item.id === team.emblem);
+  const reserveNames = (team.substitutes ?? []).filter((name) => catalog.some((player) => player.name === name));
+  const reserveText = reserveNames.length
+    ? reserveNames.map((name, index) => `**SUB${index + 1}:** ${name}`).join('\n')
+    : 'Ławka rezerwowych jest pusta.';
   const embed = new EmbedBuilder()
     .setColor(emblem?.color ?? 0x168cff)
     .setTitle(`⚽ Skład ${slot}/4 — ${username}`)
-    .setDescription(`Formacja **${team.formation}** · średni OVERALL **${avgOverall}**${emblem ? `\nHerb: **${emblem.name}**` : ''}\n\nUstawienie zmienisz komendą /team (slot: ${slot}). Herb wybierzesz przez /herb (slot: ${slot}).`)
+    .setDescription(`Formacja **${team.formation}** · średni OVERALL **${avgOverall}**${emblem ? `\nHerb: **${emblem.name}**` : ''}\n\n**Ławka rezerwowych (${reserveNames.length}/5)**\n${reserveText}\n\nUstawienie zmienisz komendą /team (slot: ${slot}). Herb wybierzesz przez /herb (slot: ${slot}).`)
     .setImage('attachment://squad-pitch.png');
   const image = await renderSquadPitch(lineup, team.formation, emblem);
   return {
@@ -938,97 +969,142 @@ function teamBuildElementOptions() {
   return ['Wszystkie', ...elements];
 }
 
+function teamBuildClubOptions() {
+  return [...new Set(catalog.map((player) => player.team).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'pl'));
+}
+
+function teamBuildSeasons(player) {
+  const explicit = player.season ?? player.season_name ?? player.seasonLabel ?? player.seasons;
+  const namedSeason = String(player.name ?? '').match(/\((?:Season|S)\s*(\d+)\)/i)?.[1];
+  const raw = explicit ?? player.stat_seasons ?? (namedSeason ? `Season ${namedSeason}` : null);
+  const values = Array.isArray(raw) ? raw : String(raw ?? '').split(/[,;|]/);
+  return [...new Set(values.map((value) => String(value).trim()).filter(Boolean))];
+}
+
+function teamBuildSeasonOptions() {
+  return [...new Set(catalog.flatMap(teamBuildSeasons))].sort((a, b) => a.localeCompare(b, 'pl'));
+}
+
+function teamBuildFilterOptions(state) {
+  const options = [];
+  for (const value of teamBuildPositionOptions()) {
+    options.push({ label: `Pozycja · ${value}`, value: `position|${value}`, });
+  }
+  for (const value of teamBuildElementOptions()) {
+    options.push({ label: `Żywioł · ${value}`, value: `element|${value}`, });
+  }
+  for (const [label, value] of [['Alfabetycznie (A–Z)', 'name'], ['OVERALL (najwyższy)', 'overall-desc'], ['OVERALL (najniższy)', 'overall-asc']]) {
+    options.push({ label: `Sortuj · ${label}`, value: `sort|${value}` });
+  }
+  return options;
+}
+
+function teamBuildSourceOptions(state) {
+  return [
+    { label: 'Wszystkie kluby', value: 'club|Wszystkie', default: state.clubFilter === 'Wszystkie' },
+    ...teamBuildClubOptions().slice(0, 24).map((value) => ({
+      label: `Klub · ${value}`,
+      value: `club|${value}`,
+      default: value === state.clubFilter,
+    })),
+  ];
+}
+
 function teamBuildRows(state) {
-  const selected = new Set(state.selected);
+  const selected = new Set([...state.selected, ...state.substitutes]);
   const allAvailable = catalog.filter((player) => state.ownedNames.includes(player.name) && !selected.has(player.name));
+  const addingStarters = state.selected.length < 11;
   let filtered = allAvailable.filter((player) =>
+    (state.clubFilter === 'Wszystkie' || player.team === state.clubFilter) &&
+    (state.seasonFilter === 'Wszystkie' || teamBuildSeasons(player).includes(state.seasonFilter)) &&
     (state.positionFilter === 'Wszystkie' || player.position === state.positionFilter) &&
     (state.elementFilter === 'Wszystkie' || player.element === state.elementFilter));
-  filtered.sort((a, b) => state.sort === 'asc'
-    ? a.overall - b.overall || a.name.localeCompare(b.name, 'pl')
-    : b.overall - a.overall || a.name.localeCompare(b.name, 'pl'));
+  filtered.sort((a, b) => state.sort === 'name'
+    ? a.name.localeCompare(b.name, 'pl')
+    : state.sort === 'overall-asc'
+      ? a.overall - b.overall || a.name.localeCompare(b.name, 'pl')
+      : b.overall - a.overall || a.name.localeCompare(b.name, 'pl'));
   const maxPage = Math.max(0, Math.ceil(filtered.length / TEAM_PAGE_SIZE) - 1);
   state.page = Math.min(state.page, maxPage);
   const pagePlayers = filtered.slice(state.page * TEAM_PAGE_SIZE, (state.page + 1) * TEAM_PAGE_SIZE);
-  const currentSlot = state.selected.length;
-  const targetPosition = state.positions[currentSlot];
+  const targetPosition = addingStarters ? state.positions[state.selected.length] : 'ławkę rezerwowych';
   const rows = [];
-
-  if (currentSlot < 11) {
+  if (addingStarters || state.substitutes.length < 5) {
     const playerMenu = new StringSelectMenuBuilder()
       .setCustomId('team-build-player')
-      .setPlaceholder(pagePlayers.length ? `Wybierz ${targetPosition.toLocaleLowerCase('pl')} — strona ${state.page + 1}/${maxPage + 1}` : 'Brak wyników — zmień filtry')
+      .setPlaceholder(pagePlayers.length ? `Dodaj ${targetPosition.toLocaleLowerCase('pl')} — strona ${state.page + 1}/${maxPage + 1}` : 'Brak wyników — zmień filtry')
       .addOptions(pagePlayers.length
         ? pagePlayers.map((player) => ({
           label: player.name,
           value: player.name,
-          description: `${player.position} · ${player.element} · OVERALL ${player.overall}`,
+          description: `${player.team ?? 'Klub nieznany'} · ${player.position} · ${player.element} · OVR ${player.overall}`,
         }))
-        : [{ label: 'Brak wyników — zmień filtry', value: '__no_results__', description: 'Zmień pozycję lub żywioł poniżej.' }]);
+        : [{ label: 'Brak wyników — zmień filtry', value: '__no_results__', description: 'Zmień aktywne filtry.' }]);
     rows.push(new ActionRowBuilder().addComponents(playerMenu));
   }
 
-  const positionMenu = new StringSelectMenuBuilder()
-    .setCustomId('team-build-position')
-    .setPlaceholder('Pozycja')
-    .addOptions(teamBuildPositionOptions().map((value) => ({
-      label: value,
-      value,
-      default: value === state.positionFilter,
-    })));
-  rows.push(new ActionRowBuilder().addComponents(positionMenu));
+  const filterMenu = new StringSelectMenuBuilder()
+    .setCustomId('team-build-filter')
+    .setPlaceholder(`Filtry: ${state.positionFilter} · ${state.elementFilter} · ${state.sort}`)
+    .addOptions(teamBuildFilterOptions(state));
+  rows.push(new ActionRowBuilder().addComponents(filterMenu));
 
-  const elementMenu = new StringSelectMenuBuilder()
-    .setCustomId('team-build-element')
-    .setPlaceholder('Żywioł')
-    .addOptions(teamBuildElementOptions().map((value) => ({
-      label: value,
-      value,
-      default: value === state.elementFilter,
-    })));
-  rows.push(new ActionRowBuilder().addComponents(elementMenu));
+  const clubMenu = new StringSelectMenuBuilder()
+    .setCustomId('team-build-source')
+    .setPlaceholder(`Klub: ${state.clubFilter}`)
+    .addOptions(teamBuildSourceOptions(state));
+  rows.push(new ActionRowBuilder().addComponents(clubMenu));
 
-  const sortMenu = new StringSelectMenuBuilder()
-    .setCustomId('team-build-sort')
-    .setPlaceholder('Sortowanie po OVERALL')
-    .addOptions([
-      { label: 'Od najmniejszego OVERALL', value: 'asc', default: state.sort === 'asc' },
-      { label: 'Od największego OVERALL', value: 'desc', default: state.sort === 'desc' },
-    ]);
-  rows.push(new ActionRowBuilder().addComponents(sortMenu));
+  if (teamBuildSeasonOptions().length) {
+    const seasonMenu = new StringSelectMenuBuilder()
+      .setCustomId('team-build-season')
+      .setPlaceholder('Filtruj sezon')
+      .addOptions([
+        { label: 'Wszystkie sezony', value: 'Wszystkie', default: state.seasonFilter === 'Wszystkie' },
+        ...teamBuildSeasonOptions().slice(0, 24).map((value) => ({
+          label: value,
+          value,
+          default: value === state.seasonFilter,
+        })),
+      ]);
+    rows.push(new ActionRowBuilder().addComponents(seasonMenu));
+  }
 
   const buttons = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('team-build:back').setLabel('◀ Cofnij').setStyle(ButtonStyle.Secondary).setDisabled(state.selected.length === 0),
-    new ButtonBuilder().setCustomId('team-build:page-prev').setLabel('◀ Karty').setStyle(ButtonStyle.Secondary).setDisabled(state.page === 0 || currentSlot >= 11),
-    new ButtonBuilder().setCustomId('team-build:page-next').setLabel('Karty ▶').setStyle(ButtonStyle.Secondary).setDisabled(state.page >= maxPage || currentSlot >= 11),
+    new ButtonBuilder().setCustomId('team-build:back').setLabel('◀ Cofnij').setStyle(ButtonStyle.Secondary).setDisabled(state.selected.length === 0 && state.substitutes.length === 0),
+    new ButtonBuilder().setCustomId('team-build:page-prev').setLabel('◀ Karty').setStyle(ButtonStyle.Secondary).setDisabled(state.page === 0),
+    new ButtonBuilder().setCustomId('team-build:page-next').setLabel('Karty ▶').setStyle(ButtonStyle.Secondary).setDisabled(state.page >= maxPage),
     new ButtonBuilder().setCustomId('team-build:cancel').setLabel('Anuluj').setStyle(ButtonStyle.Secondary),
     new ButtonBuilder().setCustomId('team-build:save').setLabel('Zapisz skład').setStyle(ButtonStyle.Success).setDisabled(state.selected.length !== 11),
   );
   rows.push(buttons);
   return rows;
 }
-
 async function renderTeamBuilder(interaction, state) {
   const currentSlot = state.selected.length;
   const positions = state.positions;
-  const targetPosition = currentSlot < 11 ? positions[currentSlot] : 'Gotowe';
+  const targetPosition = currentSlot < 11 ? positions[currentSlot] : state.substitutes.length < 5 ? 'Ławka rezerwowych' : 'Gotowe';
   const selectedPreview = state.selected.map((name, index) => {
     const player = catalog.find((entry) => entry.name === name);
     return player ? { ...player, squadPosition: state.positions[index] } : null;
   }).filter(Boolean);
   const preview = await renderSquadBuilderPreview(state.formation, selectedPreview);
+  const reserveNames = state.substitutes.map((name) => catalog.find((entry) => entry.name === name)?.name).filter(Boolean);
+  const reserveText = reserveNames.length ? reserveNames.map((name, index) => `SUB${index + 1}: ${name}`).join(' · ') : 'jeszcze pusta';
   const embed = new EmbedBuilder()
     .setColor(0x168cff)
     .setTitle(`🧩 Budowanie składu ${state.slot}/4 — ${state.formation}`)
     .setDescription(
       currentSlot < 11
-        ? `**Pozycja ${currentSlot + 1}/11: ${targetPosition}**\nWybierz jednego zawodnika w menu. Pozycję, żywioł i kolejność overall możesz filtrować poniżej.\n\nUstawiona pozycja slotu: **${targetPosition}**.`
-        : '✅ Wybrano 11 zawodników. Zapisz skład przyciskiem poniżej.',
+        ? `**Podstawowa jedenastka ${currentSlot + 1}/11: ${targetPosition}**\nWybierz zawodnika z kolekcji. Filtry klubu, sezonu, pozycji, żywiołu i sortowanie są poniżej.`
+        : state.substitutes.length < 5
+          ? `✅ Podstawowa jedenastka gotowa. Dodaj do **5 rezerwowych** albo zapisz skład już teraz.\n\n**Ławka ${state.substitutes.length}/5:** ${reserveText}`
+          : `✅ Skład gotowy.\n\n**Ławka ${state.substitutes.length}/5:** ${reserveText}`,
     )
     .setImage('attachment://squad-builder.png')
-    .setFooter({ text: `Pozycja: ${state.positionFilter} · Żywioł: ${state.elementFilter} · OVERALL: ${state.sort === 'asc' ? 'rosnąco' : 'malejąco'}` });
+    .setFooter({ text: `Klub: ${state.clubFilter} · Sezon: ${state.seasonFilter} · Pozycja: ${state.positionFilter} · Żywioł: ${state.elementFilter} · Sort: ${state.sort}` });
   const payload = {
-    content: `Postęp składu: **${state.selected.length}/11** · Pozostało kart do wyboru: **${state.ownedNames.length - state.selected.length}**.`,
+    content: `Podstawowa jedenastka: **${state.selected.length}/11** · Rezerwa: **${state.substitutes.length}/5** · Niewybrane karty: **${state.ownedNames.length - state.selected.length - state.substitutes.length}**.`,
     embeds: [embed],
     files: [new AttachmentBuilder(Buffer.from(preview), { name: 'squad-builder.png' })],
     components: teamBuildRows(state),
@@ -1067,9 +1143,12 @@ async function showTeam(interaction) {
     positions,
     ownedNames,
     selected: [],
+    substitutes: [],
+    clubFilter: 'Wszystkie',
+    seasonFilter: 'Wszystkie',
     positionFilter: positions[0],
     elementFilter: 'Wszystkie',
-    sort: 'desc',
+    sort: 'overall-desc',
     page: 0,
   };
   teamBuildSessions.set(teamBuildKey(interaction), session);
@@ -1134,20 +1213,19 @@ async function handleGameSelect(interaction) {
       await interaction.update({ content: 'Sesja budowania składu wygasła. Uruchom ponownie `/team`.', embeds: [], components: [], attachments: [] });
       return;
     }
-    if (interaction.customId === 'team-build-position') {
-      state.positionFilter = interaction.values[0];
+    if (interaction.customId === 'team-build-filter' || interaction.customId === 'team-build-source') {
+      const [filter, value] = interaction.values[0].split('|');
+      if (filter === 'position') state.positionFilter = value;
+      else if (filter === 'element') state.elementFilter = value;
+      else if (filter === 'sort') state.sort = value;
+      else if (filter === 'club') state.clubFilter = value;
+      else if (filter === 'season') state.seasonFilter = value;
       state.page = 0;
       await renderTeamBuilder(interaction, state);
       return;
     }
-    if (interaction.customId === 'team-build-element') {
-      state.elementFilter = interaction.values[0];
-      state.page = 0;
-      await renderTeamBuilder(interaction, state);
-      return;
-    }
-    if (interaction.customId === 'team-build-sort') {
-      state.sort = interaction.values[0];
+    if (interaction.customId === 'team-build-season') {
+      state.seasonFilter = interaction.values[0];
       state.page = 0;
       await renderTeamBuilder(interaction, state);
       return;
@@ -1158,11 +1236,16 @@ async function handleGameSelect(interaction) {
         await renderTeamBuilder(interaction, state);
         return;
       }
-      if (state.selected.includes(name) || !state.ownedNames.includes(name)) {
+      if (state.selected.includes(name) || state.substitutes.includes(name) || !state.ownedNames.includes(name)) {
         await interaction.update({ content: 'Tej karty nie można dodać do składu. Wybierz inną.', embeds: [], components: [] });
         return;
       }
-      state.selected.push(name);
+      if (state.selected.length < 11) state.selected.push(name);
+      else if (state.substitutes.length < 5) state.substitutes.push(name);
+      else {
+        await interaction.update({ content: 'Ławka rezerwowych jest już pełna (5/5).', embeds: [], components: [] });
+        return;
+      }
       state.page = 0;
       state.positionFilter = state.positions[state.selected.length] ?? 'Wszystkie';
       state.elementFilter = 'Wszystkie';
@@ -1244,8 +1327,9 @@ client.on(Events.InteractionCreate, async (interaction) => {
         await interaction.respond([]);
         return;
       }
-      if (interaction.commandName === 'stats' && interaction.options.getFocused(true).name === 'zawodnik') {
-        const query = interaction.options.getFocused().toLocaleLowerCase('pl');
+      const focused = interaction.options.getFocused(true);
+      if ((interaction.commandName === 'stats' && focused.name === 'zawodnik') || interaction.commandName === 'porownaj') {
+        const query = focused.value.toLocaleLowerCase('pl');
         const choices = catalog
           .filter((player) => player.name.toLocaleLowerCase('pl').includes(query))
           .slice(0, 25)
@@ -1285,16 +1369,17 @@ client.on(Events.InteractionCreate, async (interaction) => {
           teamBuildSessions.delete(teamBuildKey(interaction));
           await interaction.update({ content: 'Budowanie składu anulowane.', embeds: [], components: [], attachments: [] });
         } else if (action === 'back') {
-          if (state.selected.length) state.selected.pop();
+          if (state.substitutes.length) state.substitutes.pop();
+          else if (state.selected.length) state.selected.pop();
           const nextPosition = state.positions[state.selected.length];
-          state.positionFilter = nextPosition ?? 'Wszystkie';
+          state.positionFilter = state.selected.length < 11 ? nextPosition ?? 'Wszystkie' : 'Wszystkie';
           state.page = 0;
           await renderTeamBuilder(interaction, state);
         } else if (action === 'page-prev' || action === 'page-next') {
           state.page = Math.max(0, state.page + (action === 'page-next' ? 1 : -1));
           await renderTeamBuilder(interaction, state);
         } else if (action === 'save') {
-          const result = saveTeam(interaction.guildId, interaction.user.id, state.formation, state.selected, state.positions, state.slot);
+          const result = saveTeam(interaction.guildId, interaction.user.id, state.formation, state.selected, state.positions, state.slot, state.substitutes);
           if (!result.ok) {
             await interaction.update({ content: 'Nie udało się zapisać składu. Sprawdź, czy wybrano 11 różnych posiadanych kart.', embeds: [], components: [] });
             return;
@@ -1321,6 +1406,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
     if (interaction.isStringSelectMenu()) {
       if (!requireGuild(interaction) || !(await requireAdmin(interaction)) || !(await requireGameAccess(interaction))) return;
       if (interaction.customId.startsWith('mecz-tech:')) await matchMode.handleTechnique(interaction);
+      else if (interaction.customId.startsWith('mecz-sub-out:') || interaction.customId.startsWith('mecz-sub-in:')) await matchMode.handleSubstitution(interaction);
       else await handleGameSelect(interaction);
       return;
     }
@@ -1361,6 +1447,9 @@ client.on(Events.InteractionCreate, async (interaction) => {
         break;
       case 'stats':
         await showStats(interaction);
+        break;
+      case 'porownaj':
+        await comparePlayers(interaction);
         break;
       case 'kolekcja':
         await showCollection(interaction);
