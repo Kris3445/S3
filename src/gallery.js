@@ -388,7 +388,9 @@ export async function renderScoutStats(player) {
   }
   ctx.fillStyle = '#75869b';
   ctx.font = '12px Arial';
-  const seasonLabel = player.stat_seasons ? `SEZONY ${player.stat_seasons}` : 'STATYSTYKI SEZONOWE';
+  const seasonLabel = player.stat_source
+    ? `STATYSTYKI ${player.stat_source}`
+    : player.stat_seasons ? `SEZONY ${player.stat_seasons}` : 'STATYSTYKI SEZONOWE';
   ctx.fillText(`${seasonLabel.toUpperCase()}  •  TP W SKALI MECZOWEJ`, 482, 835);
   return canvas.encode('png');
 }

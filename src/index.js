@@ -69,7 +69,8 @@ for (const player of catalog) {
   const researched = statsByName.get(player.name);
   if (researched) {
     player.stats = researched.stats;
-    player.stat_seasons = researched.seasons;
+    player.stat_source = researched.source ?? null;
+    player.stat_seasons = researched.reference_seasons ?? researched.seasons ?? null;
   }
 }
 
