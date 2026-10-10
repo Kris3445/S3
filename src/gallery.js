@@ -866,12 +866,18 @@ export async function renderMatchPitch({home,away,homeCarrier,awayCarrier,phase,
   const coords={home:{Bramkarz:.055,Obrońca:.20,Pomocnik:.37,Napastnik:.48},away:{Bramkarz:.945,Obrońca:.80,Pomocnik:.63,Napastnik:.52}};
   const colors={home:'#1688ff',away:'#ef504d'};
   function drawTeam(team,side,carrierName){
-    const groups=new Map();for(const p of team){const role=p.position||'Pomocnik';if(!groups.has(role))groups.set(role,[]);groups.get(role).push(p);}
+    const groups=new Map();for(const p of team){const role=p.squadPosition||p.position||'Pomocnik';if(!groups.has(role))groups.set(role,[]);groups.get(role).push(p);}
+    const progress=Math.max(0,Math.min(2,zone-1));
+    const attackDirection=side==='home'?1:-1;
+    const roleAdvance={Bramkarz:0,Obrońca:.025,Pomocnik:.05,Napastnik:.075};
     let number=1;
     for(const role of ['Bramkarz','Obrońca','Pomocnik','Napastnik']){
       const members=groups.get(role)||[];
       for(let i=0;i<members.length;i++){
         const player=members[i];let x=f.x+f.w*coords[side][role],y=f.y+f.h*(i+1)/(members.length+1);
+        const defending=side!==phase;
+        const lineShift=progress*(roleAdvance[role]||0)*(defending?-.65:1);
+        x+=attackDirection*lineShift*f.w;
         const hasBall=player.name===carrierName;
         if(hasBall){const advance=Math.max(0,Math.min(2,zone-1))*.13;x=f.x+f.w*(side==='home'?.49+advance:.51-advance);y=f.y+f.h*.5;ctx.beginPath();ctx.arc(x,y,20,0,Math.PI*2);ctx.strokeStyle='#fff';ctx.lineWidth=3;ctx.stroke();}
         ctx.beginPath();ctx.arc(x,y,13,0,Math.PI*2);ctx.fillStyle=colors[side];ctx.fill();ctx.strokeStyle='#f4fff6';ctx.lineWidth=2;ctx.stroke();
