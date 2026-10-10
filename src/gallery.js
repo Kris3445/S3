@@ -846,7 +846,7 @@ export async function renderProfileBanner(username, user, profileOptions) {
 }
 
 
-export async function renderMatchPitch({home,away,homeCarrier,awayCarrier,phase,zone=1}) {
+export async function renderMatchPitch({home,away,homeCarrier,awayCarrier,phase,zone=1,teamName='Twoja drużyna',awayName='Occult'}) {
   const width=1120, height=760, canvas=createCanvas(width,height), ctx=canvas.getContext('2d');
   ctx.fillStyle='#0b1118'; ctx.fillRect(0,0,width,height);
   const head=ctx.createLinearGradient(0,0,width,0);
@@ -855,8 +855,8 @@ export async function renderMatchPitch({home,away,homeCarrier,awayCarrier,phase,
   ctx.fillStyle='#aab6bf'; ctx.font='bold 15px Roboto'; ctx.textAlign='center';
   ctx.fillText('MECZ  •  NA ŻYWO',width/2,25);
   ctx.fillStyle='#eef3f6'; ctx.font='bold 26px Roboto';
-  ctx.textAlign='left'; ctx.fillText('TWOJA DRUŻYNA',52,67);
-  ctx.textAlign='right'; ctx.fillText('OCCULT',width-52,67);
+  ctx.textAlign='left'; ctx.fillText(String(teamName).toUpperCase(),52,67,450);
+  ctx.textAlign='right'; ctx.fillText(String(awayName).toUpperCase(),width-52,67,450);
   ctx.fillStyle='#283b4b'; ctx.beginPath(); ctx.roundRect(width/2-70,35,140,52,11); ctx.fill();
   ctx.fillStyle='#fff'; ctx.font='bold 29px Roboto'; ctx.textAlign='center';
   const score=arguments[0].score||{home:0,away:0};
