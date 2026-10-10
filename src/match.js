@@ -356,6 +356,13 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
       awayCarrier: state.phase === 'away' ? carrier.name : null,
       phase: state.phase,
       zone: state.zone,
+      minute: state.minute,
+      score: state.score,
+      possession: state.phase === 'home' ? (state.teamName || state.username) : 'Occult',
+      teamName: state.teamName || state.username,
+      awayName: 'Occult',
+      lastAction: state.log.length ? state.log[state.log.length - 1].replace(/\*\*/g, '') : 'Rozpoczyna się spotkanie.',
+      footer,
     });
     const imageName = 'mecz-boisko.png';
     const matchEmbed = embed(state, footer).setImage(`attachment://${imageName}`);
