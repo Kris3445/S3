@@ -219,8 +219,10 @@ export async function renderPlayerCard(player, { locked = false } = {}) {
 }
 
 export async function renderScoutStats(player) {
-  const width = 1200;
-  const height = 900;
+  // Tall, portrait report: identity and portrait first, attributes in the
+  // middle, then techniques with power and TP in right-hand columns.
+  const width = 1000;
+  const height = 1620;
   const canvas = createCanvas(width, height);
   const ctx = canvas.getContext('2d');
   const tier = tierFor(player);
@@ -234,28 +236,41 @@ export async function renderScoutStats(player) {
 
   ctx.fillStyle = '#08111d';
   ctx.fillRect(0, 0, width, height);
-  // Structural lines and subtle pitch markings create a restrained scouting
-  // board feel without borrowing the reference's list-and-portrait layout.
   ctx.fillStyle = '#0d1a2a';
   ctx.fillRect(20, 20, width - 40, height - 40);
   ctx.fillStyle = '#101f32';
-  ctx.fillRect(40, 40, 392, 820);
-  ctx.fillRect(452, 40, 708, 820);
+  ctx.fillRect(42, 42, width - 84, height - 84);
   ctx.fillStyle = accent;
-  ctx.fillRect(40, 40, 392, 8);
-  ctx.fillRect(452, 40, 708, 8);
-  ctx.globalAlpha = 0.22;
-  ctx.strokeStyle = '#6e8199';
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.arc(236, 450, 115, 0, Math.PI * 2);
-  ctx.moveTo(236, 334);
-  ctx.lineTo(236, 566);
-  ctx.stroke();
-  ctx.globalAlpha = 1;
+  ctx.fillRect(42, 42, width - 84, 8);
 
-  // Portrait is contained, preserving the original image proportions.
-  const imageBox = { x: 62, y: 72, w: 348, h: 640 };
+  ctx.fillStyle = '#95a6bb';
+  ctx.font = 'bold 16px Roboto';
+  ctx.fillText('RAPORT ZAWODNIKA  /  INAZUMA ELEVEN', 72, 91);
+  ctx.fillStyle = '#f7f9fc';
+  ctx.font = 'bold 43px Roboto';
+  ctx.fillText(player.name.toUpperCase(), 72, 151, 690);
+  ctx.fillStyle = '#b8c5d5';
+  ctx.font = 'bold 19px Roboto';
+  ctx.fillText(`${position}   •   ${element}   •   ${tier}`, 74, 187, 700);
+
+  ctx.fillStyle = accentDark;
+  ctx.beginPath();
+  ctx.roundRect(818, 65, 112, 126, 14);
+  ctx.fill();
+  ctx.strokeStyle = accent;
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.fillStyle = '#d4deea';
+  ctx.font = 'bold 13px Roboto';
+  ctx.textAlign = 'center';
+  ctx.fillText('OVERALL', 874, 96);
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 50px Roboto';
+  ctx.fillText(String(player.overall), 874, 157);
+  ctx.textAlign = 'left';
+
+  // Contain the source image, keeping every character at its original ratio.
+  const imageBox = { x: 72, y: 220, w: 856, h: 520 };
   const scale = Math.min(imageBox.w / image.width, imageBox.h / image.height);
   const drawW = image.width * scale;
   const drawH = image.height * scale;
@@ -274,50 +289,21 @@ export async function renderScoutStats(player) {
   ctx.stroke();
 
   ctx.fillStyle = '#0a1422';
-  ctx.fillRect(62, 736, 348, 96);
+  ctx.fillRect(72, 758, 856, 74);
   ctx.fillStyle = accentDark;
-  ctx.fillRect(62, 736, 6, 96);
+  ctx.fillRect(72, 758, 6, 74);
   ctx.fillStyle = '#91a3b8';
-  ctx.font = 'bold 15px Arial';
-  ctx.fillText('KLUB', 86, 767);
+  ctx.font = 'bold 14px Roboto';
+  ctx.fillText('DRUŻYNA', 96, 786);
   ctx.fillStyle = '#f3f6fa';
-  ctx.font = 'bold 24px Arial';
-  ctx.fillText(team, 86, 800, 300);
-
-  // Top identity bar.
-  ctx.fillStyle = '#95a6bb';
-  ctx.font = 'bold 16px Arial';
-  ctx.fillText('RAPORT SKAUTINGOWY  /  INAZUMA ELEVEN', 482, 82);
-  ctx.fillStyle = '#f7f9fc';
-  ctx.font = 'bold 45px Arial';
-  ctx.fillText(player.name.toUpperCase(), 482, 143, 620);
-  ctx.fillStyle = '#b8c5d5';
-  ctx.font = 'bold 19px Arial';
-  ctx.fillText(`${position}   •   ${element}`, 484, 181, 620);
-
-  // Overall is presented as a large number tile, away from the card's usual
-  // circular badge treatment.
-  ctx.fillStyle = accentDark;
-  ctx.beginPath();
-  ctx.roundRect(1000, 64, 130, 128, 14);
-  ctx.fill();
-  ctx.strokeStyle = accent;
-  ctx.lineWidth = 2;
-  ctx.stroke();
-  ctx.fillStyle = '#d4deea';
-  ctx.font = 'bold 13px Arial';
-  ctx.textAlign = 'center';
-  ctx.fillText('OVERALL', 1065, 96);
-  ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 54px Arial';
-  ctx.fillText(String(player.overall), 1065, 158);
-  ctx.textAlign = 'left';
+  ctx.font = 'bold 23px Roboto';
+  ctx.fillText(team, 96, 816, 800);
 
   ctx.fillStyle = '#8fa0b5';
-  ctx.font = 'bold 15px Arial';
-  ctx.fillText('PARAMETRY ZAWODNIKA', 482, 230);
+  ctx.font = 'bold 15px Roboto';
+  ctx.fillText('PARAMETRY ZAWODNIKA', 72, 878);
   ctx.fillStyle = '#1d2d42';
-  ctx.fillRect(482, 244, 648, 2);
+  ctx.fillRect(72, 891, 856, 2);
 
   const attributes = [
     ['GUARD', stats.guard], ['STAMINA', stats.stamina],
@@ -325,10 +311,10 @@ export async function renderScoutStats(player) {
     ['INTELLIGENCE', stats.intelligence], ['CONTROL', stats.control],
     ['KICK', stats.kick], ['SPEED', stats.speed],
   ];
-  const colW = 310;
-  const xPositions = [482, 820];
-  const startY = 270;
-  const rowGap = 92;
+  const colW = 400;
+  const xPositions = [72, 528];
+  const startY = 929;
+  const rowGap = 68;
   for (let index = 0; index < attributes.length; index += 1) {
     const [label, rawValue] = attributes[index];
     const col = index % 2;
@@ -338,79 +324,83 @@ export async function renderScoutStats(player) {
     const value = Number.isFinite(Number(rawValue)) ? Number(rawValue) : 0;
     const max = label === 'TP' ? 180 : 100;
     ctx.fillStyle = '#c5d0de';
-    ctx.font = 'bold 14px Arial';
+    ctx.font = 'bold 14px Roboto';
     ctx.fillText(label, x, y);
     ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 26px Arial';
+    ctx.font = 'bold 26px Roboto';
     ctx.textAlign = 'right';
     ctx.fillText(String(value), x + colW, y + 1);
     ctx.textAlign = 'left';
     ctx.fillStyle = '#22344a';
     ctx.beginPath();
-    ctx.roundRect(x, y + 16, colW, 10, 5);
+    ctx.roundRect(x, y + 16, colW, 9, 5);
     ctx.fill();
     ctx.fillStyle = label === 'TP' ? '#60bdd2' : accent;
     ctx.beginPath();
-    ctx.roundRect(x, y + 16, Math.max(4, colW * Math.min(1, Math.max(0, value / max))), 10, 5);
+    ctx.roundRect(x, y + 16, Math.max(4, colW * Math.min(1, Math.max(0, value / max))), 9, 5);
     ctx.fill();
   }
 
   const moves = (player.hissatsu ?? []).slice(0, 3);
-  const moveTitleY = 640;
+  const moveTitleY = 1208;
   ctx.fillStyle = '#8fa0b5';
-  ctx.font = 'bold 15px Arial';
-  ctx.fillText('HISSATSU', 482, moveTitleY);
+  ctx.font = 'bold 15px Roboto';
+  ctx.fillText('HISSATSU', 72, moveTitleY);
   ctx.fillStyle = '#1d2d42';
-  ctx.fillRect(482, moveTitleY + 12, 648, 2);
+  ctx.fillRect(72, moveTitleY + 12, 856, 2);
+  ctx.fillStyle = '#8fa0b5';
+  ctx.font = 'bold 12px Roboto';
+  ctx.textAlign = 'center';
+  ctx.fillText('MOC', 795, moveTitleY);
+  ctx.fillText('TP', 882, moveTitleY);
+  ctx.textAlign = 'left';
+
   if (moves.length === 0) {
     ctx.fillStyle = '#c5d0de';
-    ctx.font = '17px Arial';
-    ctx.fillText('Brak przypisanych technik.', 482, 710);
+    ctx.font = '17px Roboto';
+    ctx.fillText('Brak przypisanych technik.', 72, 1265);
   }
   for (let index = 0; index < moves.length; index += 1) {
     const move = moves[index];
-    const y = 672 + index * 49;
+    const y = 1240 + index * 108;
     const moveElement = elementColors[move.element] ?? '#8ba0b7';
     ctx.fillStyle = '#0b1726';
     ctx.beginPath();
-    ctx.roundRect(482, y, 648, 40, 8);
+    ctx.roundRect(72, y, 856, 88, 8);
     ctx.fill();
     ctx.fillStyle = moveElement;
-    ctx.fillRect(482, y, 4, 40);
+    ctx.fillRect(72, y, 5, 88);
     ctx.fillStyle = '#f0f4f9';
-    ctx.font = 'bold 17px Arial';
-    ctx.fillText(move.name, 498, y + 17, 340);
+    ctx.font = 'bold 20px Roboto';
+    ctx.fillText(move.name, 96, y + 37, 590);
     ctx.fillStyle = '#bac7d6';
-    ctx.font = '12px Arial';
+    ctx.font = '15px Roboto';
     const moveKind = [move.type, move.element].filter(Boolean).join('  •  ');
-    ctx.fillText(moveKind || 'Technika', 498, y + 34, 340);
+    ctx.fillText(moveKind || 'Technika', 96, y + 65, 590);
 
     const power = hissatsuPower(player);
     const tp = hissatsuTpCost(power);
-    ctx.fillStyle = '#172638';
+    ctx.fillStyle = accentDark;
     ctx.beginPath();
-    ctx.roundRect(864, y + 3, 250, 34, 7);
+    ctx.roundRect(748, y + 16, 94, 56, 8);
+    ctx.roundRect(851, y + 16, 62, 56, 8);
     ctx.fill();
+    ctx.fillStyle = accent;
+    ctx.font = 'bold 23px Roboto';
     ctx.textAlign = 'center';
-    ctx.fillStyle = '#91a5bc';
-    ctx.font = 'bold 11px Arial';
-    ctx.fillText('MOC', 930, y + 15);
-    ctx.fillText('TP', 1050, y + 15);
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 15px Arial';
-    ctx.fillText(String(power), 930, y + 31);
-    ctx.fillText(String(tp), 1050, y + 31);
+    ctx.fillText(String(power), 795, y + 52);
+    ctx.fillStyle = '#60bdd2';
+    ctx.fillText(String(tp), 882, y + 52);
     ctx.textAlign = 'left';
   }
   ctx.fillStyle = '#75869b';
-  ctx.font = '12px Arial';
+  ctx.font = '12px Roboto';
   const seasonLabel = player.stat_source
     ? `STATYSTYKI ${player.stat_source}`
     : player.stat_seasons ? `SEZONY ${player.stat_seasons}` : 'STATYSTYKI SEZONOWE';
-  ctx.fillText(`${seasonLabel.toUpperCase()}  •  TP W SKALI MECZOWEJ`, 482, 835);
+  ctx.fillText(`${seasonLabel.toUpperCase()}  •  TP W SKALI MECZOWEJ`, 72, 1580);
   return canvas.encode('png');
 }
-
 function emblemSource(emblem) {
   const crop = emblem.crop;
   return crop
