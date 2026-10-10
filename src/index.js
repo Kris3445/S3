@@ -700,6 +700,13 @@ async function showStats(interaction) {
     const details = [move.type, ELEMENT_NAMES[move.element] ?? move.element].filter(Boolean).join(' · ');
     return `• **${move.name}**${details ? ` — ${details}` : ''}`;
   }).join('\n') || 'Brak przypisanych technik.';
+  const stats = player.stats ?? {};
+  const playerStatsText = [
+    `⚽ **KICK** ${stats.kick ?? '—'}  ·  🧤 **GUARD** ${stats.guard ?? '—'}`,
+    `🔋 **STAMINA** ${stats.stamina ?? '—'}  ·  💪 **BODY** ${stats.body ?? '—'}`,
+    `✨ **TP** ${stats.tp ?? '—'}  ·  🧠 **INTELLIGENCE** ${stats.intelligence ?? '—'}`,
+    `🎯 **CONTROL** ${stats.control ?? '—'}  ·  💨 **SPEED** ${stats.speed ?? '—'}`,
+  ].join('\\n');
   const imageName = 'karta-zawodnika.png';
   const cardImage = await renderPlayerCard(player);
   const embed = new EmbedBuilder()
@@ -711,6 +718,7 @@ async function showStats(interaction) {
       { name: 'Element', value: element, inline: true },
       { name: 'Rzadkość', value: player.tier ?? 'Nieznana', inline: true },
       { name: 'Hissatsu', value: hissatsu, inline: false },
+      { name: 'Statystyki zawodnika', value: playerStatsText, inline: false },
     )
     .setImage(`attachment://${imageName}`);
   await interaction.reply({
