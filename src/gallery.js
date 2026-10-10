@@ -401,6 +401,94 @@ export async function renderScoutStats(player) {
   ctx.fillText(`${seasonLabel.toUpperCase()}  •  TP W SKALI MECZOWEJ`, 72, 1580);
   return canvas.encode('png');
 }
+export async function renderPlayerComparison(first, second) {
+  const width = 1200;
+  const height = 1040;
+  const canvas = createCanvas(width, height);
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#08111d';
+  ctx.fillRect(0, 0, width, height);
+  ctx.fillStyle = '#0d1a2a';
+  ctx.fillRect(20, 20, width - 40, height - 40);
+  ctx.fillStyle = '#f4f6fb';
+  ctx.font = 'bold 32px Roboto';
+  ctx.textAlign = 'center';
+  ctx.fillText('PORÓWNANIE ZAWODNIKÓW', width / 2, 74);
+  ctx.textAlign = 'left';
+
+  const cards = [{ player: first, x: 40 }, { player: second, x: 620 }];
+  for (const { player, x } of cards) {
+    const tier = tierFor(player);
+    const accent = rarityColors[tier] ?? '#63c7dc';
+    const panelWidth = 540;
+    ctx.fillStyle = '#101f32';
+    ctx.fillRect(x, 100, panelWidth, 900);
+    ctx.fillStyle = accent;
+    ctx.fillRect(x, 100, panelWidth, 7);
+    ctx.fillStyle = '#f7f9fc';
+    ctx.font = 'bold 27px Roboto';
+    ctx.fillText(player.name.toUpperCase(), x + 22, 145, 390);
+    ctx.fillStyle = accent;
+    ctx.font = 'bold 18px Roboto';
+    ctx.textAlign = 'right';
+    ctx.fillText(`OVR ${player.overall}`, x + panelWidth - 22, 145);
+    ctx.textAlign = 'left';
+
+    const image = await loadImage(path.join(ASSETS, player.image));
+    const box = { x: x + 22, y: 170, w: panelWidth - 44, h: 292 };
+    const scale = Math.min(box.w / image.width, box.h / image.height);
+    const drawW = image.width * scale;
+    const drawH = image.height * scale;
+    ctx.fillStyle = '#16263a';
+    ctx.fillRect(box.x, box.y, box.w, box.h);
+    ctx.drawImage(image, box.x + (box.w - drawW) / 2, box.y + (box.h - drawH) / 2, drawW, drawH);
+
+    const stats = player.stats ?? {};
+    const rows = [
+      ['KICK', stats.kick], ['BODY', stats.body], ['CONTROL', stats.control],
+      ['GUARD', stats.guard], ['SPEED', stats.speed], ['STAMINA', stats.stamina],
+      ['TP', stats.tp], ['INTELLIGENCE', stats.intelligence],
+    ];
+    ctx.fillStyle = '#8fa0b5';
+    ctx.font = 'bold 13px Roboto';
+    ctx.fillText('STATYSTYKA', x + 24, 494);
+    ctx.textAlign = 'right';
+    ctx.fillText('WARTOŚĆ', x + panelWidth - 24, 494);
+    ctx.textAlign = 'left';
+    for (let index = 0; index < rows.length; index += 1) {
+      const [label, raw] = rows[index];
+      const value = Number.isFinite(Number(raw)) ? Number(raw) : 0;
+      const y = 510 + index * 58;
+      ctx.fillStyle = '#13243a';
+      ctx.beginPath();
+      ctx.roundRect(x + 20, y, panelWidth - 40, 48, 7);
+      ctx.fill();
+      ctx.fillStyle = '#c5d0de';
+      ctx.font = 'bold 16px Roboto';
+      ctx.fillText(label, x + 34, y + 30);
+      ctx.fillStyle = '#8fa0b5';
+      ctx.font = '13px Roboto';
+      ctx.fillText(String(player.position ?? ''), x + 155, y + 30, 180);
+      const otherValue = Number(player === first ? second.stats?.[label.toLowerCase()] : first.stats?.[label.toLowerCase()]);
+      ctx.fillStyle = !Number.isFinite(otherValue) || value === otherValue
+        ? '#f7f9fc'
+        : value > otherValue ? '#59d890' : '#f0787f';
+      ctx.font = 'bold 21px Roboto';
+      ctx.textAlign = 'right';
+      ctx.fillText(String(value), x + panelWidth - 34, y + 31);
+      ctx.textAlign = 'left';
+    }
+  }
+
+  ctx.fillStyle = '#75869b';
+  ctx.font = '13px Roboto';
+  ctx.textAlign = 'center';
+  ctx.fillText('Porównanie statystyk zawodników', width / 2, 1020);
+  ctx.textAlign = 'left';
+  return canvas.encode('png');
+}
+
+
 function emblemSource(emblem) {
   const crop = emblem.crop;
   return crop
