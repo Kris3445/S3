@@ -93,8 +93,29 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
   }
 
   function bestCarrier(team, state, side) {
+    const current = team.find((player) => player.name === state.carrierName);
+    if (current && current.position !== 'Bramkarz') return current;
     return pick(team, (player) => player.position !== 'Bramkarz',
       (player) => stat(player, 'control', state, side) + stat(player, 'speed', state, side) * 0.35);
+  }
+
+  function passScores(state, player, side) {
+    return stat(player, 'intelligence', state, side) + stat(player, 'control', state, side) * 0.2;
+  }
+
+  function interceptionChance(state, passer, defender) {
+    const passChance = contestChance(
+      passScores(state, passer, 'home'),
+      stat(defender, 'intelligence', state, 'away') + stat(defender, 'speed', state, 'away') * 0.2,
+    );
+    return Math.round(100 - passChance);
+  }
+
+  function topInterceptors(state, passer) {
+    return fieldPlayers(state.away)
+      .map((player) => ({ player, chance: interceptionChance(state, passer, player) }))
+      .sort((a, b) => b.chance - a.chance)
+      .slice(0, 3);
   }
 
   function eligibleTechniques(state, side = state.phase) {
@@ -129,6 +150,10 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
   function flipTo(state, side) {
     state.phase = side;
     state.zone = 1;
+    const team = side === 'home' ? state.home : state.away;
+    const carrier = pick(team, (player) => player.position !== 'Bramkarz',
+      (player) => stat(player, 'control', state, side) + stat(player, 'speed', state, side) * 0.35);
+    state.carrierName = carrier?.name ?? null;
   }
 
   function tryBlock(state, defendingSide, explicitMove = null) {
@@ -196,29 +221,35 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
 
   function attackContest(state, action, moveData = null) {
     const passing = action === 'pass' || action === 'center' || action === 'long-ball';
-    const actor = moveData?.player ?? (passing
-      ? pick(state.home, (player) => player.position === 'Pomocnik', (player) => stat(player, 'intelligence', state, 'home'))
-      : pick(state.home, (player) => player.position === 'Napastnik' || player.position === 'Pomocnik',
-        (player) => stat(player, 'control', state, 'home') + stat(player, 'speed', state, 'home')));
-    const defenders = fieldPlayers(state.away);
-    const defender = pick(defenders, () => true, (player) => passing
-      ? stat(player, 'intelligence', state, 'away') + stat(player, 'speed', state, 'away') * 0.2
-      : stat(player, 'body', state, 'away') + stat(player, 'speed', state, 'away') * 0.3);
+    const actor = moveData?.player ?? bestCarrier(state.home, state, 'home');
+    const defender = moveData?.defender ?? pick(fieldPlayers(state.away), () => true,
+      (player) => passing
+        ? stat(player, 'intelligence', state, 'away') + stat(player, 'speed', state, 'away') * 0.2
+        : stat(player, 'body', state, 'away') + stat(player, 'speed', state, 'away') * 0.3);
     const attackerScore = passing
-      ? stat(actor, 'intelligence', state, 'home') + stat(actor, 'control', state, 'home') * 0.2
+      ? passScores(state, actor, 'home')
       : stat(actor, 'control', state, 'home') + stat(actor, 'speed', state, 'home') * 0.4;
     const defenderScore = passing
       ? stat(defender, 'intelligence', state, 'away') + stat(defender, 'speed', state, 'away') * 0.2
       : stat(defender, 'body', state, 'away') + stat(defender, 'speed', state, 'away') * 0.3;
-    const bonus = moveData ? Math.min(18, moveData.power * 0.12) : 0;
+    const bonus = moveData && !passing ? Math.min(18, moveData.power * 0.12) : 0;
     const chance = contestChance(attackerScore, defenderScore, bonus);
     tire(state, 'home', actor);
     if (Math.random() * 100 < chance) {
       state.zone = Math.min(3, state.zone + (action === 'long-ball' ? 2 : 1));
-      const moveText = action === 'center' ? 'zagrywa do środka' : action === 'long-ball' ? 'posyła długą piłkę' : action === 'pass' ? 'wymienia podanie' : 'mija rywala dryblingiem';
-      addLog(state, actor.name + ' ' + moveText + ' i przesuwa atak na: **' + zoneLabel(state.zone) + '**.');
+      if (passing && moveData?.receiver) state.carrierName = moveData.receiver.name;
+      else state.carrierName = actor.name;
+      if (passing) {
+        const moveText = action === 'center' ? 'zagrywa do środka' : action === 'long-ball' ? 'posyła długą piłkę' : 'podaje';
+        addLog(state, `${actor.name} ${moveText} do **${moveData.receiver.name}** — podanie udane. Atak dochodzi na: **${zoneLabel(state.zone)}**.`);
+      } else {
+        addLog(state, `${actor.name} mija rywala dryblingiem i przesuwa atak na: **${zoneLabel(state.zone)}**.`);
+      }
     } else {
-      addLog(state, defender.name + ' przechwytuje piłkę! Occult rusza z kontrą.');
+      const turnover = passing
+        ? `${defender.name} przechwytuje podanie do ${moveData?.receiver?.name ?? 'zawodnika'}! Occult rusza z kontrą.`
+        : `${defender.name} zatrzymuje drybling ${actor.name} i odbiera piłkę. Occult rusza z kontrą.`;
+      addLog(state, turnover);
       flipTo(state, 'away');
     }
   }
@@ -295,11 +326,11 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
     if (menu) {
       const select = new StringSelectMenuBuilder()
         .setCustomId(`mecz-tech:${state.id}`)
-        .setPlaceholder(state.phase === 'home' ? 'Wybierz Hissatsu' : 'Wybierz technikę obronną')
+        .setPlaceholder(state.phase === 'home' ? 'Wybierz Hissatsu lub zwykły drybling' : 'Wybierz technikę obronną')
         .addOptions(menu.map((option, index) => ({
-          label: `${option.move.name} · ${option.player.name}`.slice(0, 100),
+          label: option.normalDribble ? 'Zwykły drybling bez Hissatsu' : `${option.move.name} · ${option.player.name}`.slice(0, 100),
           value: String(index),
-          description: `${option.move.type} · moc ${option.power} · ${option.cost} TP`.slice(0, 100),
+          description: option.normalDribble ? 'Bez kosztu TP · wybierz zawodnika z piłką' : `${option.move.type} · moc ${option.power} · ${option.cost} TP`.slice(0, 100),
         })));
       return [new ActionRowBuilder().addComponents(select), new ActionRowBuilder().addComponents(actionButton(state, 'cancel-menu', 'Wróć do akcji', ButtonStyle.Secondary))];
     }
@@ -395,7 +426,8 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
     }
     state.minute = Math.min(90, state.minute + 6);
     if (state.phase === 'home') {
-      if (action === 'pass' || action === 'center' || action === 'long-ball' || action === 'dribble') attackContest(state, action);
+      if (action === 'pass' || action === 'center' || action === 'long-ball') attackContest(state, action, option);
+      else if (action === 'dribble' && option) attackContest(state, action, option);
       else if (action === 'shot') {
         if (state.zone < 3) {
           await interaction.reply({ content: 'Zwykły strzał możesz oddać z pola karnego. Spróbuj podania, dryblingu albo Hissatsu z oznaczeniem (L).', ephemeral: true });
@@ -406,24 +438,30 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
           (player) => stat(player, 'kick', state, 'home'));
         tire(state, 'home', attacker);
         resolveShot(state, 'home', attacker);
-      } else if (action === 'tech' && option) {
-        if (!spendTp(state, 'home', option.player, option.cost)) {
-          await interaction.reply({ content: `${option.player.name} nie ma już wystarczająco TP.`, ephemeral: true });
-          state.minute = Math.max(0, state.minute - 6);
-          return;
-        }
-        if (option.move.type === 'Strzał') {
-          if (state.zone < 3 && !isLongShot(option.move)) {
-            await interaction.reply({ content: 'Ta technika nie ma oznaczenia (L), więc można jej użyć tylko z pola karnego.', ephemeral: true });
+      } else if ((action === 'tech' || action === 'dribble') && option) {
+        if (option.normalDribble) {
+          attackContest(state, 'dribble', { player: option.player });
+        } else {
+          if (!spendTp(state, 'home', option.player, option.cost)) {
+            await interaction.reply({ content: `${option.player.name} nie ma już wystarczająco TP.`, ephemeral: true });
             state.minute = Math.max(0, state.minute - 6);
             return;
           }
-          tire(state, 'home', option.player);
-          addLog(state, `${option.player.name} używa **${option.move.name}**!`);
-          resolveShot(state, 'home', option.player, option);
-        } else if (option.move.type === 'Drybling') {
-          attackContest(state, 'dribble', option);
+          if (option.move.type === 'Strzał') {
+            if (state.zone < 3 && !isLongShot(option.move)) {
+              await interaction.reply({ content: 'Ta technika nie ma oznaczenia (L), więc można jej użyć tylko z pola karnego.', ephemeral: true });
+              state.minute = Math.max(0, state.minute - 6);
+              return;
+            }
+            tire(state, 'home', option.player);
+            addLog(state, `${option.player.name} używa **${option.move.name}**!`);
+            resolveShot(state, 'home', option.player, option);
+          } else if (option.move.type === 'Drybling') {
+            addLog(state, `${option.player.name} używa **${option.move.name}** do dryblingu!`);
+            attackContest(state, 'dribble', option);
+          }
         }
+
       }
     } else if (action === 'press') {
       defend(state);
@@ -494,6 +532,9 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
       pendingSubOut: null,
       away,
       phase: 'home',
+      carrierName: null,
+      pendingPass: null,
+      pendingMenu: null,
       zone: 1,
       minute: 0,
       score: { home: 0, away: 0 },
@@ -504,6 +545,7 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
       awayStamina: Object.fromEntries(away.map((player) => [player.name, player.stats?.stamina ?? 50])),
       finished: false,
     };
+    state.carrierName = bestCarrier(home, state, 'home')?.name ?? null;
     sessions.set(id, state);
     ownerSessions.set(ownerKey, id);
     await interaction.reply({ embeds: [new EmbedBuilder().setColor(0x25864a).setTitle('⚙️ PIERWSZY GWIZDEK!').setDescription('Mecz został rozpoczęty. Niech wygra lepszy!')] });
@@ -518,13 +560,36 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
       await interaction.reply({ content: 'Ta sesja meczu wygasła albo należy do innego gracza.', ephemeral: true });
       return;
     }
-    if (action === 'tech') {
-      const options = eligibleTechniques(state);
+    if (action === 'tech' || action === 'dribble') {
+      let options = eligibleTechniques(state, state.phase);
+      if (state.phase === 'home' && action === 'dribble') {
+        const carrier = bestCarrier(state.home, state, 'home');
+        options = options.filter((option) => option.move.type === 'Drybling');
+        options.unshift({ player: carrier, move: { name: 'Zwykły drybling', type: 'Drybling' }, power: 0, cost: 0, normalDribble: true });
+      }
       if (!options.length) {
-        await interaction.reply({ content: 'W tej sytuacji nie masz dostępnej techniki Hissatsu z wystarczającą liczbą TP.', ephemeral: true });
+        await interaction.reply({ content: 'Nie ma dostępnej techniki w tej sytuacji lub zawodnicy nie mają wystarczająco TP.', ephemeral: true });
         return;
       }
-      await interaction.update(promptPayload(state, options));
+      state.pendingMenu = options;
+      await interaction.update(promptPayload(state, options, action === 'dribble' ? 'Wybierz zwykły drybling albo konkretną technikę Hissatsu.' : null));
+      return;
+    }
+    if (action === 'pass' || action === 'center' || action === 'long-ball') {
+      const carrier = bestCarrier(state.home, state, 'home');
+      const receivers = fieldPlayers(state.home).filter((player) => player.name !== carrier.name);
+      const receiverMenu = new StringSelectMenuBuilder()
+        .setCustomId(`mecz-pass-receiver:${state.id}:${action}`)
+        .setPlaceholder('Wybierz adresata podania')
+        .addOptions(receivers.map((player) => ({
+          label: player.name.slice(0, 100),
+          value: player.name,
+          description: `${player.position} · OVERALL ${player.overall} · ${player.element}`.slice(0, 100),
+        })));
+      await interaction.update({
+        ...promptPayload(state, null, 'Wybierz zawodnika, do którego zagrywasz.'),
+        components: [new ActionRowBuilder().addComponents(receiverMenu), new ActionRowBuilder().addComponents(actionButton(state, 'cancel-menu', 'Wróć do akcji', ButtonStyle.Secondary))],
+      });
       return;
     }
     if (action === 'sub') {
@@ -557,6 +622,8 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
     }
     if (action === 'cancel-menu') {
       state.pendingSubOut = null;
+      state.pendingMenu = null;
+      state.pendingPass = null;
       await interaction.update(promptPayload(state));
       return;
     }
@@ -633,14 +700,63 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
       await interaction.reply({ content: 'Ta sesja meczu wygasła albo należy do innego gracza.', ephemeral: true });
       return;
     }
-    const options = eligibleTechniques(state);
+    const options = state.pendingMenu ?? eligibleTechniques(state);
     const option = options[Number(interaction.values[0])];
     if (!option) {
       await interaction.reply({ content: 'Ta technika nie jest już dostępna w tej sytuacji.', ephemeral: true });
       return;
     }
-    await commitAction(interaction, state, 'tech', option);
+    state.pendingMenu = null;
+    await commitAction(interaction, state, option.normalDribble ? 'dribble' : 'tech', option);
   }
 
-  return { start, handleButton, handleTechnique, handleSubstitution };
+  async function handlePassSelection(interaction) {
+    const parts = interaction.customId.split(':');
+    const kind = parts[0];
+    const id = parts[1];
+    const state = sessions.get(id);
+    if (!state || state.userId !== interaction.user.id || state.phase !== 'home' || state.finished) {
+      await interaction.reply({ content: 'Ta akcja podania wygasła albo należy do innego gracza.', ephemeral: true });
+      return;
+    }
+    if (kind === 'mecz-pass-receiver') {
+      const action = parts[2];
+      const receiver = state.home.find((player) => player.name === interaction.values[0] && player.position !== 'Bramkarz');
+      const passer = bestCarrier(state.home, state, 'home');
+      if (!receiver || receiver.name === passer.name || !['pass', 'center', 'long-ball'].includes(action)) {
+        await interaction.reply({ content: 'Nie udało się ustalić adresata podania. Wybierz akcję ponownie.', ephemeral: true });
+        return;
+      }
+      const defenders = topInterceptors(state, passer);
+      state.pendingPass = { action, receiver: receiver.name, passer: passer.name, defenders: defenders.map(({ player, chance }) => ({ name: player.name, chance })) };
+      const defenderMenu = new StringSelectMenuBuilder()
+        .setCustomId(`mecz-pass-defender:${id}`)
+        .setPlaceholder('Wybierz, którego obrońcę chcesz minąć')
+        .addOptions(defenders.map(({ player, chance }) => ({
+          label: player.name.slice(0, 100),
+          value: player.name,
+          description: `Szansa przechwytu: ${chance}% · OVERALL ${player.overall}`.slice(0, 100),
+        })));
+      await interaction.update({
+        ...promptPayload(state, null, `Podanie do ${receiver.name}. Wybierz obrońcę — widzisz jego szansę przechwytu.`),
+        components: [new ActionRowBuilder().addComponents(defenderMenu), new ActionRowBuilder().addComponents(actionButton(state, 'cancel-menu', 'Anuluj podanie', ButtonStyle.Secondary))],
+      });
+      return;
+    }
+
+    const pending = state.pendingPass;
+    const selected = pending?.defenders.find((entry) => entry.name === interaction.values[0]);
+    const receiver = state.home.find((player) => player.name === pending?.receiver);
+    const defender = state.away.find((player) => player.name === selected?.name);
+    const passer = state.home.find((player) => player.name === pending?.passer);
+    if (!pending || !receiver || !defender || !passer) {
+      state.pendingPass = null;
+      await interaction.reply({ content: 'Wybór podania wygasł. Wybierz akcję ponownie.', ephemeral: true });
+      return;
+    }
+    state.pendingPass = null;
+    await commitAction(interaction, state, pending.action, { player: passer, receiver, defender });
+  }
+
+  return { start, handleButton, handleTechnique, handleSubstitution, handlePassSelection };
 }
