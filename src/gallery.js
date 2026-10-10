@@ -845,131 +845,74 @@ export async function renderProfileBanner(username, user, profileOptions) {
   return canvas.encode('png');
 }
 
-export async function renderMatchPitch({ home, away, homeCarrier, awayCarrier, phase, zone = 1 }) {
-  const width = 1160;
-  const height = 620;
-  const canvas = createCanvas(width, height);
-  const ctx = canvas.getContext('2d');
-  ctx.fillStyle = '#0b1220';
-  ctx.fillRect(0, 0, width, height);
 
-  const field = { x: 28, y: 30, w: width - 56, h: height - 60 };
-  ctx.fillStyle = '#10512b';
-  ctx.fillRect(field.x, field.y, field.w, field.h);
-  const stripeCount = 12;
-  for (let index = 0; index < stripeCount; index += 1) {
-    if (index % 2 === 0) {
-      ctx.fillStyle = 'rgba(210,255,220,0.055)';
-      ctx.fillRect(field.x + index * field.w / stripeCount, field.y, field.w / stripeCount, field.h);
-    }
+export async function renderMatchPitch({home,away,homeCarrier,awayCarrier,phase,zone=1}) {
+  const width=1120, height=760, canvas=createCanvas(width,height), ctx=canvas.getContext('2d');
+  ctx.fillStyle='#0b1118'; ctx.fillRect(0,0,width,height);
+  const head=ctx.createLinearGradient(0,0,width,0);
+  head.addColorStop(0,'#122334'); head.addColorStop(.5,'#172a34'); head.addColorStop(1,'#281d22');
+  ctx.fillStyle=head; ctx.fillRect(0,0,width,100);
+  ctx.fillStyle='#aab6bf'; ctx.font='bold 15px Roboto'; ctx.textAlign='center';
+  ctx.fillText('MECZ  •  NA ŻYWO',width/2,25);
+  ctx.fillStyle='#eef3f6'; ctx.font='bold 26px Roboto';
+  ctx.textAlign='left'; ctx.fillText('TWOJA DRUŻYNA',52,67);
+  ctx.textAlign='right'; ctx.fillText('OCCULT',width-52,67);
+  ctx.fillStyle='#283b4b'; ctx.beginPath(); ctx.roundRect(width/2-70,35,140,52,11); ctx.fill();
+  ctx.fillStyle='#fff'; ctx.font='bold 29px Roboto'; ctx.textAlign='center';
+  const score=arguments[0].score||{home:0,away:0};
+  ctx.fillText(String(score.home)+' : '+String(score.away),width/2,70);
+  ctx.fillStyle='#c4d0d7'; ctx.font='bold 14px Roboto';
+  ctx.fillText(String(arguments[0].minute||0)+'′',width/2,96);
+  const field={x:28,y:112,w:width-56,h:476};
+  ctx.fillStyle='#24633c'; ctx.fillRect(field.x,field.y,field.w,field.h);
+  for(let n=0;n<10;n++) if(n%2===0){ctx.fillStyle='rgba(205,255,218,.055)';ctx.fillRect(field.x+n*field.w/10,field.y,field.w/10,field.h);}
+  ctx.strokeStyle='rgba(239,249,239,.78)';ctx.lineWidth=2;
+  ctx.strokeRect(field.x+4,field.y+4,field.w-8,field.h-8);
+  ctx.beginPath();ctx.moveTo(width/2,field.y+4);ctx.lineTo(width/2,field.y+field.h-4);ctx.stroke();
+  ctx.beginPath();ctx.arc(width/2,field.y+field.h/2,64,0,Math.PI*2);ctx.stroke();
+  const centerY=field.y+field.h/2;
+  for(const left of [true,false]){
+    const edge=left?field.x+4:field.x+field.w-4;
+    ctx.strokeRect(left?edge:edge-116,centerY-84,116,168);
+    ctx.strokeRect(left?edge:edge-48,centerY-41,48,82);
   }
-
-  const line = 'rgba(235,255,241,0.82)';
-  ctx.strokeStyle = line;
-  ctx.fillStyle = line;
-  ctx.lineWidth = 3;
-  ctx.strokeRect(field.x + 8, field.y + 8, field.w - 16, field.h - 16);
-  ctx.beginPath();
-  ctx.moveTo(width / 2, field.y + 8);
-  ctx.lineTo(width / 2, field.y + field.h - 8);
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.arc(width / 2, height / 2, 82, 0, Math.PI * 2);
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.arc(width / 2, height / 2, 5, 0, Math.PI * 2);
-  ctx.fill();
-
-  const boxHeight = 228;
-  const smallHeight = 112;
-  for (const left of [true, false]) {
-    const goalX = left ? field.x + 8 : field.x + field.w - 8;
-    const penaltyX = left ? goalX : goalX - 142;
-    const smallX = left ? goalX : goalX - 58;
-    ctx.strokeRect(penaltyX, height / 2 - boxHeight / 2, 142, boxHeight);
-    ctx.strokeRect(smallX, height / 2 - smallHeight / 2, 58, smallHeight);
-    ctx.fillRect(left ? field.x - 5 : field.x + field.w - 3, height / 2 - 40, 8, 80);
-    ctx.beginPath();
-    ctx.arc(left ? field.x + 8 + 98 : field.x + field.w - 8 - 98, height / 2, 3, 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  const roleXHome = { Bramkarz: 0.075, Obrońca: 0.22, Pomocnik: 0.36, Napastnik: 0.47 };
-  const roleXAway = { Bramkarz: 0.925, Obrońca: 0.78, Pomocnik: 0.64, Napastnik: 0.53 };
-  const roleLabels = { Bramkarz: 'GK', Obrońca: 'DF', Pomocnik: 'MF', Napastnik: 'FW' };
-  const colors = { home: '#35a6ff', away: '#ff665f' };
-
-  function drawTeam(team, side, carrierName) {
-    const byRole = new Map();
-    for (const player of team) {
-      const role = player.position ?? 'Pomocnik';
-      if (!byRole.has(role)) byRole.set(role, []);
-      byRole.get(role).push(player);
-    }
-    for (const [role, players] of byRole) {
-      const baseX = side === 'home' ? roleXHome[role] : roleXAway[role];
-      const xRatio = baseX ?? (side === 'home' ? 0.36 : 0.64);
-      const spacing = Math.min(0.12, 0.72 / Math.max(1, players.length));
-      for (let index = 0; index < players.length; index += 1) {
-        const player = players[index];
-        let x = field.x + xRatio * field.w;
-        let y = field.y + field.h * (0.5 + (index - (players.length - 1) / 2) * spacing);
-        const hasBall = player.name === carrierName;
-        if (hasBall) {
-          const progress = Math.max(0, Math.min(2, zone - 1)) * 0.13;
-          x = field.x + field.w * (side === 'home' ? 0.5 + progress : 0.5 - progress);
-          y = height / 2 + (side === 'home' ? -18 : 18);
+  const xPos={home:{Bramkarz:.055,Obrońca:.20,Pomocnik:.37,Napastnik:.48},away:{Bramkarz:.945,Obrońca:.80,Pomocnik:.63,Napastnik:.52}};
+  const colors={home:'#278cf0',away:'#e65350'};
+  function drawTeam(team,side,carrierName){
+    const groups=new Map();for(const p of team){const role=p.position||'Pomocnik';if(!groups.has(role))groups.set(role,[]);groups.get(role).push(p);}
+    let number=1;
+    for(const role of ['Bramkarz','Obrońca','Pomocnik','Napastnik']){
+      const players=groups.get(role)||[];
+      for(let idx=0;idx<players.length;idx++){
+        const p=players[idx];let x=field.x+field.w*xPos[side][role],y=field.y+field.h*(idx+1)/(players.length+1);
+        const hasBall=p.name===carrierName;
+        if(hasBall){
+          const push=Math.max(0,Math.min(2,zone-1))*.115;
+          x=field.x+field.w*(side==='home'?.49+push:.51-push);
+          y=centerY+(side==='home'?-18:18);
+          ctx.beginPath();ctx.arc(x,y,20,0,Math.PI*2);ctx.strokeStyle='#fff';ctx.lineWidth=3;ctx.stroke();
         }
-
-        if (hasBall) {
-          ctx.beginPath();
-          ctx.arc(x, y, 31, 0, Math.PI * 2);
-          ctx.strokeStyle = 'rgba(255,255,255,0.75)';
-          ctx.lineWidth = 3;
-          ctx.stroke();
-        }
-        ctx.save();
-        ctx.shadowColor = 'rgba(0,0,0,0.5)';
-        ctx.shadowBlur = 8;
-        ctx.shadowOffsetY = 3;
-        ctx.beginPath();
-        ctx.arc(x, y, 23, 0, Math.PI * 2);
-        ctx.fillStyle = colors[side];
-        ctx.fill();
-        ctx.restore();
-        ctx.beginPath();
-        ctx.arc(x, y, 23, 0, Math.PI * 2);
-        ctx.strokeStyle = '#f4f8fc';
-        ctx.lineWidth = 2;
-        ctx.stroke();
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 13px Roboto';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(roleLabels[role] ?? 'MF', x, y + 1);
-
-        if (hasBall) {
-          const ballX = x + (side === 'home' ? 28 : -28);
-          const ballY = y + 20;
-          ctx.beginPath();
-          ctx.arc(ballX, ballY, 10, 0, Math.PI * 2);
-          ctx.fillStyle = '#fff4c7';
-          ctx.fill();
-          ctx.strokeStyle = '#18202a';
-          ctx.lineWidth = 2;
-          ctx.stroke();
-          ctx.beginPath();
-          ctx.arc(ballX, ballY, 3, 0, Math.PI * 2);
-          ctx.fillStyle = '#18202a';
-          ctx.fill();
-        }
+        ctx.beginPath();ctx.arc(x,y,14,0,Math.PI*2);ctx.fillStyle=colors[side];ctx.fill();
+        ctx.strokeStyle='#f4f6f8';ctx.lineWidth=2;ctx.stroke();
+        ctx.fillStyle='#fff';ctx.font='bold 9px Roboto';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(String(number),x,y);
+        if(hasBall){ctx.beginPath();ctx.arc(x+(side==='home'?19:-19),y+14,7,0,Math.PI*2);ctx.fillStyle='#f6e6ad';ctx.fill();ctx.strokeStyle='#18222a';ctx.lineWidth=1.5;ctx.stroke();}
+        number++;
       }
     }
   }
-
-  ctx.textBaseline = 'alphabetic';
-  drawTeam(home, 'home', homeCarrier);
-  drawTeam(away, 'away', awayCarrier);
-  ctx.textAlign = 'left';
-  return canvas.encode('png');
+  drawTeam(home,'home',homeCarrier);drawTeam(away,'away',awayCarrier);
+  ctx.fillStyle='#121a22';ctx.fillRect(28,600,width-56,132);
+  ctx.fillStyle=phase==='home'?'#64b8ff':'#ff8b82';ctx.beginPath();ctx.roundRect(46,616,5,100,2);ctx.fill();
+  ctx.textAlign='left';ctx.textBaseline='alphabetic';ctx.fillStyle='#eef3f6';ctx.font='bold 17px Roboto';
+  const zoneNames=['środek boiska','środek boiska','przedpole','pole karne'];
+  const minute=arguments[0].minute||0, poss=arguments[0].possession||'';
+  ctx.fillText(String(minute)+'′  ·  PIŁKA: '+poss+'  ·  '+zoneNames[Math.max(0,Math.min(3,zone))],65,642,width-130);
+  ctx.fillStyle='#cad3da';ctx.font='15px Roboto';
+  const action=arguments[0].footer||arguments[0].lastAction||'Mecz w toku.';
+  const words=String(action).replace(/[*]/g,'').split(/\s+/);let row='',y=672,lines=0;
+  for(const word of words){const trial=row?row+' '+word:word;if(ctx.measureText(trial).width>width-130&&row){ctx.fillText(row,65,y);row=word;y+=20;lines++;if(lines>=2)break;}else row=trial;}
+  if(row&&lines<3)ctx.fillText(row,65,y,width-130);
+  ctx.fillStyle='#81909c';ctx.font='12px Roboto';ctx.textAlign='right';
+  ctx.fillText(String(score.home)+' : '+String(score.away)+'  ·  '+(arguments[0].teamName||'Twoja drużyna')+' — '+(arguments[0].awayName||'Occult'),width-44,722,480);
+  ctx.textAlign='left';ctx.textBaseline='alphabetic';return canvas.encode('png');
 }
