@@ -51,7 +51,7 @@ import {
   verifyEarnAction,
   recordMatchResult,
 } from './economy.js';
-import { renderCollection, renderPlayerCard, renderPlayerComparison, renderProfileBanner, renderSquadBuilderPreview, renderSquadPitch } from './gallery.js';
+import { renderCollection, renderMatchPitch, renderPlayerCard, renderPlayerComparison, renderProfileBanner, renderSquadBuilderPreview, renderSquadPitch } from './gallery.js';
 import { createMatchMode } from './match.js';
 
 if (!TOKEN) {
@@ -123,6 +123,7 @@ const matchMode = createMatchMode({
   getUser,
   getSavedTeam,
   recordMatchResult,
+  renderMatchPitch,
   discord: { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, StringSelectMenuBuilder },
 });
 
