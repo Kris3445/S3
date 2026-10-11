@@ -344,14 +344,25 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
     return { kind: 'keeper', attacker, attackMove, defender: keeper, options: [...techniques, noTechnique] };
   }
 
-  function awayPassTarget(state) {
+  function awayPassTarget(state, action) {
     const passer = bestCarrier(state.away, state, 'away');
     const pool = state.away.filter((player) => player.name !== passer.name && player.position !== 'Bramkarz');
-    const preferred = state.zone >= 2 ? ['Napastnik', 'Pomocnik', 'Obrońca'] : ['Pomocnik', 'Napastnik', 'Obrońca'];
+    const preferred = action === 'long-ball' || state.zone >= 2
+      ? ['Napastnik', 'Pomocnik', 'Obrońca']
+      : ['Pomocnik', 'Napastnik', 'Obrońca'];
     const rank = new Map(preferred.map((position, index) => [position, index]));
+    const teamOrder = new Map(state.away.map((player, index) => [player.name, index]));
+    const leftSide = action === 'pass-left';
+    const rightSide = action === 'pass-right';
     const receiver = [...pool].sort((a, b) => {
       const line = (rank.get(a.position) ?? 9) - (rank.get(b.position) ?? 9);
       if (line) return line;
+      if (leftSide || rightSide) {
+        const side = leftSide
+          ? teamOrder.get(a.name) - teamOrder.get(b.name)
+          : teamOrder.get(b.name) - teamOrder.get(a.name);
+        if (side) return side;
+      }
       return stat(b, 'control', state, 'away') - stat(a, 'control', state, 'away');
     })[0];
     return receiver ? { passer, receiver } : null;
@@ -361,6 +372,7 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
   // a dribble or shot then gives the player the matching defensive response.
   function prepareAwayAction(state, passDepth = 0) {
     if (state.phase !== 'away' || state.finished || state.halfTime) return;
+    if (passDepth === 0) state.lastPass = null;
     const carrier = bestCarrier(state.away, state, 'away');
     const canLongShot = (carrier.hissatsu ?? []).some((move) => move.type === 'Strzał' && isLongShot(move));
     const forceProgress = passDepth >= 2;
@@ -369,7 +381,9 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
     if (state.zone >= 3 && (forceProgress || roll < 0.68)) action = 'shot';
     else if (forceProgress) action = 'dribble';
     else if (state.zone >= 2 && canLongShot && roll < 0.18) action = 'shot';
-    else if (roll < (state.zone >= 2 ? 0.48 : 0.58)) action = 'pass';
+    else if (state.zone >= 2 && roll < 0.3) action = 'long-ball';
+    else if (roll < (state.zone >= 2 ? 0.52 : 0.6)) action = Math.random() < 0.5 ? 'pass-left' : 'pass-right';
+    else if (roll < (state.zone >= 2 ? 0.62 : 0.7)) action = 'pass-forward';
     else action = 'dribble';
 
     state.awayAction = action;
@@ -386,7 +400,7 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
       return;
     }
 
-    const target = awayPassTarget(state);
+    const target = awayPassTarget(state, action);
     if (!target) {
       state.awayAction = 'dribble';
       return;
@@ -400,11 +414,16 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
     }
     const passChance = Math.max(18, Math.min(82, 100 - defender.chance));
     tire(state, 'away', passer, 10);
-    addLog(state, `${passer.name} decyduje się na podanie do **${receiver.name}**.`);
+    const passText = action === 'long-ball' ? 'długą piłkę do' : action === 'pass-left'
+      ? 'podanie na lewe skrzydło do' : action === 'pass-right'
+        ? 'podanie na prawe skrzydło do' : action === 'pass-forward'
+          ? 'podanie do przodu do' : 'podanie do';
+    addLog(state, `${passer.name} decyduje się na ${passText} **${receiver.name}**.`);
     addLog(state, `Podanie: siła ${Math.round(passScores(state, passer, 'away') + stat(receiver, 'control', state, 'away') * 0.1)} · przechwyt: ${defender.strength}. Trzej obrońcy: ${defenders.map(({ player, chance }) => `${player.name} ${chance}%`).join(', ')}.`);
     if (Math.random() * 100 < passChance) {
-      state.zone = Math.min(3, state.zone + 1);
+      state.zone = Math.min(3, state.zone + (action === 'long-ball' ? 2 : 1));
       state.carrierName = receiver.name;
+      state.lastPass = { side: 'away', from: passer.name, to: receiver.name, long: action === 'long-ball' };
       addLog(state, `Celne podanie! **${passer.name} → ${receiver.name}**. Szansa przechwytu ${defender.chance}%.`);
       prepareAwayAction(state, passDepth + 1);
     } else {
@@ -416,7 +435,7 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
 
   function addLog(state, message) {
     state.log.push(`**${Math.min(state.minute, 90)}′** ${message}`);
-    state.log = state.log.slice(-5);
+    state.log = state.log.slice(-10);
   }
 
   function advanceTime(state) {
@@ -516,6 +535,7 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
 
   function attackContest(state, action, moveData = null) {
     const passing = ['pass-forward', 'pass-left', 'pass-right', 'long-ball'].includes(action);
+    state.lastPass = null;
     const actor = moveData?.player ?? bestCarrier(state.home, state, 'home');
     const defenders = passing ? interceptionCandidates(state, actor, moveData.receiver) : [];
     const defender = passing
@@ -543,12 +563,14 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
       if (passing && moveData?.receiver) state.carrierName = moveData.receiver.name;
       else state.carrierName = actor.name;
       if (passing) {
+        state.lastPass = { side: 'home', from: actor.name, to: moveData.receiver.name, long: action === 'long-ball' };
         const moveText = action === 'pass-left' ? 'zagrywa na lewe skrzydło' : action === 'pass-right' ? 'zagrywa na prawe skrzydło' : action === 'long-ball' ? 'posyła długą piłkę do' : 'podaje do';
         addLog(state, `${actor.name} ${moveText} **${moveData.receiver.name}**. ${defender.player.name} miał ${interceptionChance}% szansy przechwytu — podanie celne! Atak dochodzi na: **${zoneLabel(state.zone)}**.`);
       } else {
         addLog(state, `${actor.name} mija rywala dryblingiem i przesuwa atak na: **${zoneLabel(state.zone)}**.`);
       }
     } else {
+      state.lastPass = null;
       state.awayAura = Math.min(10, state.awayAura + 1);
       const turnover = passing
         ? `${defender.player.name} przechwytuje podanie do ${moveData?.receiver?.name ?? 'zawodnika'} (szansa przechwytu ${interceptionChance}%). Occult rusza z kontrą.`
@@ -803,13 +825,12 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
       if (state.homeAura > 0) rows.push(new ActionRowBuilder().addComponents(actionButton(state, 'tactics', `Taktyka (${state.homeAura} TA)`, ButtonStyle.Secondary)));
       return rows;
     }
+    if (state.awayAction === 'shot') {
+      return [new ActionRowBuilder().addComponents(actionButton(state, 'keeper', '🧤 Wybierz obronę bramkarza', ButtonStyle.Danger))];
+    }
     const defenders = defensiveChoices(state);
-    const rows = [new ActionRowBuilder().addComponents(...defenders.map(({ player, chance }, index) =>
+    return [new ActionRowBuilder().addComponents(...defenders.map(({ player, chance }, index) =>
       actionButton(state, 'defend:' + index, `${player.name} (${chance}%)`, ButtonStyle.Primary)))];
-    const actions = [];
-    if (state.zone >= 3) actions.push(actionButton(state, 'keeper', 'Obrona bramkarza', ButtonStyle.Danger));
-    if (actions.length) rows.push(new ActionRowBuilder().addComponents(...actions));
-    return rows;
   }
 
   function embed(state, footer = null) {
@@ -841,7 +862,7 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
     return new EmbedBuilder()
       .setColor(state.phase === 'home' ? 0x2388d1 : 0xd7534f)
       .setTitle((state.halfTime ? '⏸️ Przerwa' : state.pendingDuel ? '⚔️ Mecz PvP — kontynuacja' : '⚡ Akcja!') + ' — ' + state.minute + '′')
-      .setDescription(carrier.name + ' ma piłkę w strefie: ' + zoneLabel(state.zone) + ' (' + sideName + ').\nTP: ' + tp + '/' + tpMax + '  ·  Kondycja: ' + stamina + '/' + staminaMax + (state.log.length ? '\n\n' + state.log.slice(-3).map((line) => line.replace(/\*\*/g, '')).join('\n') : '') + '\n\n' + instruction + halftimeRoster)
+      .setDescription(carrier.name + ' ma piłkę w strefie: ' + zoneLabel(state.zone) + ' (' + sideName + ').\nTP: ' + tp + '/' + tpMax + '  ·  Kondycja: ' + stamina + '/' + staminaMax + (state.log.length ? '\n\n**Ostatnie akcje**\n' + state.log.slice(-6).map((line) => line.replace(/\*\*/g, '')).join('\n') : '') + '\n\n' + instruction + halftimeRoster)
       .setFooter({ text: footer || ('Wynik ' + state.score.home + ' : ' + state.score.away + ' · ' + state.minute + '′') });
   }
 
@@ -864,7 +885,8 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
       possession: state.phase === 'home' ? (state.teamName || state.username) : 'Occult',
       teamName: state.teamName || state.username,
       awayName: 'Occult',
-      lastAction: state.log.length ? state.log.slice(-4).map((line) => line.replace(/\*\*/g, '')).join(' · ') : 'Rozpoczyna się spotkanie.',
+      lastAction: state.log.length ? state.log.slice(-6).map((line) => line.replace(/\*\*/g, '')).join(' · ') : 'Rozpoczyna się spotkanie.',
+      lastPass: state.lastPass,
       footer,
     });
     const imageName = 'mecz-boisko.png';
@@ -1036,6 +1058,7 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
       minute: 1,
       score: { home: 0, away: 0 },
       log: [],
+      lastPass: null,
       homeTp: Object.fromEntries(home.map((player) => [player.name, player.stats?.tp ?? 100])),
       awayTp: Object.fromEntries(away.map((player) => [player.name, player.stats?.tp ?? 100])),
       homeStamina: Object.fromEntries(home.map((player) => [player.name, player.stats?.stamina ?? 50])),
