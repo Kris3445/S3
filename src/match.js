@@ -138,16 +138,16 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
       .slice(0, 3);
   }
 
-  function eligibleTechniques(state, side = state.phase) {
-    const team = side === 'home' ? state.home : state.away;
+  function eligibleTechniques(state) {
+    const team = state.home;
     const options = [];
     for (const player of team) {
       for (const move of player.hissatsu ?? []) {
         const power = hissatsuPower(player);
         const cost = hissatsuTpCost(power);
-        if (tpLeft(state, side, player) < cost) continue;
+        if (tpLeft(state, 'home', player) < cost) continue;
         const type = move.type;
-        if (side === 'home') {
+        if (state.phase === 'home') {
           const usableShot = type === 'Strzał' && (state.zone >= 3 || isLongShot(move));
           if (!usableShot) continue;
         } else {
@@ -181,6 +181,59 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
         normalDribble: true,
       },
     ];
+  }
+
+  function defensiveOptions(state, player) {
+    const techniques = (player?.hissatsu ?? [])
+      .filter((move) => isTackle(move))
+      .map((move) => {
+        const power = hissatsuPower(player);
+        const cost = hissatsuTpCost(power);
+        return { player, move, power, cost };
+      })
+      .filter((option) => tpLeft(state, 'home', player) >= option.cost);
+    return [
+      ...techniques,
+      {
+        player,
+        move: { name: 'Bez techniki', type: 'Odbiór' },
+        power: 0,
+        cost: 0,
+        normalDefense: true,
+      },
+    ];
+  }
+
+  function createDribbleDuel(state) {
+    const attacker = bestCarrier(state.home, state, 'home');
+    const defender = pick(fieldPlayers(state.away), () => true, (player) =>
+      stat(player, 'intelligence', state, 'away')
+      + stat(player, 'body', state, 'away') * 0.2
+      + stat(player, 'speed', state, 'away') * 0.2);
+    return { kind: 'dribble', attacker, defender, options: dribbleOptions(state) };
+  }
+
+  function createDefenceDuel(state, defender) {
+    return {
+      kind: 'defence',
+      attacker: bestCarrier(state.away, state, 'away'),
+      defender,
+      options: defensiveOptions(state, defender),
+    };
+  }
+
+  function createKeeperDuel(state) {
+    const keeper = bestKeeper(state.home);
+    const techniques = (keeper?.hissatsu ?? [])
+      .filter((move) => move.type === 'Obrona bramkarska')
+      .map((move) => {
+        const power = hissatsuPower(keeper);
+        const cost = hissatsuTpCost(power);
+        return { player: keeper, move, power, cost };
+      })
+      .filter((option) => tpLeft(state, 'home', keeper) >= option.cost);
+    const noTechnique = { player: keeper, move: { name: 'Obrona bez Hissatsu', type: 'Obrona bramkarska' }, power: 0, cost: 0, normalKeeper: true };
+    return { kind: 'keeper', attacker: bestCarrier(state.away, state, 'away'), defender: keeper, options: [...techniques, noTechnique] };
   }
 
   function addLog(state, message) {
@@ -224,8 +277,8 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
     const block = tryBlock(state, defenceSide, chosenBlockMove);
     if (block.log) addLog(state, block.log);
 
-    let keeperMove = chosenKeeperMove;
-    if (!keeperMove) {
+    let keeperMove = chosenKeeperMove?.noTechnique ? null : chosenKeeperMove;
+    if (!chosenKeeperMove) {
       const moves = (keeper.hissatsu ?? []).filter((move) => move.type === 'Obrona bramkarska');
       const automatic = moves
         .map((move) => ({ move, power: hissatsuPower(keeper), cost: hissatsuTpCost(hissatsuPower(keeper)) }))
@@ -292,22 +345,11 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
   }
 
   function defend(state, defender) {
-    const attacker = bestCarrier(state.away, state, 'away');
-    if (!defender || !fieldPlayers(state.home).some((player) => player.name === defender.name)) return;
-    const attackerScore = stat(attacker, 'control', state, 'away') + stat(attacker, 'speed', state, 'away') * 0.35;
-    const defenderScore = stat(defender, 'intelligence', state, 'home') + stat(defender, 'speed', state, 'home') * 0.2 + stat(defender, 'body', state, 'home') * 0.2;
-    const chance = contestChance(defenderScore, attackerScore);
-    tire(state, 'home', defender);
-    if (Math.random() * 100 < chance) {
-      addLog(state, `${defender.name} odbiera piłkę i zatrzymuje atak Occult.`);
-      flipTo(state, 'home');
-    } else if (state.zone >= 3) {
-      addLog(state, `${attacker.name} ucieka spod pressingu i oddaje strzał!`);
-      resolveShot(state, 'away', attacker);
-    } else {
-      state.zone += 1;
-      addLog(state, `${attacker.name} omija press i przesuwa atak Occult na: **${zoneLabel(state.zone)}**.`);
-    }
+    if (!defender || !fieldPlayers(state.home).some((player) => player.name === defender.name)) return false;
+    state.pendingMenu = null;
+    state.pendingAction = null;
+    state.pendingDuel = createDefenceDuel(state, defender);
+    return true;
   }
 
   function defensiveTechnique(state, option) {
@@ -343,6 +385,75 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
     return null;
   }
 
+  function duelDescription(state) {
+    const duel = state.pendingDuel;
+    if (!duel) return null;
+    if (duel.kind === 'dribble') {
+      const attack = Math.round(stat(duel.attacker, 'control', state, 'home') + stat(duel.attacker, 'speed', state, 'home') * 0.35);
+      const defence = Math.round(stat(duel.defender, 'intelligence', state, 'away') + stat(duel.defender, 'body', state, 'away') * 0.2 + stat(duel.defender, 'speed', state, 'away') * 0.2);
+      return `**Pojedynek dryblingowy**\n${duel.attacker.name} kontra ${duel.defender.name} (obrońcę wybrał bot).\nAtak: **${attack}** bazowo · technika Hissatsu zwiększy siłę.\nObrona: **${defence}**`;
+    }
+    if (duel.kind === 'defence') {
+      const attack = Math.round(stat(duel.attacker, 'control', state, 'away') + stat(duel.attacker, 'speed', state, 'away') * 0.35);
+      const defence = Math.round(stat(duel.defender, 'intelligence', state, 'home') + stat(duel.defender, 'body', state, 'home') * 0.2 + stat(duel.defender, 'speed', state, 'home') * 0.2);
+      return `**Pojedynek o odbiór**\n${duel.defender.name} próbuje zatrzymać ${duel.attacker.name}.\nAtak Occult: **${attack}** · Twój odbiór: **${defence}** bazowo.\nWybierz Hissatsu obronne albo **Bez techniki**.`;
+    }
+    return `**Strzał na bramkę**\n${duel.attacker.name} oddaje strzał. ${duel.defender.name} przygotowuje się do obrony.\nWybierz Hissatsu bramkarskie albo obronę bez techniki.`;
+  }
+
+  function resolveDuel(state, option) {
+    const duel = state.pendingDuel;
+    if (!duel || !option) return;
+    state.pendingDuel = null;
+    const { attacker, defender, kind } = duel;
+    if (kind === 'keeper') {
+      const chosenKeeperMove = option.normalKeeper ? { noTechnique: true, player: defender } : option;
+      if (option.normalKeeper) tire(state, 'home', defender);
+      resolveShot(state, 'away', attacker, null, chosenKeeperMove);
+      return;
+    }
+
+    if (!option.normalDribble && !option.normalDefense && !spendTp(state, 'home', option.player, option.cost)) {
+      state.pendingDuel = duel;
+      return 'Za mało TP na tę technikę. Wybierz inną albo zagraj bez techniki.';
+    }
+    const power = option.normalDribble || option.normalDefense ? 0 : option.power;
+    const label = option.normalDribble || option.normalDefense ? 'bez Hissatsu' : `technika **${option.move.name}**`;
+    let chance;
+    if (kind === 'dribble') {
+      const attack = stat(attacker, 'control', state, 'home') + stat(attacker, 'speed', state, 'home') * 0.35 + power * 0.25;
+      const defence = stat(defender, 'intelligence', state, 'away') + stat(defender, 'body', state, 'away') * 0.2 + stat(defender, 'speed', state, 'away') * 0.2;
+      chance = Math.round(contestChance(attack, defence));
+      tire(state, 'home', attacker);
+      if (Math.random() * 100 < chance) {
+        state.zone = Math.min(3, state.zone + 1);
+        state.carrierName = attacker.name;
+        addLog(state, `${attacker.name} wygrywa pojedynek z ${defender.name} ${label} (szansa ${chance}%) i rusza do: **${zoneLabel(state.zone)}**.`);
+      } else {
+        addLog(state, `${defender.name} zatrzymuje ${attacker.name} ${label} (szansa ataku ${chance}%). Occult przejmuje piłkę.`);
+        flipTo(state, 'away');
+      }
+      return null;
+    }
+
+    const attack = stat(attacker, 'control', state, 'away') + stat(attacker, 'speed', state, 'away') * 0.35;
+    const defence = stat(defender, 'intelligence', state, 'home') + stat(defender, 'body', state, 'home') * 0.2 + stat(defender, 'speed', state, 'home') * 0.2 + power * 0.25;
+    chance = Math.round(contestChance(defence, attack));
+    tire(state, 'home', defender);
+    if (Math.random() * 100 < chance) {
+      addLog(state, `${defender.name} wygrywa pojedynek ${label} i odbiera piłkę (${chance}% szansy).`);
+      flipTo(state, 'home');
+    } else if (state.zone >= 3) {
+      addLog(state, `${attacker.name} omija ${defender.name} ${label} i oddaje strzał.`);
+      resolveShot(state, 'away', attacker);
+    } else {
+      state.zone = Math.min(3, state.zone + 1);
+      state.carrierName = attacker.name;
+      addLog(state, `${attacker.name} omija ${defender.name} ${label} (${chance}% szansy odbioru) i atakuje dalej: **${zoneLabel(state.zone)}**.`);
+    }
+    return null;
+  }
+
   function describe(state) {
     const possession = state.phase === 'home' ? state.username : 'Occult';
     const zone = zoneLabel(state.zone);
@@ -359,6 +470,21 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
   }
 
   function components(state, menu = null) {
+    if (state.pendingDuel) {
+      const choices = state.pendingDuel.options.map((option, index) => actionButton(
+        state,
+        'duel-option:' + index,
+        option.normalDribble
+          ? 'Bez techniki'
+          : option.normalDefense
+            ? 'Bez techniki'
+            : option.normalKeeper
+              ? 'Obrona bez Hissatsu'
+              : `${option.move.name} (P: ${option.power} | TP: ${option.cost})`.slice(0, 80),
+        option.normalDribble || option.normalDefense || option.normalKeeper ? ButtonStyle.Secondary : ButtonStyle.Primary,
+      ));
+      return [new ActionRowBuilder().addComponents(...choices)];
+    }
     if (menu) {
       const select = new StringSelectMenuBuilder()
         .setCustomId(`mecz-tech:${state.id}`)
@@ -375,7 +501,7 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
       return [new ActionRowBuilder().addComponents(select), new ActionRowBuilder().addComponents(actionButton(state, 'cancel-menu', 'Wróć do akcji', ButtonStyle.Secondary))];
     }
     if (state.phase === 'home') {
-      const moves = eligibleTechniques(state, 'home');
+      const moves = eligibleTechniques(state);
       const movement = [
         actionButton(state, 'pass-forward', '➤ Podaj do przodu', ButtonStyle.Primary),
         actionButton(state, 'pass-left', '◀ Zagraj na lewe skrzydło', ButtonStyle.Primary),
@@ -392,13 +518,12 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
       rows.push(new ActionRowBuilder().addComponents(...extra));
       return rows;
     }
-    const moves = eligibleTechniques(state, 'away');
     const defenders = defensiveChoices(state);
     const rows = [new ActionRowBuilder().addComponents(...defenders.map(({ player, chance }, index) =>
       actionButton(state, 'defend:' + index, `${player.name} (${chance}%)`, ButtonStyle.Primary)))];
-    const actions = [actionButton(state, 'tech', 'Hissatsu obronne', ButtonStyle.Success, moves.length === 0)];
+    const actions = [];
     if (state.zone >= 3) actions.push(actionButton(state, 'keeper', 'Obrona bramkarza', ButtonStyle.Danger));
-    rows.push(new ActionRowBuilder().addComponents(...actions));
+    if (actions.length) rows.push(new ActionRowBuilder().addComponents(...actions));
     return rows;
   }
 
@@ -411,12 +536,14 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
     const stamina = staminaMap[carrier.name] ?? carrier.stats?.stamina ?? 100;
     const staminaMax = carrier.stats?.stamina ?? 100;
     const sideName = state.phase === 'home' ? (state.teamName || state.username) : 'Occult';
-    const instruction = state.phase === 'home'
+    const instruction = state.pendingDuel
+      ? duelDescription(state)
+      : state.phase === 'home'
       ? 'Wybierz akcję. Przy podaniu wskażesz jednego z trzech adresatów.'
       : 'Occult ma piłkę. Wybierz jednego z trzech obrońców do próby odbioru.';
     return new EmbedBuilder()
       .setColor(state.phase === 'home' ? 0x2388d1 : 0xd7534f)
-      .setTitle('⚡ Akcja! — ' + state.minute + '′')
+      .setTitle((state.pendingDuel ? '⚔️ Pojedynek' : '⚡ Akcja!') + ' — ' + state.minute + '′')
       .setDescription(carrier.name + ' ma piłkę w strefie: ' + zoneLabel(state.zone) + ' (' + sideName + ').\nStamina: ' + stamina + '/' + staminaMax + '  ·  TP: ' + tp + '/' + tpMax + '\n\n' + instruction)
       .setFooter({ text: footer || ('Wynik ' + state.score.home + ' : ' + state.score.away + ' · ' + state.minute + '′') });
   }
@@ -470,7 +597,14 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
       return;
     }
     state.minute = Math.min(90, state.minute + 6);
-    if (state.phase === 'home') {
+    if (action === 'duel-option' && state.pendingDuel) {
+      const failure = resolveDuel(state, option);
+      if (failure) {
+        state.minute = Math.max(0, state.minute - 6);
+        await interaction.reply({ content: failure, ephemeral: true });
+        return;
+      }
+    } else if (state.phase === 'home') {
       if (['pass-forward', 'pass-left', 'pass-right', 'long-ball'].includes(action)) attackContest(state, action, option);
       else if (action === 'dribble' && option) {
         if (option.normalDribble) {
@@ -512,12 +646,6 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
           resolveShot(state, 'home', option.player, option);
         }
       }
-    } else if (action === 'press' && option?.player) {
-      defend(state, option.player);
-    } else if (action === 'keeper') {
-      const keeper = bestKeeper(state.home);
-      if (keeper) addLog(state, `${keeper.name} ustawia się do obrony!`);
-      resolveShot(state, 'away', bestCarrier(state.away, state, 'away'), null);
     } else if (action === 'tech' && option) {
       const failure = defensiveTechnique(state, option);
       if (failure) {
@@ -589,6 +717,7 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
       carrierName: null,
       pendingPass: null,
       pendingMenu: null,
+      pendingDuel: null,
       zone: 1,
       minute: 0,
       score: { home: 0, away: 0 },
@@ -627,10 +756,23 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
       return;
     }
     if (action === 'dribble') {
-      const options = dribbleOptions(state);
-      state.pendingMenu = options;
-      state.pendingAction = 'dribble';
-      await interaction.update(promptPayload(state, options));
+      if (state.phase !== 'home') {
+        await interaction.reply({ content: 'Możesz rozpocząć drybling tylko wtedy, gdy twoja drużyna ma piłkę.', ephemeral: true });
+        return;
+      }
+      state.pendingMenu = null;
+      state.pendingAction = null;
+      state.pendingDuel = createDribbleDuel(state);
+      await interaction.update(promptPayload(state));
+      return;
+    }
+    if (action === 'duel-option') {
+      const option = state.pendingDuel?.options[Number(parameter)];
+      if (!option) {
+        await interaction.reply({ content: 'Ten wybór pojedynku wygasł. Rozpocznij akcję ponownie.', ephemeral: true });
+        return;
+      }
+      await commitAction(interaction, state, action, option);
       return;
     }
     if (['pass-forward', 'pass-left', 'pass-right', 'long-ball'].includes(action)) {
@@ -672,7 +814,19 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
         await interaction.reply({ content: 'Wybór obrońcy wygasł. Wybierz ponownie.', ephemeral: true });
         return;
       }
-      await commitAction(interaction, state, 'press', { player: defender });
+      defend(state, defender);
+      await interaction.update(promptPayload(state));
+      return;
+    }
+    if (action === 'keeper') {
+      if (state.phase !== 'away' || state.zone < 3) {
+        await interaction.reply({ content: 'Bramkarz może wejść do akcji, gdy Occult jest blisko bramki.', ephemeral: true });
+        return;
+      }
+      state.pendingMenu = null;
+      state.pendingAction = null;
+      state.pendingDuel = createKeeperDuel(state);
+      await interaction.update(promptPayload(state));
       return;
     }
     if (action === 'sub') {
@@ -708,6 +862,7 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
       state.pendingMenu = null;
       state.pendingAction = null;
       state.pendingPass = null;
+      state.pendingDuel = null;
       await interaction.update(promptPayload(state));
       return;
     }
