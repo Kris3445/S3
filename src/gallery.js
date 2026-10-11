@@ -847,7 +847,7 @@ export async function renderProfileBanner(username, user, profileOptions) {
 
 
 
-export async function renderMatchPitch({home,away,homeCarrier,awayCarrier,phase,zone=1,minute=0,score={home:0,away:0},possession='',teamName='Twoja drużyna',awayName='Occult',lastAction='',footer=null}){
+export async function renderMatchPitch({home,away,homeCarrier,awayCarrier,phase,zone=1,minute=0,score={home:0,away:0},possession='',teamName='Twoja drużyna',awayName='Occult',lastAction='',lastPass=null,footer=null}){
   const width=960,height=900,canvas=createCanvas(width,height),ctx=canvas.getContext('2d');
   ctx.fillStyle='#167b37';ctx.fillRect(0,0,width,650);
   for(let i=0;i<12;i++)if(i%2===0){ctx.fillStyle='rgba(255,255,255,.035)';ctx.fillRect(i*width/12,56,width/12,594);}
@@ -865,28 +865,66 @@ export async function renderMatchPitch({home,away,homeCarrier,awayCarrier,phase,
   for(const left of [true,false]){const edge=left?f.x:f.x+f.w;ctx.strokeRect(left?edge:edge-boxW,f.y+f.h/2-boxH/2,boxW,boxH);ctx.strokeRect(left?edge:edge-sixW,f.y+f.h/2-sixH/2,sixW,sixH);}
   const coords={home:{Bramkarz:.055,Obrońca:.20,Pomocnik:.37,Napastnik:.48},away:{Bramkarz:.945,Obrońca:.80,Pomocnik:.63,Napastnik:.52}};
   const colors={home:'#1688ff',away:'#ef504d'};
-  function drawTeam(team,side,carrierName){
+  function teamPoints(team,side,carrierName){
     const groups=new Map();for(const p of team){const role=p.squadPosition||p.position||'Pomocnik';if(!groups.has(role))groups.set(role,[]);groups.get(role).push(p);}
-    const progress=Math.max(0,Math.min(2,zone-1));
-    const attackDirection=side==='home'?1:-1;
+    const progress=Math.max(0,Math.min(2,zone-1)),direction=side==='home'?1:-1,defending=side!==phase;
     const roleAdvance={Bramkarz:0,Obrońca:.025,Pomocnik:.05,Napastnik:.075};
-    let number=1;
+    const entries=[];
     for(const role of ['Bramkarz','Obrońca','Pomocnik','Napastnik']){
       const members=groups.get(role)||[];
       for(let i=0;i<members.length;i++){
-        const player=members[i];let x=f.x+f.w*coords[side][role],y=f.y+f.h*(i+1)/(members.length+1);
-        const defending=side!==phase;
-        const lineShift=progress*(roleAdvance[role]||0)*(defending?-.65:1);
-        x+=attackDirection*lineShift*f.w;
-        const hasBall=player.name===carrierName;
-        if(hasBall){const advance=Math.max(0,Math.min(2,zone-1))*.13;x=f.x+f.w*(side==='home'?.49+advance:.51-advance);y=f.y+f.h*.5;ctx.beginPath();ctx.arc(x,y,20,0,Math.PI*2);ctx.strokeStyle='#fff';ctx.lineWidth=3;ctx.stroke();}
-        ctx.beginPath();ctx.arc(x,y,13,0,Math.PI*2);ctx.fillStyle=colors[side];ctx.fill();ctx.strokeStyle='#f4fff6';ctx.lineWidth=2;ctx.stroke();
-        if(hasBall){ctx.beginPath();ctx.arc(x+(side==='home'?17:-17),y+12,6,0,Math.PI*2);ctx.fillStyle='#fff2b4';ctx.fill();ctx.strokeStyle='#18231b';ctx.lineWidth=1.5;ctx.stroke();}
-        number++;
+        const player=members[i],baseX=f.x+f.w*coords[side][role],baseY=f.y+f.h*(i+1)/(members.length+1);
+        let x=baseX,y=baseY;const hasBall=player.name===carrierName;
+        x+=direction*progress*(roleAdvance[role]||0)*f.w*(defending?-.65:1);
+        if(!defending&&role!=='Bramkarz'){
+          // Teammates make visible support and forward runs while their side attacks.
+          const run=role==='Napastnik'?.035:role==='Pomocnik'?.018:0;
+          x+=direction*(.35+progress)*run*f.w;
+          y+=(f.y+f.h*.5-y)*(role==='Napastnik'?.08:.035);
+        }
+        entries.push({player,role,baseX,baseY,x,y,hasBall});
       }
     }
+    const carrier=entries.find(entry=>entry.hasBall);
+    if(carrier){
+      const advance=progress*.13;
+      carrier.x=f.x+f.w*(side==='home'?.49+advance:.51-advance);carrier.y=f.y+f.h*.5;
+      if(!defending){
+        for(const entry of entries){
+          if(entry===carrier||entry.role==='Bramkarz')continue;
+          if(entry.role==='Napastnik'||entry.role==='Pomocnik')entry.y+=(carrier.y-entry.y)*(entry.role==='Napastnik'?.18:.10);
+        }
+      }
+      if(defending){
+        const pressers=entries.filter(entry=>entry.role!=='Bramkarz'&&!entry.hasBall)
+          .sort((a,b)=>Math.hypot(a.x-carrier.x,(a.y-carrier.y)*.8)-Math.hypot(b.x-carrier.x,(b.y-carrier.y)*.8)).slice(0,3);
+        for(const entry of pressers){entry.x+=(carrier.x-entry.x)*.18;entry.y+=(carrier.y-entry.y)*.28;}
+      }
+    }
+    for(const entry of entries){
+      const dx=entry.x-entry.baseX,dy=entry.y-entry.baseY;
+      if(Math.hypot(dx,dy)>15){
+        ctx.save();ctx.globalAlpha=.35;ctx.strokeStyle='#f8fff5';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(entry.baseX,entry.baseY);ctx.lineTo(entry.x,entry.y);ctx.stroke();
+        const angle=Math.atan2(dy,dx);ctx.beginPath();ctx.moveTo(entry.x,entry.y);ctx.lineTo(entry.x-8*Math.cos(angle-.45),entry.y-8*Math.sin(angle-.45));ctx.lineTo(entry.x-8*Math.cos(angle+.45),entry.y-8*Math.sin(angle+.45));ctx.closePath();ctx.fillStyle='#f8fff5';ctx.fill();ctx.restore();
+      }
+    }
+    return entries;
   }
-  drawTeam(home,'home',homeCarrier);drawTeam(away,'away',awayCarrier);
+  const homePoints=teamPoints(home,'home',homeCarrier),awayPoints=teamPoints(away,'away',awayCarrier);
+  if(lastPass){
+    const points=lastPass.side==='home'?homePoints:awayPoints;
+    const from=points.find(entry=>entry.player.name===lastPass.from),to=points.find(entry=>entry.player.name===lastPass.to);
+    if(from&&to){ctx.save();ctx.setLineDash([7,7]);ctx.strokeStyle='#fff2b4';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(from.x,from.y);ctx.lineTo(to.x,to.y);ctx.stroke();ctx.setLineDash([]);ctx.restore();}
+  }
+  for(const [entries,side] of [[homePoints,'home'],[awayPoints,'away']])for(const entry of entries){
+    const {player,x,y,hasBall}=entry;
+    if(hasBall){ctx.beginPath();ctx.arc(x,y,20,0,Math.PI*2);ctx.strokeStyle='#fff';ctx.lineWidth=3;ctx.stroke();}
+    ctx.beginPath();ctx.arc(x,y,13,0,Math.PI*2);ctx.fillStyle=colors[side];ctx.fill();ctx.strokeStyle='#f4fff6';ctx.lineWidth=2;ctx.stroke();
+    if(hasBall){ctx.beginPath();ctx.arc(x+(side==='home'?17:-17),y+12,6,0,Math.PI*2);ctx.fillStyle='#fff2b4';ctx.fill();ctx.strokeStyle='#18231b';ctx.lineWidth=1.5;ctx.stroke();}
+    ctx.fillStyle='#fff';ctx.font='bold 9px Roboto';ctx.textAlign=side==='home'?'left':'right';ctx.textBaseline='middle';
+    const label=player.name.length>13?player.name.slice(0,12)+'…':player.name;
+    ctx.fillText(label,x+(side==='home'?17:-17),y,88);
+  }
   ctx.fillStyle='#080b0e';ctx.fillRect(0,650,width,250);
   ctx.textAlign='left';ctx.textBaseline='alphabetic';
   ctx.fillStyle='#f0f3f4';ctx.font='bold 16px Roboto';
