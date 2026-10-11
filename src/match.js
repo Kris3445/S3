@@ -289,7 +289,7 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
         return { player: keeper, move, power, cost };
       })
       .filter((option) => tpLeft(state, 'home', keeper) >= option.cost);
-    const noTechnique = { player: keeper, move: { name: 'Obrona bez Hissatsu', type: 'Obrona bramkarska' }, power: 0, cost: 0, normalKeeper: true };
+    const noTechnique = { player: keeper, move: { name: 'Bez techniki', type: 'Obrona bramkarska' }, power: 0, cost: 0, normalKeeper: true };
     const attacker = bestCarrier(state.away, state, 'away');
     const attackMove = bestAvailableTechnique(state, 'away', attacker,
       (move) => move.type === 'Strzał' && (state.zone >= 3 || isLongShot(move)));
@@ -617,7 +617,7 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
           : option.normalDefense
             ? 'Bez techniki'
             : option.normalKeeper
-              ? 'Obrona bez Hissatsu'
+              ? 'Bez techniki'
             : option.normalShot
               ? option.move.name
               : `${option.move.name} (P: ${option.power} | TP: ${option.cost})`.slice(0, 80),
