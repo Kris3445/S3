@@ -72,10 +72,10 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
     return true;
   }
 
-  function tire(state, side, player) {
+  function tire(state, side, player, amount = 10) {
     const map = side === 'home' ? state.homeStamina : state.awayStamina;
     const current = map[player.name] ?? player.stats?.stamina ?? 50;
-    map[player.name] = Math.max(0, current - 2);
+    map[player.name] = Math.max(0, current - amount);
   }
 
   function pick(team, predicate, score) {
@@ -101,6 +101,36 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
 
   function passScores(state, player, side) {
     return stat(player, 'intelligence', state, side) + stat(player, 'control', state, side) * 0.2;
+  }
+
+  function bestAvailableTechnique(state, side, player, predicate) {
+    if (!player) return null;
+    const options = (player.hissatsu ?? [])
+      .filter(predicate)
+      .map((move) => {
+        const power = hissatsuPower(player);
+        const cost = hissatsuTpCost(power);
+        return { player, move, power, cost };
+      })
+      .filter((option) => tpLeft(state, side, player) >= option.cost);
+    return options[0] ?? null;
+  }
+
+  function interceptionCandidates(state, passer, receiver) {
+    const passStrength = passScores(state, passer, 'home') + stat(receiver, 'control', state, 'home') * 0.1;
+    return fieldPlayers(state.away)
+      .map((player) => {
+        const interceptionStrength = stat(player, 'intelligence', state, 'away')
+          + stat(player, 'speed', state, 'away') * 0.2
+          + stat(player, 'body', state, 'away') * 0.1;
+        return {
+          player,
+          strength: Math.round(interceptionStrength),
+          chance: Math.round(contestChance(interceptionStrength, passStrength)),
+        };
+      })
+      .sort((a, b) => b.chance - a.chance)
+      .slice(0, 3);
   }
 
   function passTargets(state, action) {
@@ -183,9 +213,26 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
     ];
   }
 
+  function shotOptions(state) {
+    const attacker = bestCarrier(state.home, state, 'home');
+    const techniques = (attacker?.hissatsu ?? [])
+      .filter((move) => move.type === 'Strzał' && (state.zone >= 3 || isLongShot(move)))
+      .map((move) => ({ player: attacker, move, power: hissatsuPower(attacker), cost: hissatsuTpCost(hissatsuPower(attacker)) }))
+      .filter((option) => tpLeft(state, 'home', attacker) >= option.cost);
+    const options = [...techniques];
+    if (state.zone >= 3) options.push({
+      player: attacker,
+      move: { name: 'Strzał bez Hissatsu', type: 'Strzał' },
+      power: 0,
+      cost: 0,
+      normalShot: true,
+    });
+    return options;
+  }
+
   function defensiveOptions(state, player) {
     const techniques = (player?.hissatsu ?? [])
-      .filter((move) => isTackle(move))
+      .filter((move) => isTackle(move) || (state.zone >= 3 && isShotBlock(move)))
       .map((move) => {
         const power = hissatsuPower(player);
         const cost = hissatsuTpCost(power);
@@ -210,16 +257,26 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
       stat(player, 'intelligence', state, 'away')
       + stat(player, 'body', state, 'away') * 0.2
       + stat(player, 'speed', state, 'away') * 0.2);
-    return { kind: 'dribble', attacker, defender, options: dribbleOptions(state) };
+    return {
+      kind: 'dribble', attacker, defender,
+      defenderMove: bestAvailableTechnique(state, 'away', defender, isTackle),
+      options: dribbleOptions(state),
+    };
   }
 
   function createDefenceDuel(state, defender) {
+    const attacker = bestCarrier(state.away, state, 'away');
     return {
-      kind: 'defence',
-      attacker: bestCarrier(state.away, state, 'away'),
+      kind: 'defence', attacker,
       defender,
+      attackerMove: bestAvailableTechnique(state, 'away', attacker, (move) => move.type === 'Drybling'),
       options: defensiveOptions(state, defender),
     };
+  }
+
+  function createShotDuel(state) {
+    const attacker = bestCarrier(state.home, state, 'home');
+    return { kind: 'shot', attacker, defender: bestKeeper(state.away), options: shotOptions(state) };
   }
 
   function createKeeperDuel(state) {
@@ -233,12 +290,20 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
       })
       .filter((option) => tpLeft(state, 'home', keeper) >= option.cost);
     const noTechnique = { player: keeper, move: { name: 'Obrona bez Hissatsu', type: 'Obrona bramkarska' }, power: 0, cost: 0, normalKeeper: true };
-    return { kind: 'keeper', attacker: bestCarrier(state.away, state, 'away'), defender: keeper, options: [...techniques, noTechnique] };
+    const attacker = bestCarrier(state.away, state, 'away');
+    const attackMove = bestAvailableTechnique(state, 'away', attacker,
+      (move) => move.type === 'Strzał' && (state.zone >= 3 || isLongShot(move)));
+    return { kind: 'keeper', attacker, attackMove, defender: keeper, options: [...techniques, noTechnique] };
   }
 
   function addLog(state, message) {
     state.log.push(`**${Math.min(state.minute, 90)}′** ${message}`);
     state.log = state.log.slice(-5);
+  }
+
+  function advanceTime(state) {
+    const minutes = 5 + Math.floor(Math.random() * 3);
+    state.minute = Math.min(90, state.minute + minutes);
   }
 
   function flipTo(state, side) {
@@ -260,7 +325,7 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
     const candidate = moveOptions.find(({ player, cost }) => tpLeft(state, defendingSide, player) >= cost);
     if (!candidate) return { multiplier: 1, log: null };
     if (!spendTp(state, defendingSide, candidate.player, candidate.cost)) return { multiplier: 1, log: null };
-    tire(state, defendingSide, candidate.player);
+    tire(state, defendingSide, candidate.player, 10);
     if (Math.random() >= 0.4) {
       return { multiplier: 1, log: `${candidate.player.name} używa **${candidate.move.name}**, ale blok nie osłabia strzału.` };
     }
@@ -277,35 +342,51 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
     const block = tryBlock(state, defenceSide, chosenBlockMove);
     if (block.log) addLog(state, block.log);
 
+    let shotMove = attackMove;
+    if (!shotMove && attackSide === 'away') {
+      shotMove = bestAvailableTechnique(state, 'away', attacker,
+        (move) => move.type === 'Strzał' && (state.zone >= 3 || isLongShot(move)));
+    }
+    if (shotMove && !shotMove.normalShot && !spendTp(state, attackSide, attacker, shotMove.cost)) shotMove = null;
+    if (shotMove && !shotMove.normalShot) {
+      addLog(state, `${attacker.name} używa **${shotMove.move.name}**!`);
+      tire(state, attackSide, attacker, 25);
+    } else {
+      tire(state, attackSide, attacker, 25);
+    }
+
     let keeperMove = chosenKeeperMove?.noTechnique ? null : chosenKeeperMove;
     if (!chosenKeeperMove) {
-      const moves = (keeper.hissatsu ?? []).filter((move) => move.type === 'Obrona bramkarska');
-      const automatic = moves
-        .map((move) => ({ move, power: hissatsuPower(keeper), cost: hissatsuTpCost(hissatsuPower(keeper)) }))
-        .find(({ cost }) => tpLeft(state, defenceSide, keeper) >= cost);
-      if (automatic) keeperMove = automatic;
+      keeperMove = bestAvailableTechnique(state, defenceSide, keeper, (move) => move.type === 'Obrona bramkarska');
     }
-
-    let keeperStrength = stat(keeper, 'guard', state, defenceSide) + stat(keeper, 'body', state, defenceSide) * 0.15;
+    const attackBase = Math.round(stat(attacker, 'kick', state, attackSide) + stat(attacker, 'control', state, attackSide) * 0.2);
+    const defenceBase = Math.round(stat(keeper, 'guard', state, defenceSide) + stat(keeper, 'body', state, defenceSide) * 0.2);
+    let attackTech = 0;
+    let defenceTech = 0;
+    if (shotMove && !shotMove.normalShot) attackTech = shotMove.power;
     if (keeperMove) {
       const move = keeperMove.move ?? keeperMove;
-      const power = keeperMove.power ?? hissatsuPower(keeper);
-      const cost = keeperMove.cost ?? hissatsuTpCost(power);
+      const cost = keeperMove.cost ?? hissatsuTpCost(keeperMove.power ?? hissatsuPower(keeper));
       if (spendTp(state, defenceSide, keeper, cost)) {
-        keeperStrength += power * 0.35;
-        tire(state, defenceSide, keeper);
+        defenceTech = keeperMove.power ?? hissatsuPower(keeper);
         addLog(state, `${keeper.name} używa **${move.name}**!`);
+        tire(state, defenceSide, keeper, 10);
       }
     }
-
-    const shotPower = attackMove
-      ? (attackMove.power ?? hissatsuPower(attacker)) + stat(attacker, 'kick', state, attackSide) * 0.25
-      : stat(attacker, 'kick', state, attackSide) + 15;
-    const chance = goalChance(shotPower, keeperStrength, block.multiplier);
-    const goal = Math.random() * 100 < chance;
+    const attackBonus = attackSide === 'home' ? state.tacticBonuses.attack : 0;
+    const keeperBonus = defenceSide === 'home' ? state.tacticBonuses.keeper : 0;
+    if (attackSide === 'home') state.tacticBonuses.attack = 0;
+    if (defenceSide === 'home') state.tacticBonuses.keeper = 0;
+    const attackRng = Math.floor(Math.random() * 20) + 1;
+    const defenceRng = Math.floor(Math.random() * 20) + 1;
+    const blockPenalty = block.multiplier < 1 ? 20 : 0;
+    const attackTotal = attackBase + attackTech + attackBonus + attackRng - blockPenalty;
+    const defenceTotal = defenceBase + defenceTech + keeperBonus + defenceRng;
+    addLog(state, `**Strzał — pojedynek:** Atak (Stat ${attackBase} + Tech ${attackTech} + Bonus ${attackBonus} + RNG ${attackRng} - Blok ${blockPenalty}) = **${attackTotal}** · Obrona (Stat ${defenceBase} + Tech ${defenceTech} + Bonus ${keeperBonus} + RNG ${defenceRng}) = **${defenceTotal}**.`);
+    const goal = attackTotal > defenceTotal;
     if (goal) {
       state.score[attackSide] += 1;
-      const scorer = attackMove?.move?.type === 'Strzał' ? attackMove.move.name : 'strzał';
+      const scorer = shotMove?.move?.type === 'Strzał' && !shotMove.normalShot ? shotMove.move.name : 'strzał';
       addLog(state, `GOOOL! **${attacker.name}** trafia do siatki po: ${scorer}!`);
     } else {
       addLog(state, `**${keeper.name}** broni strzał ${attacker.name}!`);
@@ -316,28 +397,41 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
   function attackContest(state, action, moveData = null) {
     const passing = ['pass-forward', 'pass-left', 'pass-right', 'long-ball'].includes(action);
     const actor = moveData?.player ?? bestCarrier(state.home, state, 'home');
-    const defender = pick(fieldPlayers(state.away), () => true, (player) => stat(player, 'intelligence', state, 'away') + stat(player, 'speed', state, 'away') * 0.2);
+    const defenders = passing ? interceptionCandidates(state, actor, moveData.receiver) : [];
+    const defender = passing
+      ? defenders[0]
+      : pick(fieldPlayers(state.away), () => true, (player) => stat(player, 'intelligence', state, 'away') + stat(player, 'speed', state, 'away') * 0.2);
     const attackerScore = passing
-      ? passScores(state, actor, 'home')
+      ? passScores(state, actor, 'home') + stat(moveData.receiver, 'control', state, 'home') * 0.1
       : stat(actor, 'control', state, 'home') + stat(actor, 'speed', state, 'home') * 0.4;
-    const defenderScore = stat(defender, 'intelligence', state, 'away') + stat(defender, 'speed', state, 'away') * 0.2;
-    const bonus = moveData && !passing ? Math.min(18, moveData.power * 0.12) : 0;
-    const chance = contestChance(attackerScore, defenderScore, bonus);
+    const defenderScore = passing
+      ? defender.strength
+      : stat(defender, 'intelligence', state, 'away') + stat(defender, 'speed', state, 'away') * 0.2;
+    const interceptionChance = passing ? defender.chance : 0;
+    const passBonus = passing ? state.tacticBonuses.attack : 0;
+    const chance = passing
+      ? Math.max(18, Math.min(82, 100 - interceptionChance + passBonus * 0.4))
+      : contestChance(attackerScore, defenderScore);
     const interception = Math.round(100 - chance);
-    tire(state, 'home', actor);
+    tire(state, 'home', actor, passing ? 10 : 20);
+    if (passing) {
+      state.tacticBonuses.attack = 0;
+      addLog(state, `Debug: siła podania **${Math.round(attackerScore)}** vs siła przechwytu **${Math.round(defenderScore)}** (${interceptionChance}%). Trzej obrońcy: ${defenders.map(({ player, chance: p }) => `${player.name} ${p}%`).join(', ')}.`);
+    }
     if (Math.random() * 100 < chance) {
       state.zone = Math.min(3, state.zone + (action === 'long-ball' ? 2 : 1));
       if (passing && moveData?.receiver) state.carrierName = moveData.receiver.name;
       else state.carrierName = actor.name;
       if (passing) {
         const moveText = action === 'pass-left' ? 'zagrywa na lewe skrzydło' : action === 'pass-right' ? 'zagrywa na prawe skrzydło' : action === 'long-ball' ? 'posyła długą piłkę do' : 'podaje do';
-        addLog(state, `${actor.name} ${moveText} **${moveData.receiver.name}**. ${defender.name} miał ${interception}% szansy przechwytu — podanie celne! Atak dochodzi na: **${zoneLabel(state.zone)}**.`);
+        addLog(state, `${actor.name} ${moveText} **${moveData.receiver.name}**. ${defender.player.name} miał ${interceptionChance}% szansy przechwytu — podanie celne! Atak dochodzi na: **${zoneLabel(state.zone)}**.`);
       } else {
         addLog(state, `${actor.name} mija rywala dryblingiem i przesuwa atak na: **${zoneLabel(state.zone)}**.`);
       }
     } else {
+      state.awayAura = Math.min(10, state.awayAura + 1);
       const turnover = passing
-        ? `${defender.name} przechwytuje podanie do ${moveData?.receiver?.name ?? 'zawodnika'} (szansa przechwytu ${interception}%). Occult rusza z kontrą.`
+        ? `${defender.player.name} przechwytuje podanie do ${moveData?.receiver?.name ?? 'zawodnika'} (szansa przechwytu ${interceptionChance}%). Occult rusza z kontrą.`
         : `${defender.name} zatrzymuje drybling ${actor.name} i odbiera piłkę. Occult rusza z kontrą.`;
       addLog(state, turnover);
       flipTo(state, 'away');
@@ -391,12 +485,17 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
     if (duel.kind === 'dribble') {
       const attack = Math.round(stat(duel.attacker, 'control', state, 'home') + stat(duel.attacker, 'speed', state, 'home') * 0.35);
       const defence = Math.round(stat(duel.defender, 'intelligence', state, 'away') + stat(duel.defender, 'body', state, 'away') * 0.2 + stat(duel.defender, 'speed', state, 'away') * 0.2);
-      return `**Pojedynek dryblingowy**\n${duel.attacker.name} kontra ${duel.defender.name} (obrońcę wybrał bot).\nAtak: **${attack}** bazowo · technika Hissatsu zwiększy siłę.\nObrona: **${defence}**`;
+      const defenderMove = duel.defenderMove?.move?.name ?? 'bez techniki';
+      return `**Mecz PvP — kontynuacja**\n${duel.attacker.name} prowadzi piłkę. Bot wybiera obrońcę: **${duel.defender.name}**.\n**Pojedynek — drybling**\nAtak bazowy: ${attack} · obrona bazowa: ${defence} · obrona bota: ${defenderMove}.\nWybierz Hissatsu zawodnika z piłką albo **Bez techniki**.`;
     }
     if (duel.kind === 'defence') {
       const attack = Math.round(stat(duel.attacker, 'control', state, 'away') + stat(duel.attacker, 'speed', state, 'away') * 0.35);
       const defence = Math.round(stat(duel.defender, 'intelligence', state, 'home') + stat(duel.defender, 'body', state, 'home') * 0.2 + stat(duel.defender, 'speed', state, 'home') * 0.2);
-      return `**Pojedynek o odbiór**\n${duel.defender.name} próbuje zatrzymać ${duel.attacker.name}.\nAtak Occult: **${attack}** · Twój odbiór: **${defence}** bazowo.\nWybierz Hissatsu obronne albo **Bez techniki**.`;
+      const attackMove = duel.attackerMove?.move?.name ?? 'bez Hissatsu';
+      return `**Mecz PvP — kontynuacja**\nOccult: **${duel.attacker.name}** prowadzi piłkę. Ty bronisz zawodnikiem **${duel.defender.name}**.\n**Pojedynek — odbiór**\nAtak: ${attack} · twój odbiór: ${defence} · technika ataku Occult: ${attackMove}.\nWybierz Hissatsu obronne albo **Bez techniki**.`;
+    }
+    if (duel.kind === 'shot') {
+      return `**Mecz PvP — kontynuacja**\n${duel.attacker.name} ma piłkę ${state.zone >= 3 ? 'w polu karnym' : 'daleko od bramki'}.\n**Strzał na bramkę**\nWybierz Hissatsu strzału albo zwykły strzał bez techniki.`;
     }
     return `**Strzał na bramkę**\n${duel.attacker.name} oddaje strzał. ${duel.defender.name} przygotowuje się do obrony.\nWybierz Hissatsu bramkarskie albo obronę bez techniki.`;
   }
@@ -408,48 +507,87 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
     const { attacker, defender, kind } = duel;
     if (kind === 'keeper') {
       const chosenKeeperMove = option.normalKeeper ? { noTechnique: true, player: defender } : option;
-      if (option.normalKeeper) tire(state, 'home', defender);
-      resolveShot(state, 'away', attacker, null, chosenKeeperMove);
+      resolveShot(state, 'away', attacker, duel.attackMove, chosenKeeperMove);
       return;
     }
 
-    if (!option.normalDribble && !option.normalDefense && !spendTp(state, 'home', option.player, option.cost)) {
+    if (kind === 'shot') {
+      resolveShot(state, 'home', attacker, option.normalShot ? null : option);
+      return;
+    }
+
+    if (kind === 'defence' && state.zone >= 3 && isShotBlock(option.move)) {
+      addLog(state, `${defender.name} ustawia blok przed strzałem Occult.`);
+      resolveShot(state, 'away', attacker, null, null, option);
+      return;
+    }
+
+    const offensiveMove = kind === 'dribble'
+      ? (option.normalDribble ? null : option)
+      : duel.attackerMove;
+    const defensiveMove = kind === 'dribble'
+      ? duel.defenderMove
+      : (option.normalDefense ? null : option);
+    if (offensiveMove && !spendTp(state, kind === 'dribble' ? 'home' : 'away', offensiveMove.player, offensiveMove.cost)) {
       state.pendingDuel = duel;
       return 'Za mało TP na tę technikę. Wybierz inną albo zagraj bez techniki.';
     }
-    const power = option.normalDribble || option.normalDefense ? 0 : option.power;
-    const label = option.normalDribble || option.normalDefense ? 'bez Hissatsu' : `technika **${option.move.name}**`;
-    let chance;
+    if (defensiveMove && !spendTp(state, kind === 'dribble' ? 'away' : 'home', defensiveMove.player, defensiveMove.cost)) {
+      state.pendingDuel = duel;
+      return 'Za mało TP na tę technikę. Wybierz inną albo zagraj bez techniki.';
+    }
+    if (offensiveMove) addLog(state, `${attacker.name} używa **${offensiveMove.move.name}**!`);
+    if (defensiveMove) addLog(state, `${defender.name} odpowiada techniką **${defensiveMove.move.name}**!`);
+
+    const attackStats = [
+      Math.round(stat(attacker, 'control', state, kind === 'dribble' ? 'home' : 'away')),
+      Math.round(stat(attacker, 'speed', state, kind === 'dribble' ? 'home' : 'away')),
+    ];
+    const defenceStats = [
+      Math.round(stat(defender, 'body', state, kind === 'dribble' ? 'away' : 'home')),
+      Math.round(stat(defender, 'intelligence', state, kind === 'dribble' ? 'away' : 'home')),
+    ];
+    const attackRng = Math.floor(Math.random() * 20) + 1;
+    const defenceRng = Math.floor(Math.random() * 20) + 1;
+    const attackTech = offensiveMove?.power ?? 0;
+    const defenceTech = defensiveMove?.power ?? 0;
+    const attackBonus = kind === 'dribble' ? state.tacticBonuses.attack : 0;
+    const defenceBonus = kind === 'defence' ? state.tacticBonuses.defence : 0;
+    if (kind === 'dribble') state.tacticBonuses.attack = 0;
+    if (kind === 'defence') state.tacticBonuses.defence = 0;
+    const attackTotal = attackStats[0] + attackStats[1] + attackTech + attackBonus + attackRng;
+    const defenceTotal = defenceStats[0] + defenceStats[1] + defenceTech + defenceBonus + defenceRng;
+    addLog(state, `**Pojedynek — ${kind === 'dribble' ? 'drybling' : 'odbiór'}:** Atak (Staty ${attackStats[0]} + ${attackStats[1]} + Tech ${attackTech} + Bonus ${attackBonus} + RNG ${attackRng}) = **${attackTotal}** · Obrona (Staty ${defenceStats[0]} + ${defenceStats[1]} + Tech ${defenceTech} + Bonus ${defenceBonus} + RNG ${defenceRng}) = **${defenceTotal}**.`);
+
     if (kind === 'dribble') {
-      const attack = stat(attacker, 'control', state, 'home') + stat(attacker, 'speed', state, 'home') * 0.35 + power * 0.25;
-      const defence = stat(defender, 'intelligence', state, 'away') + stat(defender, 'body', state, 'away') * 0.2 + stat(defender, 'speed', state, 'away') * 0.2;
-      chance = Math.round(contestChance(attack, defence));
-      tire(state, 'home', attacker);
-      if (Math.random() * 100 < chance) {
+      tire(state, 'home', attacker, 20);
+      if (defensiveMove) tire(state, 'away', defender, 10);
+      if (attackTotal > defenceTotal) {
         state.zone = Math.min(3, state.zone + 1);
         state.carrierName = attacker.name;
-        addLog(state, `${attacker.name} wygrywa pojedynek z ${defender.name} ${label} (szansa ${chance}%) i rusza do: **${zoneLabel(state.zone)}**.`);
+        addLog(state, `${attacker.name} wygrywa drybling z ${defender.name} i przechodzi do: **${zoneLabel(state.zone)}**.`);
       } else {
-        addLog(state, `${defender.name} zatrzymuje ${attacker.name} ${label} (szansa ataku ${chance}%). Occult przejmuje piłkę.`);
+        addLog(state, `${defender.name} zatrzymuje drybling ${attacker.name}. Occult przejmuje piłkę.`);
         flipTo(state, 'away');
       }
       return null;
     }
 
-    const attack = stat(attacker, 'control', state, 'away') + stat(attacker, 'speed', state, 'away') * 0.35;
-    const defence = stat(defender, 'intelligence', state, 'home') + stat(defender, 'body', state, 'home') * 0.2 + stat(defender, 'speed', state, 'home') * 0.2 + power * 0.25;
-    chance = Math.round(contestChance(defence, attack));
-    tire(state, 'home', defender);
-    if (Math.random() * 100 < chance) {
-      addLog(state, `${defender.name} wygrywa pojedynek ${label} i odbiera piłkę (${chance}% szansy).`);
+    tire(state, 'home', defender, 10);
+    if (offensiveMove) tire(state, 'away', attacker, 20);
+    if (defenceTotal >= attackTotal) {
+      state.homeAura = Math.min(10, state.homeAura + 1);
+      addLog(state, 'Tactical Advantage! Zdobywasz 1 punkt Tactical Aura za przechwyt.');
+      addLog(state, `${defender.name} wygrywa pojedynek i odbiera piłkę.`);
       flipTo(state, 'home');
     } else if (state.zone >= 3) {
-      addLog(state, `${attacker.name} omija ${defender.name} ${label} i oddaje strzał.`);
-      resolveShot(state, 'away', attacker);
+      addLog(state, `${attacker.name} omija ${defender.name} i oddaje strzał.`);
+      resolveShot(state, 'away', attacker, bestAvailableTechnique(state, 'away', attacker,
+        (move) => move.type === 'Strzał' && (state.zone >= 3 || isLongShot(move))));
     } else {
       state.zone = Math.min(3, state.zone + 1);
       state.carrierName = attacker.name;
-      addLog(state, `${attacker.name} omija ${defender.name} ${label} (${chance}% szansy odbioru) i atakuje dalej: **${zoneLabel(state.zone)}**.`);
+      addLog(state, `${attacker.name} omija ${defender.name} i atakuje dalej: **${zoneLabel(state.zone)}**.`);
     }
     return null;
   }
@@ -480,10 +618,35 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
             ? 'Bez techniki'
             : option.normalKeeper
               ? 'Obrona bez Hissatsu'
+            : option.normalShot
+              ? option.move.name
               : `${option.move.name} (P: ${option.power} | TP: ${option.cost})`.slice(0, 80),
         option.normalDribble || option.normalDefense || option.normalKeeper ? ButtonStyle.Secondary : ButtonStyle.Primary,
       ));
-      return [new ActionRowBuilder().addComponents(...choices)];
+      const rows = [];
+      for (let index = 0; index < choices.length; index += 5) {
+        rows.push(new ActionRowBuilder().addComponents(...choices.slice(index, index + 5)));
+      }
+      return rows;
+    }
+    if (state.pendingTactics) {
+      const tactics = [
+        ['tactic:defence-line', 'Cofnij obrońcę (4 TA)', 4],
+        ['tactic:midfield-defence', 'Pomocnik do obrony (3 TA)', 3],
+        ['tactic:midfield-attack', 'Pomocnik do ataku (5 TA)', 5],
+        ['tactic:keeper-rush', 'Wybieg bramkarza (5 TA)', 5],
+      ].map(([id, label, cost]) => actionButton(state, id, label, ButtonStyle.Primary, state.homeAura < cost));
+      tactics.push(actionButton(state, 'cancel-menu', 'Wróć', ButtonStyle.Secondary));
+      return [new ActionRowBuilder().addComponents(...tactics.slice(0, 5))];
+    }
+    if (state.halfTime) {
+      const rows = [];
+      const canSub = state.homeBench?.some((reserve) => state.home.some((starter) => starter.position === reserve.position));
+      if (canSub && state.homeSubstitutions < 5) {
+        rows.push(new ActionRowBuilder().addComponents(actionButton(state, 'sub', 'Dokonaj zmiany', ButtonStyle.Primary)));
+      }
+      rows.push(new ActionRowBuilder().addComponents(actionButton(state, 'continue-half', 'Rozpocznij drugą połowę', ButtonStyle.Success)));
+      return rows;
     }
     if (menu) {
       const select = new StringSelectMenuBuilder()
@@ -501,21 +664,22 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
       return [new ActionRowBuilder().addComponents(select), new ActionRowBuilder().addComponents(actionButton(state, 'cancel-menu', 'Wróć do akcji', ButtonStyle.Secondary))];
     }
     if (state.phase === 'home') {
-      const moves = eligibleTechniques(state);
+      if (state.zone >= 3) {
+        return [new ActionRowBuilder().addComponents(actionButton(state, 'shot', '🥅 Strzał na bramkę', ButtonStyle.Danger))];
+      }
       const movement = [
         actionButton(state, 'pass-forward', '➤ Podaj do przodu', ButtonStyle.Primary),
         actionButton(state, 'pass-left', '◀ Zagraj na lewe skrzydło', ButtonStyle.Primary),
         actionButton(state, 'pass-right', 'Zagraj na prawe skrzydło ▶', ButtonStyle.Primary),
         actionButton(state, 'dribble', '⚒ Drybling', ButtonStyle.Secondary),
-        actionButton(state, 'tech', 'Hissatsu', ButtonStyle.Success, moves.length === 0),
       ];
       const rows = [new ActionRowBuilder().addComponents(...movement)];
       const extra = [];
       if (state.zone >= 2) extra.push(actionButton(state, 'long-ball', '➤ Długa piłka', ButtonStyle.Success));
-      extra.push(actionButton(state, 'shot', 'Strzał', ButtonStyle.Danger, state.zone < 3));
-      const canSub = state.homeBench?.some((reserve) => state.home.some((starter) => starter.position === reserve.position));
-      if (canSub && state.homeSubstitutions < 5) extra.push(actionButton(state, 'sub', 'Zmiana ' + state.homeSubstitutions + '/5', ButtonStyle.Secondary));
-      rows.push(new ActionRowBuilder().addComponents(...extra));
+      const longShots = shotOptions(state).filter((option) => !option.normalShot);
+      if (longShots.length) extra.push(actionButton(state, 'shot', 'Hissatsu (L)', ButtonStyle.Danger));
+      if (extra.length) rows.push(new ActionRowBuilder().addComponents(...extra));
+      if (state.homeAura > 0) rows.push(new ActionRowBuilder().addComponents(actionButton(state, 'tactics', `Taktyka (${state.homeAura} TA)`, ButtonStyle.Secondary)));
       return rows;
     }
     const defenders = defensiveChoices(state);
@@ -536,15 +700,23 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
     const stamina = staminaMap[carrier.name] ?? carrier.stats?.stamina ?? 100;
     const staminaMax = carrier.stats?.stamina ?? 100;
     const sideName = state.phase === 'home' ? (state.teamName || state.username) : 'Occult';
-    const instruction = state.pendingDuel
+    const instruction = state.halfTime
+      ? 'Przerwa. Możesz zmienić skład i rozpocząć drugą połowę.'
+      : state.pendingTactics
+      ? `Masz **${state.homeAura} Tactical Aura**. Wybierz taktykę; jej bonus zadziała przy następnej odpowiedniej akcji.`
+      : state.pendingDuel
       ? duelDescription(state)
       : state.phase === 'home'
       ? 'Wybierz akcję. Przy podaniu wskażesz jednego z trzech adresatów.'
       : 'Occult ma piłkę. Wybierz jednego z trzech obrońców do próby odbioru.';
+    const halftimeRoster = state.halfTime
+      ? '\n\n**Twój skład**\n' + state.home.map((player) => `${player.squadPosition ?? player.position}: ${player.name} · TP ${tpLeft(state, 'home', player)}/${player.stats?.tp ?? 100} · Kondycja ${state.homeStamina[player.name] ?? player.stats?.stamina ?? 100}/${player.stats?.stamina ?? 100}`).join('\n')
+        + '\n\n**Occult**\n' + state.away.map((player) => `${player.position}: ${player.name} · TP ${tpLeft(state, 'away', player)}/${player.stats?.tp ?? 100}`).join('\n')
+      : '';
     return new EmbedBuilder()
       .setColor(state.phase === 'home' ? 0x2388d1 : 0xd7534f)
-      .setTitle((state.pendingDuel ? '⚔️ Pojedynek' : '⚡ Akcja!') + ' — ' + state.minute + '′')
-      .setDescription(carrier.name + ' ma piłkę w strefie: ' + zoneLabel(state.zone) + ' (' + sideName + ').\nStamina: ' + stamina + '/' + staminaMax + '  ·  TP: ' + tp + '/' + tpMax + '\n\n' + instruction)
+      .setTitle((state.halfTime ? '⏸️ Przerwa' : state.pendingDuel ? '⚔️ Mecz PvP — kontynuacja' : '⚡ Akcja!') + ' — ' + state.minute + '′')
+      .setDescription(carrier.name + ' ma piłkę w strefie: ' + zoneLabel(state.zone) + ' (' + sideName + ').\nTP: ' + tp + '/' + tpMax + '  ·  Kondycja: ' + stamina + '/' + staminaMax + (state.log.length ? '\n\n' + state.log.slice(-3).map((line) => line.replace(/\*\*/g, '')).join('\n') : '') + '\n\n' + instruction + halftimeRoster)
       .setFooter({ text: footer || ('Wynik ' + state.score.home + ' : ' + state.score.away + ' · ' + state.minute + '′') });
   }
 
@@ -567,7 +739,7 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
       possession: state.phase === 'home' ? (state.teamName || state.username) : 'Occult',
       teamName: state.teamName || state.username,
       awayName: 'Occult',
-      lastAction: state.log.length ? state.log[state.log.length - 1].replace(/\*\*/g, '') : 'Rozpoczyna się spotkanie.',
+      lastAction: state.log.length ? state.log.slice(-4).map((line) => line.replace(/\*\*/g, '')).join(' · ') : 'Rozpoczyna się spotkanie.',
       footer,
     });
     const imageName = 'mecz-boisko.png';
@@ -596,11 +768,12 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
       await interaction.reply({ content: 'Ten mecz już się zakończył.', ephemeral: true });
       return;
     }
-    state.minute = Math.min(90, state.minute + 6);
+    const previousMinute = state.minute;
+    advanceTime(state);
     if (action === 'duel-option' && state.pendingDuel) {
       const failure = resolveDuel(state, option);
       if (failure) {
-        state.minute = Math.max(0, state.minute - 6);
+        state.minute = previousMinute;
         await interaction.reply({ content: failure, ephemeral: true });
         return;
       }
@@ -612,7 +785,7 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
         } else if (option.move?.type === 'Drybling') {
           if (!spendTp(state, 'home', option.player, option.cost)) {
             await interaction.reply({ content: `${option.player.name} nie ma już wystarczająco TP.`, ephemeral: true });
-            state.minute = Math.max(0, state.minute - 6);
+            state.minute = previousMinute;
             return;
           }
           addLog(state, `${option.player.name} używa **${option.move.name}** do dryblingu!`);
@@ -622,7 +795,7 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
       else if (action === 'shot') {
         if (state.zone < 3) {
           await interaction.reply({ content: 'Zwykły strzał możesz oddać z pola karnego. Spróbuj podania, dryblingu albo Hissatsu z oznaczeniem (L).', ephemeral: true });
-          state.minute = Math.max(0, state.minute - 6);
+          state.minute = previousMinute;
           return;
         }
         const attacker = pick(state.home, (player) => player.position === 'Napastnik',
@@ -632,13 +805,13 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
       } else if (action === 'tech' && option) {
         if (!spendTp(state, 'home', option.player, option.cost)) {
           await interaction.reply({ content: `${option.player.name} nie ma już wystarczająco TP.`, ephemeral: true });
-          state.minute = Math.max(0, state.minute - 6);
+          state.minute = previousMinute;
           return;
         }
         if (option.move.type === 'Strzał') {
           if (state.zone < 3 && !isLongShot(option.move)) {
             await interaction.reply({ content: 'Ta technika nie ma oznaczenia (L), więc można jej użyć tylko z pola karnego.', ephemeral: true });
-            state.minute = Math.max(0, state.minute - 6);
+            state.minute = previousMinute;
             return;
           }
           tire(state, 'home', option.player);
@@ -650,9 +823,16 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
       const failure = defensiveTechnique(state, option);
       if (failure) {
         await interaction.reply({ content: failure, ephemeral: true });
-        state.minute = Math.max(0, state.minute - 6);
+        state.minute = previousMinute;
         return;
       }
+    }
+    if (state.minute >= 45 && !state.halfTimePassed && state.minute < 90) {
+      state.minute = 45;
+      state.halfTimePassed = true;
+      state.halfTime = true;
+      state.pendingDuel = null;
+      addLog(state, 'Koniec pierwszej połowy. Czas na zmiany w składzie.');
     }
     if (state.minute >= 90) {
       state.finished = true;
@@ -713,13 +893,19 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
       homeSubstitutions: 0,
       pendingSubOut: null,
       away,
-      phase: 'home',
+      phase: 'away',
+      halfTime: false,
+      halfTimePassed: false,
+      pendingTactics: false,
+      homeAura: 0,
+      awayAura: 0,
+      tacticBonuses: { attack: 0, defence: 0, keeper: 0 },
       carrierName: null,
       pendingPass: null,
       pendingMenu: null,
       pendingDuel: null,
       zone: 1,
-      minute: 0,
+      minute: 1,
       score: { home: 0, away: 0 },
       log: [],
       homeTp: Object.fromEntries(home.map((player) => [player.name, player.stats?.tp ?? 100])),
@@ -729,12 +915,12 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
       pendingAction: null,
       finished: false,
     };
-    state.carrierName = bestCarrier(home, state, 'home')?.name ?? null;
+    state.carrierName = bestCarrier(away, state, 'away')?.name ?? null;
     sessions.set(id, state);
     ownerSessions.set(ownerKey, id);
     await interaction.reply({ embeds: [new EmbedBuilder().setColor(0x25864a).setTitle('⚙️ PIERWSZY GWIZDEK!').setDescription('Mecz został rozpoczęty. Niech wygra lepszy!')] });
     await interaction.followUp(await payload(state, null, 'Mecz rozpoczyna się'));
-    await interaction.followUp({ ...promptPayload(state, null, 'Rozpoczęcie · wybierz pierwszą akcję.'), fetchReply: true });
+    await interaction.followUp({ ...promptPayload(state, null, 'Rozpoczęcie · wybierz zawodnika do przechwytu.'), fetchReply: true });
   }
 
   async function handleButton(interaction) {
@@ -763,6 +949,50 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
       state.pendingMenu = null;
       state.pendingAction = null;
       state.pendingDuel = createDribbleDuel(state);
+      await interaction.update(promptPayload(state));
+      return;
+    }
+    if (action === 'shot') {
+      if (state.phase !== 'home') {
+        await interaction.reply({ content: 'Strzał wybierzesz, gdy twoja drużyna będzie miała piłkę.', ephemeral: true });
+        return;
+      }
+      const options = shotOptions(state);
+      if (!options.length) {
+        await interaction.reply({ content: 'Na tej pozycji nie ma dostępnego strzału Hissatsu (L).', ephemeral: true });
+        return;
+      }
+      state.pendingMenu = null;
+      state.pendingAction = null;
+      state.pendingDuel = createShotDuel(state);
+      await interaction.update(promptPayload(state));
+      return;
+    }
+    if (action === 'tactics') {
+      if (state.phase !== 'home' || state.halfTime) {
+        await interaction.reply({ content: 'Taktykę wybierzesz podczas swojej akcji.', ephemeral: true });
+        return;
+      }
+      state.pendingTactics = true;
+      await interaction.update(promptPayload(state));
+      return;
+    }
+    if (action === 'tactic') {
+      const options = {
+        'defence-line': { cost: 4, key: 'defence', bonus: 20, name: 'Cofnij obrońcę' },
+        'midfield-defence': { cost: 3, key: 'defence', bonus: 12, name: 'Pomocnik do obrony' },
+        'midfield-attack': { cost: 5, key: 'attack', bonus: 18, name: 'Pomocnik do ataku' },
+        'keeper-rush': { cost: 5, key: 'keeper', bonus: 18, name: 'Wybieg bramkarza' },
+      };
+      const tactic = options[parameter];
+      if (!state.pendingTactics || !tactic || state.homeAura < tactic.cost) {
+        await interaction.reply({ content: 'Nie masz wystarczająco Tactical Aura na tę taktykę.', ephemeral: true });
+        return;
+      }
+      state.homeAura -= tactic.cost;
+      state.tacticBonuses[tactic.key] += tactic.bonus;
+      state.pendingTactics = false;
+      addLog(state, `Taktyka **${tactic.name}** aktywna: +${tactic.bonus} do następnej odpowiedniej akcji.`);
       await interaction.update(promptPayload(state));
       return;
     }
@@ -830,6 +1060,10 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
       return;
     }
     if (action === 'sub') {
+      if (!state.halfTime) {
+        await interaction.reply({ content: 'Zmiany składu są dostępne w przerwie między połowami.', ephemeral: true });
+        return;
+      }
       if (!state.homeBench?.length || state.homeSubstitutions >= 5) {
         await interaction.reply({ content: 'Nie masz dostępnych rezerwowych albo wykorzystałeś już pięć zmian.', ephemeral: true });
         return;
@@ -857,12 +1091,23 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
       });
       return;
     }
+    if (action === 'continue-half') {
+      if (!state.halfTime) {
+        await interaction.reply({ content: 'Przerwa już się skończyła.', ephemeral: true });
+        return;
+      }
+      state.halfTime = false;
+      addLog(state, 'Rozpoczyna się druga połowa.');
+      await interaction.update(promptPayload(state));
+      return;
+    }
     if (action === 'cancel-menu') {
       state.pendingSubOut = null;
       state.pendingMenu = null;
       state.pendingAction = null;
       state.pendingPass = null;
       state.pendingDuel = null;
+      state.pendingTactics = false;
       await interaction.update(promptPayload(state));
       return;
     }
@@ -920,9 +1165,10 @@ export function createMatchMode({ catalog, emblems, getUser, getSavedTeam, recor
     current.homeStamina[incoming.name] ??= incoming.stats?.stamina ?? 50;
     current.pendingSubOut = null;
     current.homeSubstitutions += 1;
-    current.minute = Math.min(90, current.minute + 6);
+    if (!current.halfTime) current.minute = Math.min(90, current.minute + 6);
+    if (current.carrierName === outgoing.name) current.carrierName = incoming.name;
     addLog(current, `Zmiana: **${incoming.name}** wchodzi za **${outgoing.name}**.`);
-    flipTo(current, 'away');
+    if (!current.halfTime) flipTo(current, 'away');
     if (current.minute >= 90) {
       current.finished = true;
       await finish(interaction, current);
