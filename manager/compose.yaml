@@ -1,0 +1,26 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: inazuma_manager
+      POSTGRES_USER: manager
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in environment}
+    volumes:
+      - manager_postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U manager -d inazuma_manager"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+  bot:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://manager:${POSTGRES_PASSWORD}@db:5432/inazuma_manager
+    depends_on:
+      db:
+        condition: service_healthy
+volumes:
+  manager_postgres:
