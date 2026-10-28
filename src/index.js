@@ -742,6 +742,7 @@ async function showHelp(interaction) {
     .setDescription('Lista dostępnych komend. Komendy zarządzania klubem i transferami są obecnie w wersji testowej.')
     .addFields(
       { name: '🏟️ Klub i transfery', value: [
+        '`/help` — pokaż tę listę pomocy.',
         '`/klub` — pokaż swój testowy klub Raimon, budżet i skład.',
         '`/transfery` — sprawdź zawodników dostępnych w Royal Academy.',
         '`/kup zawodnik` — kup zawodnika z rynku transferowego.',
@@ -1569,7 +1570,8 @@ client.on(Events.InteractionCreate, async (interaction) => {
       return;
     }
     if (!interaction.isChatInputCommand()) return;
-    if (!requireGuild(interaction) || !(await requireAdmin(interaction)) || !(await requireGameAccess(interaction))) return;
+    if (!requireGuild(interaction)) return;
+    if (interaction.commandName !== 'help' && (!(await requireAdmin(interaction)) || !(await requireGameAccess(interaction)))) return;
     if (interaction.commandName === 'save' && Date.now() < BETA_END_AT && !(await requireAdmin(interaction))) return;
 
     switch (interaction.commandName) {
