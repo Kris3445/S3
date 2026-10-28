@@ -125,6 +125,7 @@ const commandBuilders = [
       .setDescription('Wybierz zawodnika.')
       .setAutocomplete(true)
       .setRequired(true)),
+  new SlashCommandBuilder().setName('help').setDescription('Pokaż listę komend i wyjaśnienie ich działania.'),
   new SlashCommandBuilder()
     .setName('klub')
     .setDescription('Pokaż lub utwórz testowy klub Raimon administratora.'),
