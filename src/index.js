@@ -746,6 +746,8 @@ async function showHelp(interaction) {
         '`/help` — pokaż tę listę pomocy.',
         '`/klub` — pokaż swój testowy klub Raimon, budżet i skład.',
         '`/transfery` — sprawdź zawodników dostępnych w Royal Academy.',
+        '`/rynek-transferowy` — otwórz szczegółowy rynek z wycenami.',
+        '`/negocjuj` — złóż ofertę, otrzymaj kontrofertę lub sfinalizuj transfer.',
         '`/kup zawodnik` — kup zawodnika z rynku transferowego.',
         '`/card zawodnik` — zobacz kartę zawodnika z katalogu.',
         '`/stats` — sprawdź statystyki gracza lub zawodnika.',
