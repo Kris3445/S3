@@ -132,6 +132,10 @@ const commandBuilders = [
   new SlashCommandBuilder()
     .setName('transfery')
     .setDescription('Zobacz zawodników dostępnych do kupienia od klubu Royal Academy.'),
+  new SlashCommandBuilder().setName('rynek-transferowy').setDescription('Otwórz rozbudowany rynek transferowy.'),
+  new SlashCommandBuilder().setName('negocjuj').setDescription('Złóż ofertę transferową klubowi Royal Academy.')
+    .addStringOption((option) => option.setName('zawodnik').setDescription('Zawodnik z rynku transferowego.').setAutocomplete(true).setRequired(true))
+    .addIntegerOption((option) => option.setName('oferta').setDescription('Twoja oferta w euro.').setMinValue(1).setRequired(true)),
   new SlashCommandBuilder()
     .setName('kup')
     .setDescription('Kup zawodnika od testowego klubu Royal Academy.')
