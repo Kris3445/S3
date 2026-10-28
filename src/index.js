@@ -42,6 +42,8 @@ import {
   importSaveBackup,
   getUser,
   getOrCreateManagerClub,
+  getTransferMarket,
+  buyManagerPlayer,
   playRoulette,
   saveTeam,
   setCosmetic,
@@ -733,6 +735,38 @@ async function showManagerClub(interaction) {
   await interaction.reply({ embeds: [embed], ephemeral: true });
 }
 
+async function showTransferMarket(interaction) {
+  const market = getTransferMarket(interaction.guildId, catalog);
+  const embed = new EmbedBuilder()
+    .setColor(0x7b61ff)
+    .setTitle('🔄 Rynek transferowy — Royal Academy')
+    .setDescription('To klub sterowany przez bota. Wybierz zawodnika z listy i kup go komendą **/kup zawodnik**. Ceny są testowe i płacisz z budżetu klubu.')
+    .addFields({ name: 'Zawodnicy na sprzedaż', value: market.map((player) => `• **${player.name}** — OVR ${player.overall}, ${player.position} · **${player.price.toLocaleString('pl-PL')} €**`).join('\n') || 'Brak zawodników na sprzedaż.' })
+    .setFooter({ text: 'Zakup przenosi zawodnika do Raimon i zapisuje zmianę w danych klubu.' });
+  await interaction.reply({ embeds: [embed], ephemeral: true });
+}
+
+async function buyTransferPlayer(interaction) {
+  const name = interaction.options.getString('zawodnik', true);
+  const result = buyManagerPlayer(interaction.guildId, interaction.user.id, name, catalog);
+  if (!result.ok) {
+    const messages = {
+      unavailable: 'Ten zawodnik nie jest już dostępny. Użyj ponownie /transfery.',
+      'already-owned': 'Twój klub ma już tego zawodnika.',
+      'insufficient-funds': `Za mało pieniędzy. Budżet: ${Number(result.budget).toLocaleString('pl-PL')} €, cena: ${Number(result.price).toLocaleString('pl-PL')} €.`,
+    };
+    await interaction.reply({ content: messages[result.reason] ?? 'Nie udało się przeprowadzić transferu.', ephemeral: true });
+    return;
+  }
+  await interaction.reply({
+    embeds: [new EmbedBuilder()
+      .setColor(0x2eaf69)
+      .setTitle('✅ Transfer zakończony!')
+      .setDescription(`**${result.player.name}** przechodzi z Royal Academy do **${result.clubName}**.\nPozycja: ${result.player.position} · OVR ${result.player.overall}\nKwota transferu: **${result.price.toLocaleString('pl-PL')} €**\nNowy budżet klubu: **${result.budget.toLocaleString('pl-PL')} €**\n\nUżyj /klub, aby zobaczyć swój skład.`)]
+    , ephemeral: true
+  });
+}
+
 async function showStats(interaction) {
   if (!requireGuild(interaction)) return;
   const target = interaction.options.getUser('gracz');
@@ -1403,10 +1437,10 @@ client.on(Events.InteractionCreate, async (interaction) => {
         return;
       }
       const focused = interaction.options.getFocused(true);
-      if (((interaction.commandName === 'stats' || interaction.commandName === 'card') && focused.name === 'zawodnik') || interaction.commandName === 'porownaj') {
+      if (((interaction.commandName === 'stats' || interaction.commandName === 'card' || interaction.commandName === 'kup') && focused.name === 'zawodnik') || interaction.commandName === 'porownaj') {
         const query = focused.value.toLocaleLowerCase('pl');
         const choices = catalog
-          .filter((player) => player.name.toLocaleLowerCase('pl').includes(query))
+          .filter((player) => (interaction.commandName !== 'kup' || getTransferMarket(interaction.guildId, catalog).some((marketPlayer) => marketPlayer.name === player.name)) && player.name.toLocaleLowerCase('pl').includes(query))
           .slice(0, 25)
           .map((player) => ({ name: player.name, value: player.name }));
         await interaction.respond(choices);
@@ -1525,6 +1559,12 @@ client.on(Events.InteractionCreate, async (interaction) => {
         break;
       case 'klub':
         await showManagerClub(interaction);
+        break;
+      case 'transfery':
+        await showTransferMarket(interaction);
+        break;
+      case 'kup':
+        await buyTransferPlayer(interaction);
         break;
       case 'stats':
         await showStats(interaction);
