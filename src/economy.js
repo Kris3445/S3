@@ -461,3 +461,62 @@ export function playRoulette(guildId, userId, stake, chosenColor) {
   writeAll(data);
   return { ok: true, won, number, color, payout, balance: user.balance };
 }
+
+
+export function getTransferMarket(guildId, catalog) {
+  const marketNames = ['Gazelle', 'Torch', 'Dvalin', 'Johan Tassman', 'Troy Moon'];
+  const data = readAll();
+  const key = userKey(guildId, 'npc-royal-academy');
+  data[key] ??= {};
+  const npc = getOrCreate(data, guildId, 'npc-royal-academy');
+  if (!npc.managerClub) {
+    npc.managerClub = {
+      name: 'Royal Academy',
+      league: 1,
+      roster: marketNames.filter((name) => catalog.some((player) => player.name === name)),
+      budget: 0,
+      currency: 'EUR',
+      createdAt: new Date().toISOString(),
+    };
+  }
+  writeAll(data);
+  return npc.managerClub.roster.map((name) => {
+    const player = catalog.find((entry) => entry.name === name);
+    if (!player) return null;
+    return { name: player.name, overall: player.overall, position: player.position, price: Math.round(player.overall * 60_000) };
+  }).filter(Boolean);
+}
+
+export function buyManagerPlayer(guildId, userId, playerName, catalog) {
+  const data = readAll();
+  const managerKey = userKey(guildId, userId);
+  const npcKey = userKey(guildId, 'npc-royal-academy');
+  data[managerKey] ??= {};
+  data[npcKey] ??= {};
+  const manager = getOrCreate(data, guildId, userId);
+  const npc = getOrCreate(data, guildId, 'npc-royal-academy');
+  const marketNames = ['Gazelle', 'Torch', 'Dvalin', 'Johan Tassman', 'Troy Moon'];
+  if (!npc.managerClub) {
+    npc.managerClub = {
+      name: 'Royal Academy', league: 1,
+      roster: marketNames.filter((name) => catalog.some((player) => player.name === name)),
+      budget: 0, currency: 'EUR', createdAt: new Date().toISOString(),
+    };
+  }
+  const player = catalog.find((entry) => entry.name === playerName);
+  if (!player || !npc.managerClub.roster.includes(playerName)) return { ok: false, reason: 'unavailable' };
+  manager.managerClub ??= {
+    name: 'Raimon', league: 1,
+    roster: catalog.filter((entry) => entry.team === 'Raimon').map((entry) => entry.name),
+    budget: 8_000_000, currency: 'EUR', createdAt: new Date().toISOString(),
+  };
+  const club = manager.managerClub;
+  if (club.roster.includes(playerName)) return { ok: false, reason: 'already-owned' };
+  const price = Math.round(player.overall * 60_000);
+  if (club.budget < price) return { ok: false, reason: 'insufficient-funds', budget: club.budget, price };
+  club.budget -= price;
+  club.roster.push(playerName);
+  npc.managerClub.roster = npc.managerClub.roster.filter((name) => name !== playerName);
+  writeAll(data);
+  return { ok: true, player: { name: player.name, overall: player.overall, position: player.position }, price, budget: club.budget, clubName: club.name };
+}
