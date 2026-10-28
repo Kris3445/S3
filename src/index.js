@@ -735,6 +735,55 @@ async function showManagerClub(interaction) {
   await interaction.reply({ embeds: [embed], ephemeral: true });
 }
 
+async function showHelp(interaction) {
+  const embed = new EmbedBuilder()
+    .setColor(0x168cff)
+    .setTitle('📘 Inazuma Eleven Manager — pomoc')
+    .setDescription('Lista dostępnych komend. Komendy zarządzania klubem i transferami są obecnie w wersji testowej.')
+    .addFields(
+      { name: '🏟️ Klub i transfery', value: [
+        '`/klub` — pokaż swój testowy klub Raimon, budżet i skład.',
+        '`/transfery` — sprawdź zawodników dostępnych w Royal Academy.',
+        '`/kup zawodnik` — kup zawodnika z rynku transferowego.',
+        '`/card zawodnik` — zobacz kartę zawodnika z katalogu.',
+        '`/stats` — sprawdź statystyki gracza lub zawodnika.',
+        '`/porownaj` — porównaj dwóch zawodników.',
+      ].join('\n') },
+      { name: '⚽ Skład i mecze', value: [
+        '`/team` — zbuduj i zapisz skład.',
+        '`/squad` — pokaż zapisany skład na boisku.',
+        '`/herb` — wybierz zdobyty herb dla składu.',
+        '`/mecz` — rozegraj mecz swoim składem.',
+        '`/kolekcja` — zobacz posiadane karty zawodników.',
+      ].join('\n') },
+      { name: '💰 Monety i sklep', value: [
+        '`/sklep` — otwórz sklep.',
+        '`/work` — zarób monety przez pracę.',
+        '`/training` — zarób monety przez trening.',
+        '`/job` — spróbuj pracy z ryzykiem straty monet.',
+        '`/free` — odbierz jednorazową nagrodę, jeśli jeszcze jej nie odebrano.',
+        '`/daily` — odbierz dzienną nagrodę.',
+        '`/saldo` — sprawdź saldo monet.',
+        '`/ruletke` — zagraj w ruletkę za monety.',
+      ].join('\n') },
+      { name: '👤 Profil i wydarzenia', value: [
+        '`/profil` — zmień odblokowane ozdoby profilu.',
+        '`/profile` — pokaż profil gracza.',
+        '`/profile_image` — ustaw zdjęcie karty.',
+        '`/trophy_list` — pokaż trofea.',
+        '`/calendar` — sprawdź wydarzenie tygodnia.',
+        '`/osiągnięcia` — sprawdź postęp osiągnięć.',
+        '`/wyzwanie` — rozwiąż quiz o technikach Hissatsu.',
+      ].join('\n') },
+      { name: '🛠️ Zapis i statystyki', value: [
+        '`/save` — pobierz kopię zapasową swojego zapisu.',
+        '`/import_baza` — zaimportuj kopię zapasową (uprawnienia administratora).',
+      ].join('\n') },
+    )
+    .setFooter({ text: 'Nie wszystkie funkcje są wdrożone na żywym bocie. Testowe transfery wymagają wdrożenia tej wersji.' });
+  await interaction.reply({ embeds: [embed], ephemeral: true });
+}
+
 async function showTransferMarket(interaction) {
   const market = getTransferMarket(interaction.guildId, catalog);
   const embed = new EmbedBuilder()
@@ -1556,6 +1605,9 @@ client.on(Events.InteractionCreate, async (interaction) => {
         break;
       case 'card':
         await showPlayerCard(interaction);
+        break;
+      case 'help':
+        await showHelp(interaction);
         break;
       case 'klub':
         await showManagerClub(interaction);
