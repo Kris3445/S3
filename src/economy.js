@@ -520,3 +520,31 @@ export function buyManagerPlayer(guildId, userId, playerName, catalog) {
   writeAll(data);
   return { ok: true, player: { name: player.name, overall: player.overall, position: player.position }, price, budget: club.budget, clubName: club.name };
 }
+
+
+export function negotiateManagerPlayer(guildId, userId, playerName, offer, catalog) {
+  const data = readAll();
+  const manager = getOrCreate(data, guildId, userId);
+  const npc = getOrCreate(data, guildId, 'npc-royal-academy');
+  const names = ['Gazelle', 'Torch', 'Dvalin', 'Johan Tassman', 'Troy Moon'];
+  if (!npc.managerClub) npc.managerClub = { name: 'Royal Academy', league: 1, roster: names.filter((name) => catalog.some((p) => p.name === name)), budget: 0, currency: 'EUR', createdAt: new Date().toISOString() };
+  const player = catalog.find((p) => p.name === playerName);
+  if (!player || !npc.managerClub.roster.includes(playerName)) return { ok: false, reason: 'unavailable' };
+  manager.managerClub ??= { name: 'Raimon', league: 1, roster: catalog.filter((p) => p.team === 'Raimon').map((p) => p.name), budget: 8_000_000, currency: 'EUR', createdAt: new Date().toISOString() };
+  const club = manager.managerClub;
+  if (!Array.isArray(club.roster)) club.roster = [];
+  if (!Number.isFinite(club.budget)) club.budget = 8_000_000;
+  if (club.roster.includes(playerName)) return { ok: false, reason: 'already-owned' };
+  const askingPrice = Math.round(player.overall * 60_000);
+  const minimumPrice = Math.round(askingPrice * 0.88);
+  const counterPrice = Math.max(minimumPrice, Math.round(Math.max(offer, minimumPrice) * 1.04 / 10000) * 10000);
+  if (offer > club.budget) return { ok: false, reason: 'insufficient-funds', budget: club.budget, offer };
+  if (offer >= minimumPrice) {
+    club.budget -= offer; club.roster.push(playerName);
+    npc.managerClub.roster = npc.managerClub.roster.filter((name) => name !== playerName);
+    writeAll(data);
+    return { ok: true, outcome: 'accepted', player: { name: player.name, overall: player.overall, position: player.position }, askingPrice, price: offer, budget: club.budget, clubName: club.name };
+  }
+  writeAll(data);
+  return { ok: true, outcome: offer >= askingPrice * 0.72 ? 'counter' : 'rejected', player: { name: player.name, overall: player.overall, position: player.position }, askingPrice, minimumPrice, counterPrice, offer, budget: club.budget, clubName: club.name };
+}
