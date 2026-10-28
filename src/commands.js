@@ -125,9 +125,17 @@ const commandBuilders = [
       .setDescription('Wybierz zawodnika.')
       .setAutocomplete(true)
       .setRequired(true)),
+  new SlashCommandBuilder().setName('help').setDescription('Pokaż listę komend i wyjaśnienie ich działania.'),
   new SlashCommandBuilder()
     .setName('klub')
     .setDescription('Pokaż lub utwórz testowy klub Raimon administratora.'),
+  new SlashCommandBuilder()
+    .setName('transfery')
+    .setDescription('Zobacz zawodników dostępnych do kupienia od klubu Royal Academy.'),
+  new SlashCommandBuilder()
+    .setName('kup')
+    .setDescription('Kup zawodnika od testowego klubu Royal Academy.')
+    .addStringOption((option) => option.setName('zawodnik').setDescription('Zawodnik z listy /transfery.').setAutocomplete(true).setRequired(true)),
   new SlashCommandBuilder()
     .setName('stats')
     .setDescription('Pokaż statystyki gracza lub szczegóły zawodnika.')
@@ -139,6 +147,6 @@ const commandBuilders = [
 ];
 
 export const commands = commandBuilders.map((command) => {
-  command.setDefaultMemberPermissions(PermissionFlagsBits.Administrator);
+  if (command.name !== 'help') command.setDefaultMemberPermissions(PermissionFlagsBits.Administrator);
   return command.toJSON();
 });
