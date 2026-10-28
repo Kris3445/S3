@@ -129,6 +129,13 @@ const commandBuilders = [
     .setName('klub')
     .setDescription('Pokaż lub utwórz testowy klub Raimon administratora.'),
   new SlashCommandBuilder()
+    .setName('transfery')
+    .setDescription('Zobacz zawodników dostępnych do kupienia od klubu Royal Academy.'),
+  new SlashCommandBuilder()
+    .setName('kup')
+    .setDescription('Kup zawodnika od testowego klubu Royal Academy.')
+    .addStringOption((option) => option.setName('zawodnik').setDescription('Zawodnik z listy /transfery.').setAutocomplete(true).setRequired(true)),
+  new SlashCommandBuilder()
     .setName('stats')
     .setDescription('Pokaż statystyki gracza lub szczegóły zawodnika.')
     .addUserOption((option) => option.setName('gracz').setDescription('Gracz, którego statystyki chcesz zobaczyć.'))
