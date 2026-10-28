@@ -147,6 +147,6 @@ const commandBuilders = [
 ];
 
 export const commands = commandBuilders.map((command) => {
-  command.setDefaultMemberPermissions(PermissionFlagsBits.Administrator);
+  if (command.name !== 'help') command.setDefaultMemberPermissions(PermissionFlagsBits.Administrator);
   return command.toJSON();
 });
