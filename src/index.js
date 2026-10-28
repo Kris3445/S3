@@ -41,6 +41,7 @@ import {
   getSaveBackup,
   importSaveBackup,
   getUser,
+  getOrCreateManagerClub,
   playRoulette,
   saveTeam,
   setCosmetic,
@@ -675,6 +676,61 @@ async function comparePlayers(interaction) {
     files: [new AttachmentBuilder(Buffer.from(image), { name: imageName })],
     ephemeral: true,
   });
+}
+
+async function showPlayerCard(interaction) {
+  if (!requireGuild(interaction)) return;
+  const name = interaction.options.getString('zawodnik', true);
+  const player = catalog.find((entry) => entry.name === name);
+  if (!player) {
+    await interaction.reply({ content: 'Nie znaleziono tego zawodnika w katalogu.', ephemeral: true });
+    return;
+  }
+  const imageName = 'karta-zawodnika.png';
+  const cardImage = await renderPlayerCard(player);
+  const potential = Number.isFinite(player.potential_min) && Number.isFinite(player.potential_max)
+    ? `${player.potential_min}–${player.potential_max}`
+    : 'Nieustalony';
+  const embed = new EmbedBuilder()
+    .setColor(tierColors[player.tier] ?? 0x168cff)
+    .setTitle(`⚽ ${player.name} · OVR ${player.overall}`)
+    .setDescription(`**Klub:** ${player.team ?? 'Nieznany'}\n**Pozycja:** ${player.position ?? 'Nieznana'}\n**Potencjał:** ${potential}\n**Żywioł:** ${ELEMENT_NAMES[player.element] ?? player.element ?? 'Nieznany'}`)
+    .setImage(`attachment://${imageName}`);
+  await interaction.reply({
+    embeds: [embed],
+    files: [new AttachmentBuilder(Buffer.from(cardImage), { name: imageName })],
+    ephemeral: true,
+  });
+}
+
+async function showManagerClub(interaction) {
+  if (!requireGuild(interaction)) return;
+  const initialRoster = catalog.filter((player) => player.team === 'Raimon').map((player) => player.name);
+  const club = getOrCreateManagerClub(interaction.guildId, interaction.user.id, {
+    name: 'Raimon',
+    league: 1,
+    roster: initialRoster,
+    budget: 8_000_000,
+  });
+  const roster = club.roster.map((name) => catalog.find((player) => player.name === name)).filter(Boolean);
+  const goalkeepers = roster.filter((player) => player.position === 'Bramkarz').length;
+  const rosterLines = roster.map((player) => {
+    const potential = Number.isFinite(player.potential_min) && Number.isFinite(player.potential_max)
+      ? ` · POT ${player.potential_min}–${player.potential_max}`
+      : '';
+    return `• ${player.name} — OVR ${player.overall} · ${player.position}${potential}`;
+  });
+  const complete = roster.length >= 18 && goalkeepers === 2;
+  const needs = [];
+  if (roster.length < 18) needs.push(`brakuje ${18 - roster.length} zawodników do składu startowego 18`);
+  if (goalkeepers < 2) needs.push(`brakuje ${2 - goalkeepers} bramkarza/bramkarzy`);
+  const embed = new EmbedBuilder()
+    .setColor(complete ? 0x2eaf69 : 0xe0a23b)
+    .setTitle(`⚽ Klub testowy: ${club.name}`)
+    .setDescription(`**Menedżer:** ${interaction.user.username}\n**Liga:** ${club.league}\n**Budżet początkowy:** ${Number(club.budget).toLocaleString('pl-PL')} €\n**Skład:** ${roster.length}/18 · **Bramkarze:** ${goalkeepers}/2\n\n${complete ? 'Skład spełnia minimalne wymagania.' : '⚠️ Skład jest niekompletny: ' + needs.join('; ') + '.'}`)
+    .addFields({ name: 'Zawodnicy', value: rosterLines.join('\n').slice(0, 1024) || 'Brak zawodników.' })
+    .setFooter({ text: 'Testowy klub zapisuje się w danych użytkownika. Nie zmienia jeszcze tabeli ligi ani transferów.' });
+  await interaction.reply({ embeds: [embed], ephemeral: true });
 }
 
 async function showStats(interaction) {
@@ -1347,7 +1403,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
         return;
       }
       const focused = interaction.options.getFocused(true);
-      if ((interaction.commandName === 'stats' && focused.name === 'zawodnik') || interaction.commandName === 'porownaj') {
+      if (((interaction.commandName === 'stats' || interaction.commandName === 'card') && focused.name === 'zawodnik') || interaction.commandName === 'porownaj') {
         const query = focused.value.toLocaleLowerCase('pl');
         const choices = catalog
           .filter((player) => player.name.toLocaleLowerCase('pl').includes(query))
@@ -1463,6 +1519,12 @@ client.on(Events.InteractionCreate, async (interaction) => {
         break;
       case 'ruletke':
         await playRouletteRound(interaction);
+        break;
+      case 'card':
+        await showPlayerCard(interaction);
+        break;
+      case 'klub':
+        await showManagerClub(interaction);
         break;
       case 'stats':
         await showStats(interaction);
