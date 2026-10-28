@@ -118,6 +118,17 @@ const commandBuilders = [
       .setDescription('Zastąp zapisy graczy, którzy już mają dane.')),
 
   new SlashCommandBuilder()
+    .setName('card')
+    .setDescription('Pokaż kartę dowolnego zawodnika z katalogu.')
+    .addStringOption((option) => option
+      .setName('zawodnik')
+      .setDescription('Wybierz zawodnika.')
+      .setAutocomplete(true)
+      .setRequired(true)),
+  new SlashCommandBuilder()
+    .setName('klub')
+    .setDescription('Pokaż lub utwórz testowy klub Raimon administratora.'),
+  new SlashCommandBuilder()
     .setName('stats')
     .setDescription('Pokaż statystyki gracza lub szczegóły zawodnika.')
     .addUserOption((option) => option.setName('gracz').setDescription('Gracz, którego statystyki chcesz zobaczyć.'))

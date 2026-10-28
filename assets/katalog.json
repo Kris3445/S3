@@ -10,12 +10,14 @@
         "type": "Strzał"
       }
     ],
-    "overall": 35,
+    "overall": 31,
     "chance_percent": 3.5385,
     "tier": "BRĄZOWA",
     "image": "cards/01_william_glass.png",
     "source_file": "rating-every-ie-characters-day-12-william-glass-megane-v0-83y34akpe3gb1.webp",
-    "team": "Raimon"
+    "team": "Raimon",
+    "potential_min": 39,
+    "potential_max": 51
   },
   {
     "name": "Jim Wright",
@@ -33,7 +35,9 @@
     "tier": "BRĄZOWA",
     "image": "cards/02_jim_wright.png",
     "source_file": "OIP (4)(4).webp",
-    "team": "Raimon"
+    "team": "Raimon",
+    "potential_min": 63,
+    "potential_max": 70
   },
   {
     "name": "Tod Ironside",
@@ -51,12 +55,14 @@
         "type": "Drybling"
       }
     ],
-    "overall": 73,
+    "overall": 66,
     "chance_percent": 2.5,
     "tier": "SREBRNA",
     "image": "cards/03_tod_ironside.png",
     "source_file": "OIP (5)(4).webp",
-    "team": "Raimon"
+    "team": "Raimon",
+    "potential_min": 70,
+    "potential_max": 76
   },
   {
     "name": "Timmy Saunders",
@@ -74,12 +80,14 @@
         "type": "Drybling"
       }
     ],
-    "overall": 70,
+    "overall": 63,
     "chance_percent": 2.5,
-    "tier": "SREBRNA",
+    "tier": "BRĄZOWA",
     "image": "cards/04_timmy_saunders.png",
     "source_file": "OIP (6)(1).webp",
-    "team": "Raimon"
+    "team": "Raimon",
+    "potential_min": 69,
+    "potential_max": 81
   },
   {
     "name": "Steve Grim",
@@ -92,12 +100,14 @@
         "type": "Strzał"
       }
     ],
-    "overall": 67,
+    "overall": 61,
     "chance_percent": 2.5,
-    "tier": "SREBRNA",
+    "tier": "BRĄZOWA",
     "image": "cards/05_steve_grim.png",
     "source_file": "OIP (7)(4).webp",
-    "team": "Raimon"
+    "team": "Raimon",
+    "potential_min": 68,
+    "potential_max": 76
   },
   {
     "name": "Sam Kincaid",
@@ -110,12 +120,14 @@
         "type": "Strzał"
       }
     ],
-    "overall": 66,
+    "overall": 58,
     "chance_percent": 2.5,
-    "tier": "SREBRNA",
+    "tier": "BRĄZOWA",
     "image": "cards/06_sam_kincaid.png",
     "source_file": "OIP (8)(4).webp",
-    "team": "Raimon"
+    "team": "Raimon",
+    "potential_min": 63,
+    "potential_max": 69
   },
   {
     "name": "Maxwell Carson",
@@ -128,12 +140,14 @@
         "type": "Strzał"
       }
     ],
-    "overall": 71,
+    "overall": 66,
     "chance_percent": 2.5,
     "tier": "SREBRNA",
     "image": "cards/07_maxwell_carson.png",
     "source_file": "OIP (9)(4).webp",
-    "team": "Raimon"
+    "team": "Raimon",
+    "potential_min": 70,
+    "potential_max": 79
   },
   {
     "name": "Bobby Shearer",
@@ -151,12 +165,14 @@
         "type": "Odbiór"
       }
     ],
-    "overall": 80,
+    "overall": 74,
     "chance_percent": 1.4,
-    "tier": "ZŁOTA",
+    "tier": "SREBRNA",
     "image": "cards/08_bobby_shearer.png",
     "source_file": "OIP (10)(4).webp",
-    "team": "Raimon"
+    "team": "Raimon",
+    "potential_min": 80,
+    "potential_max": 87
   },
   {
     "name": "Kevin Dragonfly",
@@ -174,12 +190,14 @@
         "type": "Strzał"
       }
     ],
-    "overall": 82,
+    "overall": 76,
     "chance_percent": 1.4,
     "tier": "ZŁOTA",
     "image": "cards/09_kevin_dragonfly.png",
     "source_file": "OIP (11)(4).webp",
-    "team": "Raimon"
+    "team": "Raimon",
+    "potential_min": 81,
+    "potential_max": 88
   },
   {
     "name": "Jack Wallside",
@@ -197,12 +215,14 @@
         "type": "Odbiór"
       }
     ],
-    "overall": 85,
+    "overall": 78,
     "chance_percent": 0.5,
     "tier": "ZŁOTA",
     "image": "cards/10_jack_wallside.png",
     "source_file": "OIP (12)(4).webp",
-    "team": "Raimon"
+    "team": "Raimon",
+    "potential_min": 84,
+    "potential_max": 92
   },
   {
     "name": "Erik Eagle",
@@ -220,12 +240,14 @@
         "type": "Strzał"
       }
     ],
-    "overall": 86,
+    "overall": 77,
     "chance_percent": 0.5,
     "tier": "ZŁOTA",
     "image": "cards/11_erik_eagle.png",
     "source_file": "R.jpg",
-    "team": "Raimon"
+    "team": "Raimon",
+    "potential_min": 85,
+    "potential_max": 93
   },
   {
     "name": "Nathan Swift",
@@ -243,12 +265,14 @@
         "type": "Drybling"
       }
     ],
-    "overall": 88,
+    "overall": 79,
     "chance_percent": 0.5,
     "tier": "ZŁOTA",
     "image": "cards/12_nathan_swift.png",
     "source_file": "8cca717972b9f9750d21be0e79408e7f.jpg",
-    "team": "Raimon"
+    "team": "Raimon",
+    "potential_min": 87,
+    "potential_max": 95
   },
   {
     "name": "Mark Evans",
@@ -266,12 +290,14 @@
         "type": "Obrona bramkarska"
       }
     ],
-    "overall": 91,
+    "overall": 80,
     "chance_percent": 0.25,
     "tier": "ZŁOTA",
     "image": "cards/13_mark_evans.png",
     "source_file": "OIP (13)(4).webp",
-    "team": "Raimon"
+    "team": "Raimon",
+    "potential_min": 90,
+    "potential_max": 97
   },
   {
     "name": "Axel Blaze",
@@ -289,12 +315,14 @@
         "type": "Strzał"
       }
     ],
-    "overall": 92,
+    "overall": 81,
     "chance_percent": 0.25,
     "tier": "ZŁOTA",
     "image": "cards/14_axel_blaze.png",
     "source_file": "OIP (14)(4).webp",
-    "team": "Raimon"
+    "team": "Raimon",
+    "potential_min": 89,
+    "potential_max": 98
   },
   {
     "name": "Gazelle",
@@ -307,13 +335,15 @@
         "type": "Strzał"
       }
     ],
-    "overall": 83,
+    "overall": 75,
     "chance_percent": 1.4,
     "tier": "ZŁOTA",
     "image": "cards/15_gazelle.png",
     "source_file": "OIP (18)(1).webp",
     "collection_page": 2,
-    "team": "Genesis"
+    "team": "Genesis",
+    "potential_min": 82,
+    "potential_max": 90
   },
   {
     "name": "Torch",
@@ -331,13 +361,15 @@
         "type": "Drybling"
       }
     ],
-    "overall": 84,
+    "overall": 74,
     "chance_percent": 1.4,
-    "tier": "ZŁOTA",
+    "tier": "SREBRNA",
     "image": "cards/16_torch.png",
     "source_file": "R (1)(1).webp",
     "collection_page": 2,
-    "team": "Genesis"
+    "team": "Genesis",
+    "potential_min": 80,
+    "potential_max": 89
   },
   {
     "name": "Dvalin",
@@ -355,13 +387,15 @@
         "type": "Obrona bramkarska"
       }
     ],
-    "overall": 82,
+    "overall": 72,
     "chance_percent": 1.4,
-    "tier": "ZŁOTA",
+    "tier": "SREBRNA",
     "image": "cards/17_dvalin.png",
     "source_file": "OIP (19)(1).webp",
     "collection_page": 2,
-    "team": "Genesis"
+    "team": "Genesis",
+    "potential_min": 76,
+    "potential_max": 86
   },
   {
     "name": "Nathan Jones",
@@ -374,13 +408,15 @@
         "type": "Obrona bramkarska"
       }
     ],
-    "overall": 47,
+    "overall": 42,
     "chance_percent": 3.5385,
     "tier": "BRĄZOWA",
     "image": "cards/18_nathan_jones.png",
     "source_file": "OIP (20)(1).webp",
     "team": "Occult",
-    "collection_page": 3
+    "collection_page": 3,
+    "potential_min": 51,
+    "potential_max": 65
   },
   {
     "name": "Ken Furan",
@@ -393,13 +429,15 @@
         "type": "Odbiór"
       }
     ],
-    "overall": 42,
+    "overall": 37,
     "chance_percent": 3.5385,
     "tier": "BRĄZOWA",
     "image": "cards/19_ken_furan.png",
     "source_file": "OIP (21)(1).webp",
     "team": "Occult",
-    "collection_page": 3
+    "collection_page": 3,
+    "potential_min": 49,
+    "potential_max": 65
   },
   {
     "name": "Russell Walk",
@@ -412,91 +450,105 @@
         "type": "Odbiór"
       }
     ],
-    "overall": 44,
+    "overall": 40,
     "chance_percent": 3.5385,
     "tier": "BRĄZOWA",
     "image": "cards/20_russell_walk.png",
     "source_file": "OIP (22).webp",
     "team": "Occult",
-    "collection_page": 3
+    "collection_page": 3,
+    "potential_min": 46,
+    "potential_max": 57
   },
   {
     "name": "Jason Jones",
     "position": "Obrońca",
     "element": "Wind",
     "hissatsu": [],
-    "overall": 36,
+    "overall": 32,
     "chance_percent": 3.5385,
     "tier": "BRĄZOWA",
     "image": "cards/21_jason_jones.png",
     "source_file": "OIP (23).webp",
     "team": "Occult",
-    "collection_page": 3
+    "collection_page": 3,
+    "potential_min": 43,
+    "potential_max": 59
   },
   {
     "name": "Jerry Fulton",
     "position": "Obrońca",
     "element": "Fire",
     "hissatsu": [],
-    "overall": 49,
+    "overall": 44,
     "chance_percent": 3.5385,
     "tier": "BRĄZOWA",
     "image": "cards/22_jerry_fulton.png",
     "source_file": "OIP (24).webp",
     "team": "Occult",
-    "collection_page": 3
+    "collection_page": 3,
+    "potential_min": 51,
+    "potential_max": 64
   },
   {
     "name": "Alexander Brave",
     "position": "Pomocnik",
     "element": "Fire",
     "hissatsu": [],
-    "overall": 48,
+    "overall": 42,
     "chance_percent": 3.5385,
     "tier": "BRĄZOWA",
     "image": "cards/23_alexander_brave.png",
     "source_file": "OIP (25).webp",
     "team": "Occult",
-    "collection_page": 3
+    "collection_page": 3,
+    "potential_min": 51,
+    "potential_max": 61
   },
   {
     "name": "Ray Mannings",
     "position": "Pomocnik",
     "element": "Wind",
     "hissatsu": [],
-    "overall": 34,
+    "overall": 30,
     "chance_percent": 3.5385,
     "tier": "BRĄZOWA",
     "image": "cards/24_ray_mannings.png",
     "source_file": "OIP (26).webp",
     "team": "Occult",
-    "collection_page": 3
+    "collection_page": 3,
+    "potential_min": 40,
+    "potential_max": 54
   },
   {
     "name": "Robert Mayer",
     "position": "Pomocnik",
     "element": "Forest",
     "hissatsu": [],
-    "overall": 46,
+    "overall": 41,
     "chance_percent": 3.5385,
     "tier": "BRĄZOWA",
     "image": "cards/25_robert_mayer.png",
     "source_file": "OIP (28).webp",
     "team": "Occult",
-    "collection_page": 3
+    "collection_page": 3,
+    "potential_min": 49,
+    "potential_max": 56
   },
   {
     "name": "Burt Wolf",
     "position": "Pomocnik",
     "element": "Mountain",
     "hissatsu": [],
-    "overall": 50,
+    "overall": 46,
     "chance_percent": 3,
     "tier": "BRĄZOWA",
     "image": "cards/26_burt_wolf.png",
     "source_file": "OIP (29).webp",
     "team": "Occult",
-    "collection_page": 3
+    "collection_page": 3,
+    "potential_min": 60,
+    "potential_max": 69
   },
   {
     "name": "Troy Moon",
@@ -514,13 +566,15 @@
         "type": "Drybling"
       }
     ],
-    "overall": 53,
+    "overall": 49,
     "chance_percent": 3,
     "tier": "BRĄZOWA",
     "image": "cards/27_troy_moon.png",
     "source_file": "OIP (30).webp",
     "team": "Occult",
-    "collection_page": 3
+    "collection_page": 3,
+    "potential_min": 65,
+    "potential_max": 75
   },
   {
     "name": "Johan Tassman",
@@ -533,13 +587,15 @@
         "type": "Strzał"
       }
     ],
-    "overall": 72,
+    "overall": 67,
     "chance_percent": 2.5,
     "tier": "SREBRNA",
     "image": "cards/28_johan_tassman.png",
     "source_file": "OIP (31).webp",
     "team": "Occult",
-    "collection_page": 3
+    "collection_page": 3,
+    "potential_min": 73,
+    "potential_max": 78
   },
   {
     "name": "Charlie Boardfield",

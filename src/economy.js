@@ -97,6 +97,24 @@ export function getUser(guildId, userId) {
   return structuredClone(user);
 }
 
+export function getOrCreateManagerClub(guildId, userId, initialClub) {
+  if (!guildId || !userId) throw new Error('Serwer i użytkownik są wymagani do utworzenia klubu.');
+  const data = readAll();
+  const user = getOrCreate(data, guildId, userId);
+  if (!user.managerClub) {
+    user.managerClub = {
+      name: initialClub.name,
+      league: initialClub.league ?? 1,
+      roster: [...new Set(initialClub.roster ?? [])],
+      budget: initialClub.budget ?? 8_000_000,
+      currency: 'EUR',
+      createdAt: new Date().toISOString(),
+    };
+  }
+  writeAll(data);
+  return structuredClone(user.managerClub);
+}
+
 export function recordMatchResult(guildId, userId, result) {
   if (!['win', 'draw', 'loss'].includes(result)) throw new Error('Nieprawidłowy wynik meczu.');
   const data = readAll();
