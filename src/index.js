@@ -44,6 +44,7 @@ import {
   getOrCreateManagerClub,
   getTransferMarket,
   buyManagerPlayer,
+  negotiateManagerPlayer,
   playRoulette,
   saveTeam,
   setCosmetic,
@@ -745,6 +746,8 @@ async function showHelp(interaction) {
         '`/help` — pokaż tę listę pomocy.',
         '`/klub` — pokaż swój testowy klub Raimon, budżet i skład.',
         '`/transfery` — sprawdź zawodników dostępnych w Royal Academy.',
+        '`/rynek-transferowy` — otwórz szczegółowy rynek z wycenami.',
+        '`/negocjuj` — złóż ofertę, otrzymaj kontrofertę lub sfinalizuj transfer.',
         '`/kup zawodnik` — kup zawodnika z rynku transferowego.',
         '`/card zawodnik` — zobacz kartę zawodnika z katalogu.',
         '`/stats` — sprawdź statystyki gracza lub zawodnika.',
@@ -787,13 +790,23 @@ async function showHelp(interaction) {
 
 async function showTransferMarket(interaction) {
   const market = getTransferMarket(interaction.guildId, catalog);
-  const embed = new EmbedBuilder()
-    .setColor(0x7b61ff)
-    .setTitle('🔄 Rynek transferowy — Royal Academy')
-    .setDescription('To klub sterowany przez bota. Wybierz zawodnika z listy i kup go komendą **/kup zawodnik**. Ceny są testowe i płacisz z budżetu klubu.')
-    .addFields({ name: 'Zawodnicy na sprzedaż', value: market.map((player) => `• **${player.name}** — OVR ${player.overall}, ${player.position} · **${player.price.toLocaleString('pl-PL')} €**`).join('\n') || 'Brak zawodników na sprzedaż.' })
-    .setFooter({ text: 'Zakup przenosi zawodnika do Raimon i zapisuje zmianę w danych klubu.' });
+  const club = getOrCreateManagerClub(interaction.guildId, interaction.user.id, { name: 'Raimon', league: 1, roster: catalog.filter((p) => p.team === 'Raimon').map((p) => p.name), budget: 8_000_000 });
+  const money = (n) => Number(n).toLocaleString('pl-PL') + ' €';
+  const embed = new EmbedBuilder().setColor(0x5965f2).setTitle('⚽ INAZUMA ELEVEN  |  CENTRUM TRANSFEROWE')
+    .setDescription('━━━━━━━━━━━━━━━━━━━━\n🏟️ **Royal Academy — lista transferowa**\nPorównuj wyceny i składaj własne oferty. Klub może zaakceptować ofertę, odrzucić ją lub przedstawić kontrofertę.\n━━━━━━━━━━━━━━━━━━━━')
+    .addFields({ name: '💶 Budżet Raimon', value: `**${money(club.budget)}**`, inline: true }, { name: '👥 Dostępni zawodnicy', value: `**${market.length}**`, inline: true }, { name: '📋 Negocjacje', value: 'Użyj **/negocjuj** i wybierz zawodnika oraz ofertę w euro. Oferty zbliżone do wyceny mają większą szansę powodzenia.', inline: false }, { name: '🟣 ZAWODNICY NA RYNKU', value: market.map((p) => `**${p.name}** · ${p.position}\n⭐ **OVR ${p.overall}**  |  Wycena: **${money(p.price)}**`).join('\n\n') || 'Brak zawodników na rynku.', inline: false })
+    .setFooter({ text: 'Rynek testowy • EUR • Transfer zapisuje się po akceptacji oferty' });
   await interaction.reply({ embeds: [embed], ephemeral: true });
+}
+
+async function negotiateTransfer(interaction) {
+  const name = interaction.options.getString('zawodnik', true), offer = interaction.options.getInteger('oferta', true);
+  const result = negotiateManagerPlayer(interaction.guildId, interaction.user.id, name, offer, catalog);
+  if (!result.ok) { const msg = result.reason === 'unavailable' ? 'Ten zawodnik nie jest już dostępny.' : result.reason === 'already-owned' ? 'Twój klub ma już tego zawodnika.' : `Oferta przekracza budżet klubu: ${Number(result.budget).toLocaleString('pl-PL')} €.`; await interaction.reply({ content: msg, ephemeral: true }); return; }
+  const money = (n) => Number(n).toLocaleString('pl-PL') + ' €';
+  if (result.outcome === 'accepted') { await interaction.reply({ embeds: [new EmbedBuilder().setColor(0x2eaf69).setTitle('🤝 Porozumienie osiągnięte!').setDescription(`Royal Academy zaakceptowała ofertę za **${name}**.\nKwota transferu: **${money(result.price)}**\nPozostały budżet Raimon: **${money(result.budget)}**\n\nZawodnik dołącza do składu. Sprawdź **/klub**.`)], ephemeral: true }); return; }
+  if (result.outcome === 'counter') { await interaction.reply({ embeds: [new EmbedBuilder().setColor(0xf1c40f).setTitle('📝 Royal Academy składa kontrofertę').setDescription(`Oferta **${money(offer)}** za **${name}** jest za niska. Dyrektor sportowy proponuje **${money(result.counterPrice)}**.\nWycena wyjściowa: ${money(result.askingPrice)}. Wróć z nową ofertą przez **/negocjuj**.\nBudżet Raimon: **${money(result.budget)}**.`)], ephemeral: true }); return; }
+  await interaction.reply({ embeds: [new EmbedBuilder().setColor(0xe74c3c).setTitle('❌ Oferta odrzucona').setDescription(`Royal Academy uznała ofertę **${money(offer)}** za zbyt niską dla **${name}**. Wycena: **${money(result.askingPrice)}**. Możesz wrócić z lepszą ofertą.`)], ephemeral: true });
 }
 
 async function buyTransferPlayer(interaction) {
@@ -1615,7 +1628,11 @@ client.on(Events.InteractionCreate, async (interaction) => {
         await showManagerClub(interaction);
         break;
       case 'transfery':
+      case 'rynek-transferowy':
         await showTransferMarket(interaction);
+        break;
+      case 'negocjuj':
+        await negotiateTransfer(interaction);
         break;
       case 'kup':
         await buyTransferPlayer(interaction);
